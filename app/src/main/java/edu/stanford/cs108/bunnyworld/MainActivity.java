@@ -58,7 +58,4 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    //This is Anmol
-    //This is Anmol again
-
 }
