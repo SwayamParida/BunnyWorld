@@ -20,7 +20,8 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.8"/>
 
-    <edu.stanford.cs108.bunnyworld.PageView
+    <!--FIXME: Replace placeholder ImageView with a custom PageView-->
+    <ImageView
         android:id="@+id/pagePreview"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -30,7 +31,7 @@
         app:layout_constraintEnd_toEndOf="@id/vMargin"/>
 
     <HorizontalScrollView
-        android:id="@+id/presetShapes"
+        android:id="@+id/presetImages"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintTop_toBottomOf="@id/pagePreview"
@@ -132,7 +133,7 @@
 
             <Button
                 android:id="@+id/save"
-                android:onClick="onClick"
+                android:onClick="saveChanges"
                 android:text="Save"/>
 
         </GridLayout>
