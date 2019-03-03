@@ -6,4 +6,137 @@
     android:layout_height="match_parent"
     tools:context=".EditorActivity">
 
+    <android.support.constraint.Guideline
+        android:id="@+id/hMargin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.85"/>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/vMargin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.8"/>
+
+    <edu.stanford.cs108.bunnyworld.PageView
+        android:id="@+id/pagePreview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/hMargin"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/vMargin"/>
+
+    <HorizontalScrollView
+        android:id="@+id/presetShapes"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/pagePreview"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/vMargin"/>
+
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/attributes"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/pagePreview"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:columnCount="2">
+
+            <TextView
+                android:labelFor="@id/name"
+                android:text="Name"/>
+
+            <EditText
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:inputType="text"/>
+
+            <TextView
+                android:layout_columnSpan="2"
+                android:layout_width="match_parent"
+                android:text="Bounds"/>
+
+            <TextView
+                android:labelFor="@id/rectX"
+                android:text="x"/>
+
+            <EditText
+                android:id="@+id/rectX"
+                android:layout_width="match_parent"
+                android:inputType="numberDecimal"/>
+
+            <TextView
+                android:labelFor="@id/rectY"
+                android:text="y"/>
+
+            <EditText
+                android:id="@+id/rectY"
+                android:layout_width="match_parent"
+                android:inputType="numberDecimal"/>
+
+            <TextView
+                android:labelFor="@id/width"
+                android:text="Width"/>
+
+            <EditText
+                android:id="@+id/width"
+                android:layout_width="match_parent"
+                android:inputType="numberDecimal"/>
+
+            <TextView
+                android:labelFor="@id/height"
+                android:text="Height"/>
+
+            <EditText
+                android:id="@+id/height"
+                android:layout_width="match_parent"
+                android:inputType="numberDecimal"/>
+
+            <TextView
+                android:labelFor="@id/imgSpinner"
+                android:text="Image"/>
+
+            <Spinner
+                android:id="@+id/imgSpinner"
+                android:layout_width="match_parent"/>
+
+            <TextView
+                android:labelFor="@id/shapeText"
+                android:text="Text"/>
+
+            <EditText
+                android:id="@+id/shapeText"
+                android:layout_width="match_parent"
+                android:inputType="text"/>
+
+            <CheckBox
+                android:id="@+id/visible"
+                android:checked="true"
+                android:text="Visible"/>
+
+            <CheckBox
+                android:id="@+id/movable"
+                android:layout_width="match_parent"
+                android:checked="true"
+                android:text="Movable"/>
+
+            <Button
+                android:id="@+id/save"
+                android:onClick="onClick"
+                android:text="Save"/>
+
+        </GridLayout>
+
+    </android.support.v4.widget.NestedScrollView>
+
 </android.support.constraint.ConstraintLayout>
