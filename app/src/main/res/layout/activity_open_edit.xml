@@ -19,7 +19,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="newGameNameEditor"
         android:text="Create New Game:"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -52,11 +51,19 @@
 
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="createGameBtn"
+        app:layout_constraintTop_toBottomOf="@id/createGameBtn"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:text="Create New Game:"
+        android:text="Load Existing Game:"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/colorPrimaryDark"/>
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/editExistingGameText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+    </Spinner>
 
 </android.support.constraint.ConstraintLayout>
