@@ -4,62 +4,78 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+import android.view.View;
 
 public class Image extends Shape {
     //the file name
     private Bitmap fileName;
     private RectF scaledCoord;
-    private Canvas pageCanvas;
-    private RectF originalSize;
+    private int viewWidth;
+    private int viewHeight;
     private float originalX;
     private float originalY;
     private String name;
+    private boolean drawOriginalDim = false;
     private RectF bounds;
     private String shapeScript = "";
     private boolean visible;
     private boolean moveable;
 
     //superclass constructor--- canvas refers to main canvas area for the editor
-    public Image(Canvas canvas, String name, BitmapDrawable drawable,
-                 RectF bounds, boolean visible, boolean moveable){
+    public Image(View view, BitmapDrawable drawable, RectF bounds,
+                 boolean visible, boolean moveable, String name){
         super();
-        this.name = name;
+        if( name == null || name.equals("")){
+            this.name = "shape" + count;
+            count++;
+        } else this.name = name;
         this.bounds = bounds;
         this.visible = visible;
         this.moveable = moveable;
-        pageCanvas = canvas;
+        this.viewWidth = view.getWidth();
+        this.viewHeight = view.getHeight();
         this.fileName = drawable.getBitmap();
         int width = fileName.getWidth();
         int height = fileName.getHeight();
-        originalSize = new RectF(bounds.left, bounds.top,
-                bounds.left + width, bounds.top + height);
         originalX = bounds.left;
         originalY = bounds.top;
 
-        //scale and store new rect for other canvas sizes
-        float newX = bounds.left/canvas.getWidth();
-        float newY = bounds.top/canvas.getHeight();
-        float newWidth = bounds.width()/canvas.getWidth();
-        float newHeight = bounds.height()/canvas.getHeight();
+        //scale and store new image bounds for other canvas sizes
+        float newX = originalX/viewWidth;
+        float newY = originalY/viewHeight;
+        float newWidth = bounds.width()/viewWidth;
+        float newHeight = bounds.height()/viewHeight;
         scaledCoord = new RectF(newX, newY, newX + newWidth, newY + newHeight);
     }
 
     //override the shape draw
     public void draw(Canvas canvas, float xPos, float yPos) {
-        float width = bounds.width();
-        float height = bounds.height();
-        RectF newRect = new RectF(xPos, yPos, xPos + width, yPos + height);
-        canvas.drawRect(newRect, defaultPaint);
+        float width = canvas.getWidth();
+        float height = canvas.getHeight();
+        float newX = scaledCoord.left*width;
+        float newY = scaledCoord.top*height;
+        if(drawOriginalDim) canvas.drawBitmap(fileName, newX, newY, null);
+        else {
+            float newWidth = scaledCoord.width()*width;
+            float newHeight = scaledCoord.height()*height;
+            RectF newBounds = new RectF(newX, newY, newX+newWidth, newY+newHeight);
+            canvas.drawBitmap(fileName, null, newBounds, null);
+        }
     }
 
     //Editor activity calls this version of draw
-    public void draw() {
-        pageCanvas.drawBitmap(fileName, null, bounds, null);
+    public void draw(Canvas canvas) {
+        canvas.drawBitmap(fileName, null, bounds, null);
+        drawOriginalDim = false;
     }
 
     //functionality to draw original image
-    public void drawOriginal(){
-        pageCanvas.drawBitmap(fileName, originalX, originalY, null);
+    public void drawOriginal(Canvas canvas){
+        canvas.drawBitmap(fileName, originalX, originalY, null);
+        float newX = scaledCoord.left*canvas.getWidth();
+        float newY = scaledCoord.top*canvas.getHeight();
+        bounds = new RectF(newX, newY, newX +fileName.getWidth(), newX + fileName.getHeight());
+        drawOriginalDim = true;
     }
 
     //update the script for the object
@@ -90,5 +106,15 @@ public class Image extends Shape {
     //returns the name of this shape
     public String getName(){
         return name;
+    }
+
+    //provide resize functionality
+    public void resizeBounds(RectF newBounds){
+        this.bounds = newBounds;
+        float newX = newBounds.left/viewWidth;
+        float newY = newBounds.top/viewHeight;
+        float newWidth = newBounds.width()/viewWidth;
+        float newHeight = newBounds.height()/viewHeight;
+        scaledCoord = new RectF(newX, newY, newX + newWidth, newY + newHeight);
     }
 }

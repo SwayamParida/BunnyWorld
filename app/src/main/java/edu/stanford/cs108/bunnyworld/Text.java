@@ -3,31 +3,38 @@ package edu.stanford.cs108.bunnyworld;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.view.View;
 
 public class Text extends Shape {
     //the file name
     private String txtString;
     private Paint txtPaint = new Paint();
-    private Canvas pageCanvas;
-    private int textX;
-    private int textY;
+    private int viewWidth;
+    private int viewHeight;
+    private float textX;
+    private float textY;
     private String name;
     private String shapeScript = "";
     private boolean visible;
     private boolean moveable;
 
     //superclass constructor
-    public Text(Canvas canvas, String txtString, int strX, int strY,
+    public Text(View view, String txtString, String fontSize, float strX, float strY,
                 boolean visible, boolean moveable, String name){
         super();
         this.name = name;
         this.visible = visible;
         this.moveable = moveable;
-        this.pageCanvas = canvas;
+        this.viewHeight = view.getHeight();
+        this.viewWidth = view.getWidth();
         this.txtString = txtString;
         txtPaint.setColor(Color.BLACK);
-        textX = strX;
-        textY = strY;
+        if(fontSize != null && !fontSize.equals("")){
+            int ftSize = Integer.parseInt(fontSize);
+            txtPaint.setTextSize(ftSize);
+        }
+        textX = strX/viewWidth;
+        textY = strY/viewHeight;
     }
 
     //Called by any other canvas with new x and y positions for the object
@@ -35,9 +42,11 @@ public class Text extends Shape {
         canvas.drawText(txtString, xPos, yPos, txtPaint);
     }
 
-    //called by the pageEditorView class
+    //called by any other canvas except the pageEditorView class
     public void draw(Canvas canvas) {
-        pageCanvas.drawText(txtString, textX, textY, txtPaint);
+        float width = canvas.getWidth();
+        float height = canvas.getHeight();
+        canvas.drawText(txtString, textX*width, textY*height, txtPaint);
     }
 
     //update the script for the object
@@ -68,5 +77,14 @@ public class Text extends Shape {
     //returns the name of this shape
     public String getName(){
         return name;
+    }
+
+    //provide ability to change text properties
+    public void changeText(String fontName, String fontSize, String fontStyle){
+        //set boolean to true
+        //create a new paint object and replace default paint
+        // paint.setTypeface(); // takes plain/bold/DEFAULT_BOLD etc
+        // paint.setTypeface(Typeface.create("Arial",Typeface.ITALIC));
+        // paint.setTextSize(); //takes floating pt number
     }
 }

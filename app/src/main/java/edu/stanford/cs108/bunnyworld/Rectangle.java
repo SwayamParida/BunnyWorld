@@ -4,12 +4,14 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.view.View;
 
 public class Rectangle extends Shape {
     //default constructor
     private Paint defaultPaint = new Paint();
     private RectF scaledCoord;
-    private Canvas pageCanvas;
+    private int viewWidth;
+    private int viewHeight;
     private String name;
     private RectF bounds;
     private String shapeScript = "";
@@ -17,22 +19,25 @@ public class Rectangle extends Shape {
     private boolean moveable;
 
     //superclass constructor
-    public Rectangle(Canvas canvas, String name, RectF bounds, boolean visible, boolean moveable) {
-        //scale before storing the RECTF
+    public Rectangle(View view, RectF bounds, boolean visible, boolean moveable, String name) {
+        //scale before storing the rectF
         super();
-        this.name = name;
+        if(name == null || name.equals("")){
+            this.name = "shape" + count;
+            count++;
+        } else this.name = name;
         this.bounds = bounds;
         this.visible = visible;
         this.moveable = moveable;
-        pageCanvas = canvas;
+        this.viewHeight = view.getHeight();
+        this.viewWidth = view.getWidth();
 
         //scale and set new RectF for other canvas sizes
-        float newX = bounds.left/canvas.getWidth();
-        float newY = bounds.top/canvas.getHeight();
-        float newWidth = bounds.width()/canvas.getWidth();
-        float newHeight = bounds.height()/canvas.getHeight();
+        float newX = bounds.left/viewWidth;
+        float newY = bounds.top/viewHeight;
+        float newWidth = bounds.width()/viewWidth;
+        float newHeight = bounds.height()/viewHeight;
         scaledCoord = new RectF(newX, newY, newX + newWidth, newY + newHeight);
-        defaultPaint.setColor(Color.rgb(211, 211, 211));
     }
 
     //PageView calls this to display shapes
@@ -49,8 +54,8 @@ public class Rectangle extends Shape {
     }
 
     //Editor activity calls this version of draw
-    public void draw() {
-        pageCanvas.drawRect(bounds, defaultPaint);
+    public void draw(Canvas canvas) {
+        canvas.drawRect(bounds, defaultPaint);
     }
 
     //update the script for the object
@@ -81,6 +86,16 @@ public class Rectangle extends Shape {
     //returns the name of this shape
     public String getName(){
         return name;
+    }
+
+    //provide resize functionality
+    public void resizeBounds(RectF newBounds){
+        this.bounds = newBounds;
+        float newX = newBounds.left/viewWidth;
+        float newY = newBounds.top/viewHeight;
+        float newWidth = newBounds.width()/viewWidth;
+        float newHeight = newBounds.height()/viewHeight;
+        scaledCoord = new RectF(newX, newY, newX + newWidth, newY + newHeight);
     }
 }
 
