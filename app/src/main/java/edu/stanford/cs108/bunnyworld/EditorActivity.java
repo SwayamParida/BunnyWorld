@@ -18,9 +18,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EditorActivity extends AppCompatActivity {
-    private static final Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
-    private static final Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
-    private static ArrayAdapter imgSpinnerAdapter;
+    public static final Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
+    public static final Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
+
+    private Page page;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +56,7 @@ public class EditorActivity extends AppCompatActivity {
      */
     private void populateSpinner() {
         // Create an array adapter using the items in imageNames
-        imgSpinnerAdapter = new ArrayAdapter<>(
+        ArrayAdapter<String> imgSpinnerAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
                 new ArrayList<>(stringImgMap.keySet())
@@ -73,20 +74,16 @@ public class EditorActivity extends AppCompatActivity {
         for (BitmapDrawable image : stringImgMap.values()) {
             ImageView imageView = new ImageView(this);
             imageView.setImageDrawable(image);
-            imageView.setOnClickListener(v -> selectImage((ImageView) v));
+            imageView.setOnClickListener(v -> {
+                PageView pagePreview = findViewById(R.id.pagePreview);
+                BitmapDrawable selectedImage = (BitmapDrawable) ((ImageView) v).getDrawable();
+                pagePreview.setSelectedImage(selectedImage);
+            });
             horizontalLayout.addView(imageView);
         }
         ((HorizontalScrollView) findViewById(R.id.presetImages)).addView(horizontalLayout);
     }
-    /**
-     * Helper method that updates the Spinner to reflect the image clicked by the user
-     * @param imageView The view containing the image whose string needs to be displays in the Spinner
-     */
-    private void selectImage(ImageView imageView) {
-        Spinner imgSpinner = findViewById(R.id.imgSpinner);
-        String imageName = imgStringMap.get(imageView.getDrawable());
-        imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imageName));
-    }
+
     /**
      * Event handler for when the "Save" button is clicked.
      * Creates a shape object using the attributes specified by the user.
@@ -97,31 +94,31 @@ public class EditorActivity extends AppCompatActivity {
         String text = ((EditText) findViewById(R.id.shapeText)).getText().toString();
         boolean visible = ((CheckBox) findViewById(R.id.visible)).isChecked();
         boolean movable = ((CheckBox) findViewById(R.id.movable)).isChecked();
+        ImageView pagePreview = findViewById(R.id.pagePreview);
 
         String imageName = ((Spinner) findViewById(R.id.imgSpinner)).getSelectedItem().toString();
         BitmapDrawable image = stringImgMap.getOrDefault(imageName, null);
 
         float x = Float.parseFloat(((EditText) findViewById(R.id.rectX)).getText().toString());
         float y = Float.parseFloat(((EditText) findViewById(R.id.rectY)).getText().toString());
-        float width = Float.parseFloat(((EditText) findViewById(R.id.width)).getText().toString());
-        float height = Float.parseFloat(((EditText) findViewById(R.id.height)).getText().toString());
-        RectF boundingRect = new RectF(x, y, x + width, y + height);
+        float shapeWidth = Float.parseFloat(((EditText) findViewById(R.id.width)).getText().toString());
+        float shapeHeight = Float.parseFloat(((EditText) findViewById(R.id.height)).getText().toString());
+        RectF boundingRect = new RectF(x, y, x + shapeWidth, y + shapeHeight);
 
         Shape shape;
-
         // When only image is provided
-        if (image != null && text.isEmpty()) {
-            shape = new Image(null, name, image, boundingRect, visible, movable);
-            // TODO: Discuss with Ike about changing Image constructor to not require a Canvas since draw will anyways be given a Canvas
-        }
+        if (image != null && text.isEmpty())
+            shape = new Image(pagePreview, image, boundingRect, visible, movable, name);
         // When text is provided, it takes precedence over a n
-        else if (!text.isEmpty()) {
-            shape = new Text(null, text, (int) boundingRect.left, (int) boundingRect.top, visible, movable, name);
-            // TODO: Discuss with Ike about changing Text constructor to not require a Canvas, change data type of strX and strY from int to float, and keep variable order consister
-        }
+        else if (!text.isEmpty())
+            shape = new Text(pagePreview, text, boundingRect.left, boundingRect.top, visible, movable, name);
         // When neither image nor text is provided
-        else {
-            shape = new Rectangle(null, name, boundingRect, visible, movable);
-        }
+        else
+            shape = new Rectangle(pagePreview, boundingRect, visible, movable, name);
+
+        // Replace selected shape
+        Shape selectedShape = getSelectedShape();
+        page.deleteShape(selectedShape);
+        page.addShape(selectedShape);
     }
 }

@@ -1,11 +1,13 @@
 package edu.stanford.cs108.bunnyworld;
 
+import android.graphics.Canvas;
+
 import java.util.ArrayList;
 
 public class Page {
 
     private boolean isStarterPage = false;
-    private ArrayList<Shape> listOfShapes = new ArrayList<Shape>();
+    private ArrayList<Shape> listOfShapes = new ArrayList<>();
     private String name;
     private String backGroundImageName;
 
@@ -33,6 +35,18 @@ public class Page {
         this.name = newName;
     }
 
-    //Draw background images and then shapes
+    public void draw(Canvas canvas) {
+        for (Shape shape : listOfShapes)
+            shape.draw(canvas);
+    }
+    public Shape findLastShape(float x, float y) {
+        Shape lastFound = null;
+        for (Shape shape : listOfShapes) {
+            if (shape.containsPoint(x, y))
+                lastFound = shape;
+        }
+        return lastFound;
+    }
+
 
 }
