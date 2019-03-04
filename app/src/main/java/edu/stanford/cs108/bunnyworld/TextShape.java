@@ -5,30 +5,21 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.View;
 
-public class Text extends Shape {
+public class TextShape extends Shape {
     //the file name
     private String txtString;
     private Paint txtPaint = new Paint();
-    private int viewWidth;
-    private int viewHeight;
     private float textX;
     private float textY;
-    private String name;
-    private String shapeScript = "";
-    private boolean visible;
-    private boolean moveable;
 
     //superclass constructor
-    public Text(View view, String txtString, float strX, float strY,
-                boolean visible, boolean moveable, String name){
-        super();
-        this.name = name;
-        this.visible = visible;
-        this.moveable = moveable;
-        this.viewHeight = view.getHeight();
-        this.viewWidth = view.getWidth();
+    public TextShape(View view, String txtString, float strX, float strY,
+                     boolean visible, boolean movable, String name){
+        super(view, visible, movable, null, name);
         this.txtString = txtString;
         txtPaint.setColor(Color.BLACK);
+        this.viewHeight = view.getHeight();
+        this.viewWidth = view.getWidth();
         textX = strX/viewWidth;
         textY = strY/viewHeight;
     }
@@ -45,36 +36,6 @@ public class Text extends Shape {
         float width = canvas.getWidth();
         float height = canvas.getHeight();
         canvas.drawText(txtString, textX*width, textY*height, txtPaint);
-    }
-
-    //update the script for the object
-    public void updateScript(String newScript){
-        shapeScript = newScript;
-    }
-
-    //returns the script for this object
-    public String getShapeScript(){
-        return shapeScript;
-    }
-
-    //bool indicating if the shape is visible
-    public boolean isVisible(){
-        return visible;
-    }
-
-    //returns bool indicating if the shape must be moveable
-    public boolean isMoveable(){
-        return moveable;
-    }
-
-    // sets the name of the shape
-    public void setName(String name){
-        this.name = name;
-    }
-
-    //returns the name of this shape
-    public String getName(){
-        return name;
     }
 
     //provide ability to change text properties

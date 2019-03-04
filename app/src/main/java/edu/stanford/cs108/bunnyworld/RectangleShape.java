@@ -6,31 +6,17 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.view.View;
 
-public class Rectangle extends Shape {
+public class RectangleShape extends Shape {
     //default constructor
-    private Paint defaultPaint = new Paint();
     private RectF scaledCoord;
-    private int viewWidth;
-    private int viewHeight;
-    private String name;
-    private RectF bounds;
-    private String shapeScript = "";
-    private boolean visible;
-    private boolean moveable;
+
+    private Paint defaultPaint = new Paint();
 
     //superclass constructor
-    public Rectangle(View view, RectF bounds, boolean visible, boolean moveable, String name) {
+    public RectangleShape(View view, RectF bounds, boolean visible, boolean movable, String name) {
         //scale before storing the rectF
-        super();
-        if(name == null || name.equals("")){
-            this.name = "shape" + count;
-            count++;
-        } else this.name = name;
-        this.bounds = bounds;
-        this.visible = visible;
-        this.moveable = moveable;
-        this.viewHeight = view.getHeight();
-        this.viewWidth = view.getWidth();
+        super(view, visible, movable, bounds, name);
+        defaultPaint.setColor(Color.rgb(211,211,211));
 
         //scale and set new RectF for other canvas sizes
         float newX = bounds.left/viewWidth;
@@ -58,36 +44,6 @@ public class Rectangle extends Shape {
     @Override
     public void draw(Canvas canvas) {
         canvas.drawRect(bounds, defaultPaint);
-    }
-
-    //update the script for the object
-    public void updateScript(String newScript){
-        shapeScript = newScript;
-    }
-
-    //returns the script for this object
-    public String getShapeScript(){
-        return shapeScript;
-    }
-
-    //bool indicating if the shape is visible
-    public boolean isVisible(){
-        return visible;
-    }
-
-    //returns bool indicating if the shape must be moveable
-    public boolean isMoveable(){
-        return moveable;
-    }
-
-    // sets the name of the shape
-    public void setName(String name){
-        this.name = name;
-    }
-
-    //returns the name of this shape
-    public String getName(){
-        return name;
     }
 
     //provide resize functionality

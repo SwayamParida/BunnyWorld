@@ -2,6 +2,7 @@
   <dictionary name="ikeos">
     <words>
       <w>coord</w>
+      <w>ivars</w>
       <w>moveable</w>
     </words>
   </dictionary>
