@@ -1,10 +1,12 @@
 package edu.stanford.cs108.bunnyworld;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -28,6 +30,10 @@ public class PageView extends View {
 
     public void setSelectedImage(BitmapDrawable selectedImage) {
         this.selectedImage = selectedImage;
+    }
+
+    public void setPage(Page page) {
+        this.page = page;
     }
 
     private float x1, x2, y1, y2;
@@ -72,10 +78,10 @@ public class PageView extends View {
     }
 
     private void updateInspector(Shape shape) {
-        ((EditText) findViewById(R.id.name)).setText(shape.getName());
-        ((EditText) findViewById(R.id.shapeText)).setText(shape.getText());
-        ((CheckBox) findViewById(R.id.visible)).setChecked(shape.isVisible());
-        ((CheckBox) findViewById(R.id.movable)).setChecked(shape.isMovable());
+        ((EditText) ((Activity) getContext()).findViewById(R.id.name)).setText(shape.getName());
+        ((EditText) ((Activity) getContext()).findViewById(R.id.shapeText)).setText(shape.getText());
+        ((CheckBox) ((Activity) getContext()).findViewById(R.id.visible)).setChecked(shape.isVisible());
+        ((CheckBox) ((Activity) getContext()).findViewById(R.id.movable)).setChecked(shape.isMovable());
         updateImgSpinner();
     }
 
@@ -83,7 +89,7 @@ public class PageView extends View {
      * Helper method that updates the Spinner to reflect the image clicked by the user
      */
     private void updateImgSpinner() {
-        Spinner imgSpinner = findViewById(R.id.imgSpinner);
+        Spinner imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
         String imageName = EditorActivity.imgStringMap.get(selectedImage);
         ArrayAdapter<String> imgSpinnerAdapter = (ArrayAdapter<String>) imgSpinner.getAdapter();
         imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imageName));

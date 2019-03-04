@@ -28,6 +28,9 @@ public class EditorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
+        page = new Page();
+        ((PageView) findViewById(R.id.pagePreview)).setPage(page);
+
         initImageMap();
         populateSpinner();
         populateImgScrollView();
