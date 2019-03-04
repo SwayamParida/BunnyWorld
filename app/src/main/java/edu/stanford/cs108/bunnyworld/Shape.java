@@ -19,6 +19,7 @@ abstract class Shape {
     static List shapesList = new ArrayList<Shape>();
 
     //ivars for all shapes
+    protected String txtString;
     protected RectF bounds;
     protected boolean selected;
     protected String name;
@@ -31,7 +32,8 @@ abstract class Shape {
     protected float originalX;
     protected float originalY;
 
-    Shape(View view, RectF bounds, BitmapDrawable drawable, boolean visible, boolean movable, String name){
+    Shape(View view, RectF bounds, BitmapDrawable drawable, String txtString,
+          boolean visible, boolean movable, String name){
         if(name == null || name.equals("")){
             this.name = "shape" + count;
             count++;
@@ -44,6 +46,7 @@ abstract class Shape {
         this.viewHeight = view.getHeight();
         this.viewWidth = view.getWidth();
         this.fileName = drawable.getBitmap();
+        this.txtString = txtString;
     }
 
     //general draw method
@@ -106,5 +109,25 @@ abstract class Shape {
     public boolean containsPoint(float xPos, float yPos){
         return (xPos < bounds.right && xPos < bounds.left &&
                 yPos > bounds.top && yPos < bounds.bottom);
+    }
+
+    //returns Bitmap
+    public Bitmap getBitmap(){
+        return fileName;
+    }
+
+    //update bitmap
+    public void updateBitmap(Bitmap file){
+        this.fileName = file;
+    }
+
+    //returns the text string
+    public String getText(){
+        return txtString;
+    }
+
+    //sets the textString
+    public void setText(String txt){
+        this.txtString = txt;
     }
 }
