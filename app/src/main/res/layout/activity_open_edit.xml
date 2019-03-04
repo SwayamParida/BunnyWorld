@@ -30,7 +30,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:hint="Enter Game Name"
+        android:inputType="text"
         android:maxLines="1"
+        android:imeOptions="actionDone"
+        android:gravity="center"
         android:textSize="24sp"
         app:layout_constraintTop_toBottomOf="@id/createNewGameText"
         app:layout_constraintStart_toStartOf="parent"
@@ -45,7 +48,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:text="Create New Game"
-        android:textSize="24sp"/>
+        android:textSize="24sp"
+        android:onClick="createNewGame"/>
 
     <TextView
         android:id="@+id/editExistingGameText"
