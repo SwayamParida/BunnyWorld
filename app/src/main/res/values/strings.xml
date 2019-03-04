@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Bunny World</string>
+    <string name="spinnerMsg">Choose game file</string>
 </resources>
