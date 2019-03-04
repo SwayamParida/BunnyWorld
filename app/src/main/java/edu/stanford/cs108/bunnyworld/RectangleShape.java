@@ -44,6 +44,7 @@ public class RectangleShape extends Shape {
     @Override
     public void draw(Canvas canvas) {
         canvas.drawRect(bounds, defaultPaint);
+        super.draw(canvas);
     }
 
     //provide resize functionality

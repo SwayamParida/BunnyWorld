@@ -3,25 +3,26 @@ package edu.stanford.cs108.bunnyworld;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 
 public class TextShape extends Shape {
     //the file name
-    private String txtString;
     private Paint txtPaint = new Paint();
     private float textX;
     private float textY;
 
     //superclass constructor
-    public TextShape(View view, String txtString, float strX, float strY,
+    public TextShape(View view, RectF bounds, BitmapDrawable image, String txtString,
                      boolean visible, boolean movable, String name){
-        super(view, null, null, txtString, visible, movable, name);
-        this.txtString = txtString;
+        super(view, bounds, image, txtString, visible, movable, name);
         txtPaint.setColor(Color.BLACK);
         this.viewHeight = view.getHeight();
         this.viewWidth = view.getWidth();
-        textX = strX/viewWidth;
-        textY = strY/viewHeight;
+        textX = bounds.left/viewWidth;
+        textY = bounds.right/viewHeight;
     }
 
     //Called by any other canvas with new x and y positions for the object
@@ -33,6 +34,7 @@ public class TextShape extends Shape {
     //called by any other canvas except the pageEditorView class
     @Override
     public void draw(Canvas canvas) {
+        super.draw(canvas);
         float width = canvas.getWidth();
         float height = canvas.getHeight();
         canvas.drawText(txtString, textX*width, textY*height, txtPaint);

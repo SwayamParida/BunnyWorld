@@ -1,6 +1,5 @@
 package edu.stanford.cs108.bunnyworld;
 
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -10,7 +9,6 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 abstract class Shape {
     static int count = 0;
@@ -23,7 +21,7 @@ abstract class Shape {
     protected RectF bounds;
     protected boolean selected;
     protected String name;
-    protected Bitmap fileName;
+    protected BitmapDrawable image;
     protected String shapeScript = "";
     protected boolean visible;
     protected boolean movable;
@@ -32,11 +30,12 @@ abstract class Shape {
     protected float originalX;
     protected float originalY;
 
+    private static final Paint outlinePaint = new Paint();
+
     Shape(View view, RectF bounds, BitmapDrawable drawable, String txtString,
           boolean visible, boolean movable, String name){
         if(name == null || name.equals("")){
-            this.name = "shape" + count;
-            count++;
+            this.name = "shape" + count++;
         } else this.name = name;
         this.visible = visible;
         this.movable = movable;
@@ -45,12 +44,18 @@ abstract class Shape {
         this.originalY = bounds.top;
         this.viewHeight = view.getHeight();
         this.viewWidth = view.getWidth();
-        this.fileName = drawable.getBitmap();
+        this.image = drawable;
         this.txtString = txtString;
+
+        outlinePaint.setStyle(Paint.Style.STROKE);
+        outlinePaint.setColor(Color.BLUE);
     }
 
     //general draw method
-    abstract void draw(Canvas canvas);
+    public void draw(Canvas canvas) {
+        if (selected)
+            canvas.drawRect(bounds, outlinePaint);
+    }
 
     //specific draw for other canvases
     abstract void draw(Canvas canvas, float xPos, float yPos);
@@ -107,18 +112,18 @@ abstract class Shape {
 
     //checks if in bounds
     public boolean containsPoint(float xPos, float yPos){
-        return (xPos < bounds.right && xPos < bounds.left &&
+        return (xPos > bounds.left && xPos < bounds.right &&
                 yPos > bounds.top && yPos < bounds.bottom);
     }
 
     //returns Bitmap
-    public Bitmap getBitmap(){
-        return fileName;
+    public BitmapDrawable getImage(){
+        return image;
     }
 
     //update bitmap
-    public void updateBitmap(Bitmap file){
-        this.fileName = file;
+    public void updateImage(BitmapDrawable file){
+        this.image = file;
     }
 
     //returns the text string
@@ -129,5 +134,13 @@ abstract class Shape {
     //sets the textString
     public void setText(String txt){
         this.txtString = txt;
+    }
+
+    public RectF getBounds() {
+        return bounds;
+    }
+
+    public void setBounds(RectF bounds) {
+        this.bounds = bounds;
     }
 }

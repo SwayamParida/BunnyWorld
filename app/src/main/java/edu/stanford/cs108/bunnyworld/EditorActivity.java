@@ -23,17 +23,40 @@ public class EditorActivity extends AppCompatActivity {
 
     private Page page;
 
+
+    /**
+     * Helper method that updates the Spinner to reflect the image clicked by the user
+     */
+    public static void updateSpinner(Spinner imgSpinner, BitmapDrawable image) {
+        String imageName = EditorActivity.imgStringMap.get(image);
+        ArrayAdapter<String> imgSpinnerAdapter = (ArrayAdapter<String>) imgSpinner.getAdapter();
+        imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imageName));
+    }
+    /**
+     * Event handler for when the "Save" button is clicked.
+     */
+    public void saveChanges(View view) {
+        Shape selectedShape = ((PageView) findViewById(R.id.pagePreview)).getSelectedShape();
+        page.deleteShape(selectedShape);
+        page.addShape(updatedShape());
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
-        page = new Page();
-        ((PageView) findViewById(R.id.pagePreview)).setPage(page);
-
         initImageMap();
         populateSpinner();
         populateImgScrollView();
+        initPageView();
+    }
+    private void initPageView() {
+        page = new Page();
+        PageView pagePreview = findViewById(R.id.pagePreview);
+        pagePreview.setPage(page);
+        BitmapDrawable defaultImage = stringImgMap.get(((ArrayAdapter<String>)((Spinner) findViewById(R.id.imgSpinner)).getAdapter()).getItem(0));
+        pagePreview.setSelectedImage(defaultImage);
     }
     /**
      * Initializes a HashMap that maps the name of an image to the BitmapDrawable associated with it.
@@ -81,23 +104,23 @@ public class EditorActivity extends AppCompatActivity {
                 PageView pagePreview = findViewById(R.id.pagePreview);
                 BitmapDrawable selectedImage = (BitmapDrawable) ((ImageView) v).getDrawable();
                 pagePreview.setSelectedImage(selectedImage);
+                updateSpinner(findViewById(R.id.imgSpinner), selectedImage);
             });
             horizontalLayout.addView(imageView);
         }
         ((HorizontalScrollView) findViewById(R.id.presetImages)).addView(horizontalLayout);
     }
-
     /**
-     * Event handler for when the "Save" button is clicked.
      * Creates a shape object using the attributes specified by the user.
      * Based on the image and text attributes, determines which subclass of Shape needs to be instantiated.
+     * @return new Shape using the updated attributes
      */
-    public void saveChanges(View view) {
+    private Shape updatedShape() {
         String name = ((EditText) findViewById(R.id.name)).getText().toString();
         String text = ((EditText) findViewById(R.id.shapeText)).getText().toString();
         boolean visible = ((CheckBox) findViewById(R.id.visible)).isChecked();
         boolean movable = ((CheckBox) findViewById(R.id.movable)).isChecked();
-        ImageView pagePreview = findViewById(R.id.pagePreview);
+        PageView pagePreview = findViewById(R.id.pagePreview);
 
         String imageName = ((Spinner) findViewById(R.id.imgSpinner)).getSelectedItem().toString();
         BitmapDrawable image = stringImgMap.getOrDefault(imageName, null);
@@ -111,12 +134,14 @@ public class EditorActivity extends AppCompatActivity {
         Shape shape;
         // When only image is provided
         if (image != null && text.isEmpty())
-            shape = new ImageShape(pagePreview, image, boundingRect, visible, movable, name);
-        // When text is provided, it takes precedence over a n
+            shape = new ImageShape(pagePreview, boundingRect, image, text, visible, movable, name);
+            // When text is provided, it takes precedence over any other object
         else if (!text.isEmpty())
-            shape = new TextShape(pagePreview, text, boundingRect.left, boundingRect.top, visible, movable, name);
-        // When neither image nor text is provided
+            shape = new TextShape(pagePreview, boundingRect, image, text, visible, movable, name);
+            // When neither image nor text is provided
         else
             shape = new RectangleShape(pagePreview, boundingRect, visible, movable, name);
+
+        return shape;
     }
 }

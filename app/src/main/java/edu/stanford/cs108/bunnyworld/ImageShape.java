@@ -9,15 +9,13 @@ import android.view.View;
 
 public class ImageShape extends Shape {
     //the file name
-    private Bitmap fileName;
     private RectF scaledCoord;
     private boolean drawOriginalDim = false;
 
     //superclass constructor--- canvas refers to main canvas area for the editor
-    public ImageShape(View view, BitmapDrawable drawable, RectF bounds,
+    public ImageShape(View view, RectF bounds, BitmapDrawable drawable, String txtString,
                       boolean visible, boolean movable, String name){
-        super(view, bounds, drawable, null, visible, movable, name);
-        this.fileName = drawable.getBitmap();
+        super(view, bounds, drawable, txtString, visible, movable, name);
 
         //scale and store new image bounds for other canvas sizes
         float newX = originalX/viewWidth;
@@ -34,34 +32,35 @@ public class ImageShape extends Shape {
         float height = canvas.getHeight();
         float newX = scaledCoord.left*width;
         float newY = scaledCoord.top*height;
-        if(drawOriginalDim) canvas.drawBitmap(fileName, xPos, yPos, null);
+        if(drawOriginalDim) canvas.drawBitmap(image.getBitmap(), xPos, yPos, null);
         else {
             float newWidth = scaledCoord.width()*width;
             float newHeight = scaledCoord.height()*height;
             RectF newBounds = new RectF(xPos, yPos, xPos+newWidth, yPos+newHeight);
-            canvas.drawBitmap(fileName, null, newBounds, null);
+            canvas.drawBitmap(image.getBitmap(), null, newBounds, null);
         }
     }
 
     //Editor activity calls this version of draw
     @Override
     public void draw(Canvas canvas) {
+        super.draw(canvas);
         float width = canvas.getWidth();
         float height = canvas.getHeight();
         float newX = scaledCoord.left*width;
         float newY = scaledCoord.top*height;
-        if(drawOriginalDim) canvas.drawBitmap(fileName, newX, newY, null);
+        if(drawOriginalDim) canvas.drawBitmap(image.getBitmap(), newX, newY, null);
         else {
             float newWidth = scaledCoord.width()*width;
             float newHeight = scaledCoord.height()*height;
             RectF newBounds = new RectF(newX, newY, newX+newWidth, newY+newHeight);
-            canvas.drawBitmap(fileName, null, newBounds, null);
+            canvas.drawBitmap(image.getBitmap(), null, newBounds, null);
         }
     }
 
     //functionality to draw original image
     public void drawOriginal(Canvas canvas){
-        canvas.drawBitmap(fileName, originalX, originalY, null);
+        canvas.drawBitmap(image.getBitmap(), originalX, originalY, null);
         drawOriginalDim = true;
     }
 
