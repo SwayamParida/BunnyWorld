@@ -19,7 +19,7 @@ public class Text extends Shape {
     private boolean moveable;
 
     //superclass constructor
-    public Text(View view, String txtString, String fontSize, float strX, float strY,
+    public Text(View view, String txtString, float strX, float strY,
                 boolean visible, boolean moveable, String name){
         super();
         this.name = name;
@@ -29,20 +29,18 @@ public class Text extends Shape {
         this.viewWidth = view.getWidth();
         this.txtString = txtString;
         txtPaint.setColor(Color.BLACK);
-        if(fontSize != null && !fontSize.equals("")){
-            int ftSize = Integer.parseInt(fontSize);
-            txtPaint.setTextSize(ftSize);
-        }
         textX = strX/viewWidth;
         textY = strY/viewHeight;
     }
 
     //Called by any other canvas with new x and y positions for the object
+    @Override
     public void draw(Canvas canvas, float xPos, float yPos) {
         canvas.drawText(txtString, xPos, yPos, txtPaint);
     }
 
     //called by any other canvas except the pageEditorView class
+    @Override
     public void draw(Canvas canvas) {
         float width = canvas.getWidth();
         float height = canvas.getHeight();

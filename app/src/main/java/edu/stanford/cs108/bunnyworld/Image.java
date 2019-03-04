@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+import android.support.annotation.NonNull;
 import android.view.View;
 
 public class Image extends Shape {
@@ -49,6 +50,7 @@ public class Image extends Shape {
     }
 
     //override the shape draw
+    @Override
     public void draw(Canvas canvas, float xPos, float yPos) {
         float width = canvas.getWidth();
         float height = canvas.getHeight();
@@ -64,6 +66,7 @@ public class Image extends Shape {
     }
 
     //Editor activity calls this version of draw
+    @Override
     public void draw(Canvas canvas) {
         canvas.drawBitmap(fileName, null, bounds, null);
         drawOriginalDim = false;

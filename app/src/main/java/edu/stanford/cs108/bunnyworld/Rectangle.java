@@ -41,6 +41,7 @@ public class Rectangle extends Shape {
     }
 
     //PageView calls this to display shapes
+    @Override
     public void draw(Canvas canvas, float xPos, float yPos) {
         //scale them and then store it
         float screenWidth = canvas.getWidth();
@@ -54,6 +55,7 @@ public class Rectangle extends Shape {
     }
 
     //Editor activity calls this version of draw
+    @Override
     public void draw(Canvas canvas) {
         canvas.drawRect(bounds, defaultPaint);
     }
