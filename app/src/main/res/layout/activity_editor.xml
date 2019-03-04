@@ -60,12 +60,8 @@
             <EditText
                 android:id="@+id/name"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:inputType="text"/>
-
-            <TextView
-                android:layout_columnSpan="2"
-                android:layout_width="match_parent"
-                android:text="Bounds"/>
 
             <TextView
                 android:labelFor="@id/rectX"
@@ -74,6 +70,7 @@
             <EditText
                 android:id="@+id/rectX"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:inputType="numberDecimal"/>
 
             <TextView
@@ -83,6 +80,7 @@
             <EditText
                 android:id="@+id/rectY"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:inputType="numberDecimal"/>
 
             <TextView
@@ -92,6 +90,7 @@
             <EditText
                 android:id="@+id/width"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:inputType="numberDecimal"/>
 
             <TextView
@@ -101,15 +100,8 @@
             <EditText
                 android:id="@+id/height"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:inputType="numberDecimal"/>
-
-            <TextView
-                android:labelFor="@id/imgSpinner"
-                android:text="Image"/>
-
-            <Spinner
-                android:id="@+id/imgSpinner"
-                android:layout_width="match_parent"/>
 
             <TextView
                 android:labelFor="@id/shapeText"
@@ -118,7 +110,17 @@
             <EditText
                 android:id="@+id/shapeText"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:inputType="text"/>
+
+            <TextView
+                android:labelFor="@id/imgSpinner"
+                android:text="Image"/>
+
+            <Spinner
+                android:id="@+id/imgSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
             <CheckBox
                 android:id="@+id/visible"
@@ -127,7 +129,6 @@
 
             <CheckBox
                 android:id="@+id/movable"
-                android:layout_width="match_parent"
                 android:checked="true"
                 android:text="Movable"/>
 

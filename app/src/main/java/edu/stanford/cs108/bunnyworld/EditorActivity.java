@@ -14,21 +14,13 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class EditorActivity extends AppCompatActivity {
-    private static final Map<String, BitmapDrawable> imageMap = new HashMap<>();
-    private static final String[] imageNames = { "carrot", "carrot2", "death", "duck", "fire", "mystic" };
-    private final BitmapDrawable images[] = {
-            (BitmapDrawable) getResources().getDrawable(R.drawable.carrot),
-            (BitmapDrawable) getResources().getDrawable(R.drawable.carrot2),
-            (BitmapDrawable) getResources().getDrawable(R.drawable.death),
-            (BitmapDrawable) getResources().getDrawable(R.drawable.duck),
-            (BitmapDrawable) getResources().getDrawable(R.drawable.fire),
-            (BitmapDrawable) getResources().getDrawable(R.drawable.mystic),
-    };
+    private static final Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
+    private static final Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
+    private static ArrayAdapter imgSpinnerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +35,18 @@ public class EditorActivity extends AppCompatActivity {
      * Initializes a HashMap that maps the name of an image to the BitmapDrawable associated with it.
      */
     private void initImageMap() {
+        String[] imageNames = { "carrot", "carrot2", "death", "duck", "fire", "mystic" };
+        BitmapDrawable[] images = new BitmapDrawable[]{
+                (BitmapDrawable) getResources().getDrawable(R.drawable.carrot),
+                (BitmapDrawable) getResources().getDrawable(R.drawable.carrot2),
+                (BitmapDrawable) getResources().getDrawable(R.drawable.death),
+                (BitmapDrawable) getResources().getDrawable(R.drawable.duck),
+                (BitmapDrawable) getResources().getDrawable(R.drawable.fire),
+                (BitmapDrawable) getResources().getDrawable(R.drawable.mystic),
+        };
         for (int i = 0; i < images.length; ++i) {
-            imageMap.put(imageNames[i], images[i]);
+            stringImgMap.put(imageNames[i], images[i]);
+            imgStringMap.put(images[i], imageNames[i]);
         }
     }
     /**
@@ -53,28 +55,37 @@ public class EditorActivity extends AppCompatActivity {
      */
     private void populateSpinner() {
         // Create an array adapter using the items in imageNames
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+        imgSpinnerAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                Arrays.asList(imageNames)
+                new ArrayList<>(stringImgMap.keySet())
         );
         // Set spinner dropdown layout
-        adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+        imgSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
         // Set adapter to spinner
-        ((Spinner) findViewById(R.id.imgSpinner)).setAdapter(adapter);
+        ((Spinner) findViewById(R.id.imgSpinner)).setAdapter(imgSpinnerAdapter);
     }
-
     /**
      * Populates a HorizontalScrollView with all the preset images available for the user to create a shape out of
      */
     private void populateImgScrollView() {
         LinearLayout horizontalLayout = new LinearLayout(this);
-        for (BitmapDrawable image : images) {
+        for (BitmapDrawable image : stringImgMap.values()) {
             ImageView imageView = new ImageView(this);
             imageView.setImageDrawable(image);
+            imageView.setOnClickListener(v -> selectImage((ImageView) v));
             horizontalLayout.addView(imageView);
         }
         ((HorizontalScrollView) findViewById(R.id.presetImages)).addView(horizontalLayout);
+    }
+    /**
+     * Helper method that updates the Spinner to reflect the image clicked by the user
+     * @param imageView The view containing the image whose string needs to be displays in the Spinner
+     */
+    private void selectImage(ImageView imageView) {
+        Spinner imgSpinner = findViewById(R.id.imgSpinner);
+        String imageName = imgStringMap.get(imageView.getDrawable());
+        imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imageName));
     }
     /**
      * Event handler for when the "Save" button is clicked.
@@ -88,7 +99,7 @@ public class EditorActivity extends AppCompatActivity {
         boolean movable = ((CheckBox) findViewById(R.id.movable)).isChecked();
 
         String imageName = ((Spinner) findViewById(R.id.imgSpinner)).getSelectedItem().toString();
-        BitmapDrawable image = imageMap.getOrDefault(imageName, null);
+        BitmapDrawable image = stringImgMap.getOrDefault(imageName, null);
 
         float x = Float.parseFloat(((EditText) findViewById(R.id.rectX)).getText().toString());
         float y = Float.parseFloat(((EditText) findViewById(R.id.rectY)).getText().toString());
