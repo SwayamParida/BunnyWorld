@@ -15,7 +15,7 @@ public class TextShape extends Shape {
     //superclass constructor
     public TextShape(View view, String txtString, float strX, float strY,
                      boolean visible, boolean movable, String name){
-        super(view, visible, movable, null, name);
+        super(view, null, null, visible, movable, name);
         this.txtString = txtString;
         txtPaint.setColor(Color.BLACK);
         this.viewHeight = view.getHeight();

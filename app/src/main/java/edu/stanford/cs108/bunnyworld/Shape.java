@@ -1,9 +1,11 @@
 package edu.stanford.cs108.bunnyworld;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ abstract class Shape {
     protected RectF bounds;
     protected boolean selected;
     protected String name;
+    protected Bitmap fileName;
     protected String shapeScript = "";
     protected boolean visible;
     protected boolean movable;
@@ -28,7 +31,7 @@ abstract class Shape {
     protected float originalX;
     protected float originalY;
 
-    Shape(View view, boolean visible, boolean movable, RectF bounds, String name){
+    Shape(View view, RectF bounds, BitmapDrawable drawable, boolean visible, boolean movable, String name){
         if(name == null || name.equals("")){
             this.name = "shape" + count;
             count++;
@@ -40,6 +43,7 @@ abstract class Shape {
         this.originalY = bounds.top;
         this.viewHeight = view.getHeight();
         this.viewWidth = view.getWidth();
+        this.fileName = drawable.getBitmap();
     }
 
     //general draw method

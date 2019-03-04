@@ -16,7 +16,7 @@ public class ImageShape extends Shape {
     //superclass constructor--- canvas refers to main canvas area for the editor
     public ImageShape(View view, BitmapDrawable drawable, RectF bounds,
                       boolean visible, boolean movable, String name){
-        super(view, visible, movable, bounds, name);
+        super(view, bounds, drawable, visible, movable, name);
         this.fileName = drawable.getBitmap();
 
         //scale and store new image bounds for other canvas sizes
