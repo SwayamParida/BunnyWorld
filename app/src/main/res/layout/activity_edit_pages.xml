@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <TextView
-        android:text="All Pages"
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:textSize="35sp"
+        android:layout_height="wrap_content"
         android:gravity="center|center_vertical"
-        />
+        android:text="All Pages"
+        android:textSize="35sp" />
 
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:orientation="vertical"
-        android:padding="10dp"
         android:layout_weight="2"
-        android:fillViewport="false">
+        android:fillViewport="false"
+        android:orientation="vertical"
+        android:padding="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -45,23 +44,22 @@
 
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        >
+        android:orientation="horizontal">
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="CHANGETHIS"
             android:gravity="center|center_vertical"
+            android:onClick="CHANGETHIS"
             android:text="Create New Page" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="CHANGETHIS"
             android:gravity="center|center_vertical"
+            android:onClick="CHANGETHIS"
             android:text="Delete Selected Page" />
     </LinearLayout>
 </LinearLayout>

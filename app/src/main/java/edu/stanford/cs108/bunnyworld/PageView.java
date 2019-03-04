@@ -53,7 +53,7 @@ public class PageView extends View {
         }
 
         RectF boundingRect = new RectF(x1, y1, x2, y2);
-        Shape shape = new Image(this, selectedImage, boundingRect, true, true, null);
+        Shape shape = new ImageShape(this, selectedImage, boundingRect, true, true, null);
         updateInspector(shape);
         invalidate();
 

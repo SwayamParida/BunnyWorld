@@ -108,17 +108,12 @@ public class EditorActivity extends AppCompatActivity {
         Shape shape;
         // When only image is provided
         if (image != null && text.isEmpty())
-            shape = new Image(pagePreview, image, boundingRect, visible, movable, name);
+            shape = new ImageShape(pagePreview, image, boundingRect, visible, movable, name);
         // When text is provided, it takes precedence over a n
         else if (!text.isEmpty())
-            shape = new Text(pagePreview, text, boundingRect.left, boundingRect.top, visible, movable, name);
+            shape = new TextShape(pagePreview, text, boundingRect.left, boundingRect.top, visible, movable, name);
         // When neither image nor text is provided
         else
-            shape = new Rectangle(pagePreview, boundingRect, visible, movable, name);
-
-        // Replace selected shape
-        Shape selectedShape = getSelectedShape();
-        page.deleteShape(selectedShape);
-        page.addShape(selectedShape);
+            shape = new RectangleShape(pagePreview, boundingRect, visible, movable, name);
     }
 }
