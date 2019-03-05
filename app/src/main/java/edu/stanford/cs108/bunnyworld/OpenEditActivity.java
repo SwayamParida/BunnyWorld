@@ -2,13 +2,14 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -18,16 +19,20 @@ import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE;
 
 public class OpenEditActivity extends AppCompatActivity {
+    //iVars
     private DatabaseHelper dbHelper;
     private String[] fromArray = {"gameName"};
     private int[] toArray = {android.R.id.text1};
+    private OpenEditActivity instance;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_open_edit);
+        this.instance = this;
 
-        dbHelper = DatabaseHelper.getInstance(getApplicationContext()); //Get singleton instance of DBHelper class
+        dbHelper = DatabaseHelper.getInstance(this); //Get singleton instance of DBHelper class
 
         //Enters full screen mode
         ActionBar actionBar = getSupportActionBar();
@@ -40,10 +45,19 @@ public class OpenEditActivity extends AppCompatActivity {
 
     //Populates spinner with database game names
     private void setupSpinner() {
-        Cursor cursor = dbHelper.db.rawQuery("SELECT * FROM games;", null);
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, cursor, fromArray, toArray, 0);
         Spinner spinner = (Spinner) findViewById(R.id.existingGamesSpinner);
-        spinner.setAdapter(adapter);
+        if (dbHelper.gameExists()) {
+            Cursor cursor = dbHelper.db.rawQuery("SELECT * FROM games;", null);
+            SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item, cursor, fromArray, toArray, 0);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinner.setAdapter(adapter);
+        } else { //Populates spinner with 'no game files' msg if database is empty
+            String[] arraySpinner = new String[] {"No game files"};
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, arraySpinner);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinner.setAdapter(adapter);
+        }
+
     }
 
     //Overrides backbutton pressed to ensure onCreate is called on previous activity (e.g. MainActivity)

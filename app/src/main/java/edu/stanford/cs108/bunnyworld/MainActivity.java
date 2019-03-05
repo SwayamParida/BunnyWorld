@@ -1,6 +1,7 @@
 package edu.stanford.cs108.bunnyworld;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.support.v7.app.ActionBar;
@@ -12,6 +13,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.VideoView;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;

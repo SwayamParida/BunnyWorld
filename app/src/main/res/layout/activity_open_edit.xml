@@ -7,6 +7,7 @@
     tools:context=".OpenEditActivity">
 
     <ImageView
+        android:id="@+id/chungusImageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitXY"
@@ -69,6 +70,7 @@
         android:id="@+id/existingGamesSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:prompt="@string/spinnerMsg"
         app:layout_constraintTop_toBottomOf="@id/editExistingGameText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -77,6 +79,7 @@
     </Spinner>
 
     <Button
+        android:id="@+id/loadGameBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/existingGamesSpinner"
