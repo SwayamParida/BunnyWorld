@@ -31,6 +31,9 @@ abstract class Shape {
     protected float originalY;
 
     private static final Paint outlinePaint = new Paint();
+    private static final int PAINT_COLOR = Color.BLUE;
+    private static final Paint.Style PAINT_STYLE = Paint.Style.STROKE;
+    private static final float STROKE_WIDTH = 15.0f;
 
     Shape(View view, RectF bounds, BitmapDrawable drawable, String txtString,
           boolean visible, boolean movable, String name){
@@ -47,8 +50,9 @@ abstract class Shape {
         this.image = drawable;
         this.txtString = txtString;
 
-        outlinePaint.setStyle(Paint.Style.STROKE);
-        outlinePaint.setColor(Color.BLUE);
+        outlinePaint.setStyle(PAINT_STYLE);
+        outlinePaint.setColor(PAINT_COLOR);
+        outlinePaint.setStrokeWidth(STROKE_WIDTH);
     }
 
     //general draw method
@@ -112,8 +116,7 @@ abstract class Shape {
 
     //checks if in bounds
     public boolean containsPoint(float xPos, float yPos){
-        return (xPos > bounds.left && xPos < bounds.right &&
-                yPos > bounds.top && yPos < bounds.bottom);
+        return bounds.contains(xPos, yPos);
     }
 
     //returns Bitmap
@@ -142,5 +145,10 @@ abstract class Shape {
 
     public void setBounds(RectF bounds) {
         this.bounds = bounds;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

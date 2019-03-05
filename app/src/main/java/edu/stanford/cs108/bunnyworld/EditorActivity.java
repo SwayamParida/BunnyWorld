@@ -22,7 +22,11 @@ public class EditorActivity extends AppCompatActivity {
     public static final Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
 
     private Page page;
-
+    private PageView pagePreview;
+    private EditText nameEditText, textEditText, xEditText, yEditText, wEditText, hEditText;
+    private CheckBox visibleCheckBox, movableCheckBox;
+    private HorizontalScrollView imgScrollView;
+    private Spinner imgSpinner;
 
     /**
      * Helper method that updates the Spinner to reflect the image clicked by the user
@@ -36,9 +40,10 @@ public class EditorActivity extends AppCompatActivity {
      * Event handler for when the "Save" button is clicked.
      */
     public void saveChanges(View view) {
-        Shape selectedShape = ((PageView) findViewById(R.id.pagePreview)).getSelectedShape();
+        Shape selectedShape = pagePreview.getSelectedShape();
         page.deleteShape(selectedShape);
         page.addShape(updatedShape());
+        pagePreview.invalidate();
     }
 
     @Override
@@ -46,16 +51,37 @@ public class EditorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
+        initComponents();
         initImageMap();
         populateSpinner();
         populateImgScrollView();
         initPageView();
     }
+
+    /**
+     * Helper method that initializes the relevant views defined in the editor_activity.xml
+     * to be referred to later in the code.
+     */
+    private void initComponents() {
+        nameEditText = findViewById(R.id.name);
+        textEditText = findViewById(R.id.shapeText);
+        xEditText = findViewById(R.id.rectX);
+        yEditText = findViewById(R.id.rectY);
+        wEditText = findViewById(R.id.width);
+        hEditText = findViewById(R.id.height);
+        visibleCheckBox = findViewById(R.id.visible);
+        movableCheckBox = findViewById(R.id.movable);
+        imgSpinner = findViewById(R.id.imgSpinner);
+        imgScrollView = findViewById(R.id.presetImages);
+        pagePreview = findViewById(R.id.pagePreview);
+    }
+    /**
+     * Helper method that passes relevant data to PageView
+     */
     private void initPageView() {
         page = new Page();
-        PageView pagePreview = findViewById(R.id.pagePreview);
         pagePreview.setPage(page);
-        BitmapDrawable defaultImage = stringImgMap.get(((ArrayAdapter<String>)((Spinner) findViewById(R.id.imgSpinner)).getAdapter()).getItem(0));
+        BitmapDrawable defaultImage = stringImgMap.get(((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0));
         pagePreview.setSelectedImage(defaultImage);
     }
     /**
@@ -90,7 +116,7 @@ public class EditorActivity extends AppCompatActivity {
         // Set spinner dropdown layout
         imgSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
         // Set adapter to spinner
-        ((Spinner) findViewById(R.id.imgSpinner)).setAdapter(imgSpinnerAdapter);
+        imgSpinner.setAdapter(imgSpinnerAdapter);
     }
     /**
      * Populates a HorizontalScrollView with all the preset images available for the user to create a shape out of
@@ -101,14 +127,13 @@ public class EditorActivity extends AppCompatActivity {
             ImageView imageView = new ImageView(this);
             imageView.setImageDrawable(image);
             imageView.setOnClickListener(v -> {
-                PageView pagePreview = findViewById(R.id.pagePreview);
                 BitmapDrawable selectedImage = (BitmapDrawable) ((ImageView) v).getDrawable();
                 pagePreview.setSelectedImage(selectedImage);
-                updateSpinner(findViewById(R.id.imgSpinner), selectedImage);
+                updateSpinner(imgSpinner, selectedImage);
             });
             horizontalLayout.addView(imageView);
         }
-        ((HorizontalScrollView) findViewById(R.id.presetImages)).addView(horizontalLayout);
+        imgScrollView.addView(horizontalLayout);
     }
     /**
      * Creates a shape object using the attributes specified by the user.
@@ -116,29 +141,28 @@ public class EditorActivity extends AppCompatActivity {
      * @return new Shape using the updated attributes
      */
     private Shape updatedShape() {
-        String name = ((EditText) findViewById(R.id.name)).getText().toString();
-        String text = ((EditText) findViewById(R.id.shapeText)).getText().toString();
-        boolean visible = ((CheckBox) findViewById(R.id.visible)).isChecked();
-        boolean movable = ((CheckBox) findViewById(R.id.movable)).isChecked();
-        PageView pagePreview = findViewById(R.id.pagePreview);
+        String name = nameEditText.getText().toString();
+        String text = textEditText.getText().toString();
+        boolean visible = visibleCheckBox.isChecked();
+        boolean movable = movableCheckBox.isChecked();
 
-        String imageName = ((Spinner) findViewById(R.id.imgSpinner)).getSelectedItem().toString();
-        BitmapDrawable image = stringImgMap.getOrDefault(imageName, null);
+        String imageName = imgSpinner.getSelectedItem().toString();
+        BitmapDrawable image = stringImgMap.get(imageName);
 
-        float x = Float.parseFloat(((EditText) findViewById(R.id.rectX)).getText().toString());
-        float y = Float.parseFloat(((EditText) findViewById(R.id.rectY)).getText().toString());
-        float shapeWidth = Float.parseFloat(((EditText) findViewById(R.id.width)).getText().toString());
-        float shapeHeight = Float.parseFloat(((EditText) findViewById(R.id.height)).getText().toString());
-        RectF boundingRect = new RectF(x, y, x + shapeWidth, y + shapeHeight);
+        float x = Float.parseFloat(xEditText.getText().toString());
+        float y = Float.parseFloat(yEditText.getText().toString());
+        float width = Float.parseFloat(wEditText.getText().toString());
+        float height = Float.parseFloat(hEditText.getText().toString());
+        RectF boundingRect = new RectF(x, y, x + width, y + height);
 
         Shape shape;
         // When only image is provided
         if (image != null && text.isEmpty())
             shape = new ImageShape(pagePreview, boundingRect, image, text, visible, movable, name);
-            // When text is provided, it takes precedence over any other object
+        // When text is provided, it takes precedence over any other object
         else if (!text.isEmpty())
             shape = new TextShape(pagePreview, boundingRect, image, text, visible, movable, name);
-            // When neither image nor text is provided
+        // When neither image nor text is provided
         else
             shape = new RectangleShape(pagePreview, boundingRect, visible, movable, name);
 

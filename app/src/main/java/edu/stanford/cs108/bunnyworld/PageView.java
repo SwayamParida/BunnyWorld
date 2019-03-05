@@ -6,10 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -20,15 +18,13 @@ public class PageView extends View {
     private Page page;
     private BitmapDrawable selectedImage;
     private Shape selectedShape;
+    // Co-ordinates of user touches - populated in onTouchEvent()
+    private float x1, x2, y1, y2;
 
     public PageView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    @Override
-    public void onDraw(Canvas canvas) {
-        page.draw(canvas);
-    }
     public void setSelectedImage(BitmapDrawable selectedImage) {
         this.selectedImage = selectedImage;
     }
@@ -38,40 +34,46 @@ public class PageView extends View {
     public void setPage(Page page) {
         this.page = page;
     }
-    private float x1, x2, y1, y2;
-    // FIXME: (x1,y1) and (y1,y2) are not updated properly, so their persistent values cause a bug where every click creates an image
+    @Override
+    public void onDraw(Canvas canvas) {
+        page.draw(canvas);
+    }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (selectedImage == null)
-            return true;
-
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 x1 = event.getX();
                 y1 = event.getY();
-                // Prevents premature processing before both new co-ordinates are obtained
-                return true;
             case MotionEvent.ACTION_UP:
                 x2 = event.getX();
                 y2 = event.getY();
-                break;
         }
 
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
-        if (x1 == x2 && y1 == y2) {
+        if (x1 == x2 && y1 == y2)
             selectShape(page.findLastShape(x1, y1));
-        }
-        // If (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
-        else {
-            RectF boundingRect = getBoundingRect(x1, x2, y1, y2);
+        // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
+        // When no shape is selected, a drag implies user intends to draw a new ImageShape
+        else if (selectedShape == null){
+            RectF boundingRect = createBounds(x1, y1, x2, y2);
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null, true, true, null);
-            updateInspector(shape);
             page.addShape(shape);
+            updateInspector(shape);
+        }
+        // When a shape is selected, a drag implies user intends to move the selected shape
+        else if (selectedShape.isMovable()){
+            RectF newBounds = shiftBounds(x1, y1, x2, y2, selectedShape.getBounds());
+            selectedShape.setBounds(newBounds);
+            updateInspector(selectedShape);
         }
         invalidate();
 
         return true;
     }
+    /**
+     * Helper method that handles all the steps associated with shape selection and deselection
+     * @param toSelect When not-null, this Shape is selected. When null, the current selection is cleared.
+     */
     private void selectShape(Shape toSelect) {
         if (toSelect != null)
             toSelect.setSelected(true);
@@ -114,12 +116,37 @@ public class PageView extends View {
             movable.setChecked(false);
         }
     }
-    private RectF getBoundingRect(float x1, float x2, float y1, float y2) {
+    /**
+     * Helper method that creates a RectF object, enforcing that left <= right and top <= bottom.
+     * @param x1 One of the horizontal components
+     * @param y1 One of the vertical components
+     * @param x2 One of the horizontal components
+     * @param y2 One of the vertical components
+     * @return Validated RectF object
+     */
+    private RectF createBounds(float x1, float y1, float x2, float y2) {
         RectF boundingRect = new RectF();
         boundingRect.left = Math.min(x1, x2);
         boundingRect.right = Math.max(x1, x2);
         boundingRect.top = Math.min(y1, y2);
         boundingRect.bottom = Math.max(y1, y2);
         return boundingRect;
+    }
+    /**
+     * Helper method that computes a new bounding rectangle ensuring that the point in the original shape
+     * where user began dragging is the same point in the new shape where the user ends dragging.
+     * @param startX x co-ordinate of point in original bounds where the user begins dragging
+     * @param startY y co-ordinate of point in original bounds where the user begins dragging
+     * @param endX x co-ordinate of point in new bounds where the user ends dragging
+     * @param endY y co-ordinate of point in new bounds where the user ends dragging
+     * @param originalBounds
+     * @return
+     */
+    private RectF shiftBounds(float startX, float startY, float endX, float endY, RectF originalBounds) {
+        float newLeft = endX - (startX - originalBounds.left);
+        float newTop = endY - (startY - originalBounds.top);
+        float newRight = newLeft + originalBounds.width();
+        float newBottom = newTop + originalBounds.height();
+        return new RectF(newLeft, newTop, newRight, newBottom);
     }
 }
