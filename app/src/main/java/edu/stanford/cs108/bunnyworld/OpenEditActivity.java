@@ -16,7 +16,7 @@ import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE;
 
-public class OpenEditActivity extends AppCompatActivity {
+public class OpenEditActivity extends AppCompatActivity implements BunnyWorldConstants {
     //iVars
     private DatabaseHelper dbHelper;
     private String[] fromArray = {"gameName"};
@@ -72,13 +72,13 @@ public class OpenEditActivity extends AppCompatActivity {
             Toast.makeText(this, "No name entered.", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (dbHelper.entryExists(dbHelper.GAMES_TABLE, gameName)) {
+        if (dbHelper.entryExists(GAMES_TABLE, gameName)) {
             Toast.makeText(this, "A game with that name already exists. Use a different name.", Toast.LENGTH_LONG).show();
             return;
         }
         dbHelper.addGameToTable(gameName);
         Intent intent = new Intent(this, EditPagesActivity.class);
-        intent.putExtra("Game_id", dbHelper.getId(dbHelper.GAMES_TABLE, gameName, dbHelper.NO_PARENT));
+        intent.putExtra("Game_id", dbHelper.getId(GAMES_TABLE, gameName, NO_PARENT));
         startActivity(intent);
     }
 
@@ -88,7 +88,7 @@ public class OpenEditActivity extends AppCompatActivity {
         Cursor gameCursor = (Cursor) spinner.getSelectedItem();
         String gameName = gameCursor.getString(0);
         Intent intent = new Intent(this, EditPagesActivity.class);
-        intent.putExtra("Game_id", dbHelper.getId(dbHelper.GAMES_TABLE, gameName, dbHelper.NO_PARENT));
+        intent.putExtra("Game_id", dbHelper.getId(GAMES_TABLE, gameName, NO_PARENT));
         startActivity(intent);
 
     }

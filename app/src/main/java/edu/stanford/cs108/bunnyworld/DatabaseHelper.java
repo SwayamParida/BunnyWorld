@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class DatabaseHelper {
+public class DatabaseHelper implements BunnyWorldConstants {
 
     //iVars
 /**********************************************/
@@ -36,31 +36,6 @@ public class DatabaseHelper {
     private static DatabaseHelper single_instance = null;
     public static SQLiteDatabase db;
     private static Context mContext;
-    private static final String DATABASE_NAME = "BunnyWorldDB";
-
-    private ArrayList<Integer> imgList = new ArrayList<Integer>(Arrays.asList
-            (R.drawable.carrot, R.drawable.carrot2, R.drawable.death, R.drawable.duck,
-                    R.drawable.edit_icon, R.drawable.fire, R.drawable.mystic, R.drawable.play_icon));
-    private ArrayList<Integer> audioList = new ArrayList<Integer>(Arrays.asList
-            (R.raw.carrotcarrotcarrot, R.raw.evillaugh, R.raw.fire, R.raw.hooray, R.raw.intro_music,
-                    R.raw.munch, R.raw.munching, R.raw.woof));
-
-    public static final int AUDIO = 0;
-    public static final int IMAGE = 1;
-    public static final int NO_PARENT = -1;
-    public static final String GAMES_TABLE = "games";
-    public static final String PAGES_TABLE = "pages";
-    public static final String SHAPES_TABLE = "shapes";
-    public static final String RESOURCE_TABLE = "resources";
-    public static final double NO_CHANGE_X = -Double.MAX_VALUE;
-    public static final double NO_CHANGE_Y = -Double.MAX_VALUE;
-    public static final double NO_CHANGE_WIDTH = -Double.MAX_VALUE;
-    public static final double NO_CHANGE_HEIGHT = -Double.MAX_VALUE;
-
-    private static final int FILE_COL_INDEX = 2;
-    private static final int NAME_COL = 0;
-
-
 /**********************************************/
 
     /**
@@ -509,6 +484,48 @@ public class DatabaseHelper {
 
         return shape;
     }
+
+    /**
+     * Inserts a new page into pages database.
+     * @param pageName Desired name of page.
+     * @param parent_id Id of game that page belongs to.
+     * @return Returns true if page is successfully added to database.
+     */
+    public boolean addPage(String pageName, int parent_id) {
+        if (entryExists(PAGES_TABLE, pageName, parent_id)) {
+            Toast.makeText(mContext, "Page with name '" + pageName +"' already exists.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        ContentValues cv = new ContentValues();
+        cv.put("name", pageName);
+        cv.put("parent_id", parent_id);
+        db.insert(PAGES_TABLE, null, cv);
+        return true;
+    }
+
+    /**
+     * Removes a page and all of its associated shapes from the database
+     * @param page_id The unique id where the page is stored in the database
+     */
+    public void deletePage(int page_id) {
+        String pageDelete = "DELETE FROM " + PAGES_TABLE + " WHERE _id = " + page_id + ";";
+        db.execSQL(pageDelete);
+        String pageShapeDelete = "DELETE FROM " + SHAPES_TABLE + " WHERE parent_id = " + page_id + ";";
+        db.execSQL(pageShapeDelete);
+    }
+
+    /**
+     * Change a given page's name in the database
+     * @param page_id Unique id where page is stored in the database
+     * @param newName Desired new name for the page
+     */
+    public void changePageName(int page_id, String newName) {
+        String cmd = "UPDATE " + PAGES_TABLE + " SET name = '" + newName + "' WHERE _id = " + page_id + ";";
+        db.execSQL(cmd);
+    }
+
+
+
 
 
 
