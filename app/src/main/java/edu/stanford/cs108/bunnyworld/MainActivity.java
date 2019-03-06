@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
+        mediaPlayer.setOnCompletionListener(completionListener);
 
         getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_IMMERSIVE|
                 SYSTEM_UI_FLAG_FULLSCREEN|SYSTEM_UI_FLAG_HIDE_NAVIGATION);
