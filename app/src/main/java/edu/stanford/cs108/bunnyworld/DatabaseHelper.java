@@ -34,7 +34,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
 /**********************************************/
     //Variable for single instance of DBSingleton
     private static DatabaseHelper single_instance = null;
-    public static SQLiteDatabase db;
+    public SQLiteDatabase db;
     private static Context mContext;
 /**********************************************/
 
@@ -56,7 +56,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * Returns the single instance of the DatabaseHelper
      * @param context context of the caller
      */
-    public static final DatabaseHelper getInstance(Context context) {
+    public static DatabaseHelper getInstance(Context context) {
         mContext = context;
         context.deleteDatabase(DATABASE_NAME); //Erases database
         if (single_instance == null) {
