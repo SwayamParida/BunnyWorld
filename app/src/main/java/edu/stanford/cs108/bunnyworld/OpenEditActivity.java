@@ -2,14 +2,12 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -31,7 +29,6 @@ public class OpenEditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_open_edit);
         this.instance = this;
-
         dbHelper = DatabaseHelper.getInstance(this); //Get singleton instance of DBHelper class
 
         //Enters full screen mode
@@ -75,13 +72,13 @@ public class OpenEditActivity extends AppCompatActivity {
             Toast.makeText(this, "No name entered.", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (dbHelper.gameExists(gameName)) {
+        if (dbHelper.entryExists(dbHelper.GAMES_TABLE, gameName)) {
             Toast.makeText(this, "A game with that name already exists. Use a different name.", Toast.LENGTH_LONG).show();
             return;
         }
         dbHelper.addGameToTable(gameName);
         Intent intent = new Intent(this, EditPagesActivity.class);
-        intent.putExtra("Game_id", dbHelper.getGameId(gameName));
+        intent.putExtra("Game_id", dbHelper.getId(dbHelper.GAMES_TABLE, gameName, dbHelper.NO_PARENT));
         startActivity(intent);
     }
 
@@ -91,7 +88,7 @@ public class OpenEditActivity extends AppCompatActivity {
         Cursor gameCursor = (Cursor) spinner.getSelectedItem();
         String gameName = gameCursor.getString(0);
         Intent intent = new Intent(this, EditPagesActivity.class);
-        intent.putExtra("Game_id", dbHelper.getGameId(gameName));
+        intent.putExtra("Game_id", dbHelper.getId(dbHelper.GAMES_TABLE, gameName, dbHelper.NO_PARENT));
         startActivity(intent);
 
     }
