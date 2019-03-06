@@ -58,7 +58,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      */
     public static DatabaseHelper getInstance(Context context) {
         mContext = context;
-        context.deleteDatabase(DATABASE_NAME); //Erases database
+        //context.deleteDatabase(DATABASE_NAME); //Erases database
         if (single_instance == null) {
             single_instance = new DatabaseHelper(context.getApplicationContext());
         } else {
@@ -523,8 +523,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
         String cmd = "UPDATE " + PAGES_TABLE + " SET name = '" + newName + "' WHERE _id = " + page_id + ";";
         db.execSQL(cmd);
     }
-
-
 
 
 

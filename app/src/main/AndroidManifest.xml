@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="edu.stanford.cs108.bunnyworld">
-
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/bunnyworld"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/bunnyworld"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
         <activity android:name=".OpenGameActivity"></activity>
         <activity android:name=".EditPagesActivity" />
         <activity android:name=".OpenEditActivity" />

@@ -39,7 +39,7 @@
             android:src="@drawable/play_icon"
             android:scaleType="fitXY"
             android:background="@android:color/transparent"
-            />
+            android:onClick="openPlayChooser"/>
 
 
         <ImageButton

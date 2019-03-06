@@ -19,7 +19,7 @@ import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE;
 public class OpenEditActivity extends AppCompatActivity implements BunnyWorldConstants {
     //iVars
     private DatabaseHelper dbHelper;
-    private String[] fromArray = {"gameName"};
+    private String[] fromArray = {"name"};
     private int[] toArray = {android.R.id.text1};
 
     @Override
@@ -80,7 +80,6 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
         startActivity(intent);
     }
 
-    //Adds
     public void openGameFile(View view) {
         Spinner spinner = (Spinner) findViewById(R.id.existingGamesSpinner);
         Cursor gameCursor = (Cursor) spinner.getSelectedItem();
@@ -88,6 +87,10 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
         Intent intent = new Intent(this, EditPagesActivity.class);
         intent.putExtra("Game_id", dbHelper.getId(GAMES_TABLE, gameName, NO_PARENT));
         startActivity(intent);
+
+    }
+
+    public void getWebImage(View view) {
 
     }
 }
