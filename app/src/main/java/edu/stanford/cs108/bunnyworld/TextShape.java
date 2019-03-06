@@ -22,7 +22,7 @@ public class TextShape extends Shape {
         this.viewHeight = view.getHeight();
         this.viewWidth = view.getWidth();
         textX = bounds.left/viewWidth;
-        textY = bounds.right/viewHeight;
+        textY = bounds.right/viewHeight; // Shouldn't this be bounds.top/viewHeight?
     }
 
     //Called by any other canvas with new x and y positions for the object
