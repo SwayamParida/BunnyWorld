@@ -21,14 +21,11 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
     private DatabaseHelper dbHelper;
     private String[] fromArray = {"gameName"};
     private int[] toArray = {android.R.id.text1};
-    private OpenEditActivity instance;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_open_edit);
-        this.instance = this;
         dbHelper = DatabaseHelper.getInstance(this); //Get singleton instance of DBHelper class
 
         //Enters full screen mode
