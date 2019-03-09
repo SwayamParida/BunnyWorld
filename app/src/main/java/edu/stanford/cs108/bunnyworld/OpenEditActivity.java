@@ -89,8 +89,4 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
         startActivity(intent);
 
     }
-
-    public void getWebImage(View view) {
-
-    }
 }

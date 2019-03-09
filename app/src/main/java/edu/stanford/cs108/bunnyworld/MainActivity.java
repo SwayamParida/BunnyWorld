@@ -32,10 +32,9 @@ public class MainActivity extends AppCompatActivity {
         setup();
 
         //EXPERIMENTAL: Search bing for images
-        BingSearch.setContext(this);
-        BingSearch.setSearchTerm("dank memes");
-        myThread = new BingSearch();
-        myThread.start();
+//        BingSearch.setSearchTerm("space");
+//        myThread = new BingSearch();
+//        myThread.start();
     }
 
     public void setup() {
@@ -72,18 +71,22 @@ public class MainActivity extends AppCompatActivity {
 
     //Experimental: Testing Bing Image Retrieval
     public void openPlayChooser(View view) {
-        Random random = new Random();
-        int rnum;
-        try {
-            myThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        ImageView imageView = (ImageView) findViewById(R.id.playImageView);
-        ArrayList<Bitmap> images = BingSearch.getImages();
-
-        rnum = random.nextInt(images.size());
-        imageView.setImageBitmap(images.get(rnum));
+//        Random random = new Random();
+//        int rnum;
+//        try {
+//            myThread.join();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        ImageView imageView = (ImageView) findViewById(R.id.playImageView);
+//        ArrayList<Bitmap> images = BingSearch.getImages();
+//
+//        rnum = random.nextInt(images.size());
+//        imageView.setImageBitmap(images.get(rnum));
+        mediaPlayer.stop();
+        myVideoView.stopPlayback();
+        Intent intent = new Intent(this, WebSearchActivity.class);
+        startActivity(intent);
     }
 
 }
