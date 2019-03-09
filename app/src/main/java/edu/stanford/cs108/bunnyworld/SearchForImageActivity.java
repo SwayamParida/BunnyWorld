@@ -7,28 +7,20 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.Image;
+import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.ContactsContract;
-import android.support.v4.widget.CircularProgressDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,15 +29,12 @@ import com.microsoft.azure.cognitiveservices.search.imagesearch.BingImageSearchM
 import com.microsoft.azure.cognitiveservices.search.imagesearch.models.ImageObject;
 import com.microsoft.azure.cognitiveservices.search.imagesearch.models.ImagesModel;
 
-import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
@@ -56,12 +45,13 @@ import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class WebSearchActivity extends AppCompatActivity {
+public class SearchForImageActivity extends AppCompatActivity {
     private EditText searchBar = null;
     private LinearLayout linearLayout;
     DatabaseHelper dbHelper;
     public static Bitmap currentImage;
     private static boolean returningFromActivity = false;
+    private static boolean wentToPhotoGallery = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -72,19 +62,23 @@ public class WebSearchActivity extends AppCompatActivity {
         linearLayout = findViewById(R.id.imgLinLayout);
         Toast.makeText(this, "Started", Toast.LENGTH_LONG);
         searchBar = findViewById(R.id.imgSearchBar);
-        dbHelper = DatabaseHelper.getInstance(WebSearchActivity.this);
+        dbHelper = DatabaseHelper.getInstance(SearchForImageActivity.this);
         searchSetup();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (wentToPhotoGallery) {
+            wentToPhotoGallery = false;
+            return;
+        }
         if (!returningFromActivity) return;
         returningFromActivity = false;
         if (AddImageActivity.succeeded == true && AddImageActivity.addedImgName != "") {
-            Toast.makeText(WebSearchActivity.this, "Resource '" + AddImageActivity.addedImgName + "' added.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(SearchForImageActivity.this, "Resource '" + AddImageActivity.addedImgName + "' added.", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(WebSearchActivity.this, "No image added.", Toast.LENGTH_LONG).show();
+            Toast.makeText(SearchForImageActivity.this, "No image added.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -128,7 +122,7 @@ public class WebSearchActivity extends AppCompatActivity {
     }
 
     private void performSearch(String query) {
-        BingSearch searchThread = new BingSearch(WebSearchActivity.this, query);
+        BingSearch searchThread = new BingSearch(SearchForImageActivity.this, query);
         searchThread.execute("");
 
     }
@@ -144,7 +138,7 @@ public class WebSearchActivity extends AppCompatActivity {
                 Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
                 currentImage = bitmap;
                 returningFromActivity = true;
-                Intent intent = new Intent(WebSearchActivity.this, AddImageActivity.class);
+                Intent intent = new Intent(SearchForImageActivity.this, AddImageActivity.class);
                 startActivity(intent);
             }
         };
@@ -162,6 +156,33 @@ public class WebSearchActivity extends AppCompatActivity {
         }
         searchThread.cancel(true);
 
+    }
+
+    public void addImgFromGallery(View v) {
+        returningFromActivity = false;
+        Intent intent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, 0);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // TODO Auto-generated method stub
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            Uri targetUri = data.getData();
+            Bitmap bitmap;
+            try {
+                bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
+                currentImage = bitmap;
+                Intent intent = new Intent(SearchForImageActivity.this, AddImageActivity.class);
+                returningFromActivity = true;
+                wentToPhotoGallery = true;
+                startActivity(intent);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /*BingSearch INNER CLASS

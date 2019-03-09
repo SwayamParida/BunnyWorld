@@ -32,8 +32,8 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
         actionBar.hide();
-        getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_IMMERSIVE|
-                SYSTEM_UI_FLAG_FULLSCREEN|SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_IMMERSIVE |
+                SYSTEM_UI_FLAG_FULLSCREEN | SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         setupSpinner();
 
     }
@@ -52,7 +52,7 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinner.setAdapter(adapter);
         } else { //Populates spinner with 'no game files' msg if database is empty
-            String[] arraySpinner = new String[] {"No game files"};
+            String[] arraySpinner = new String[]{"No game files"};
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, arraySpinner);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinner.setAdapter(adapter);
@@ -88,3 +88,4 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
 
     }
 }
+

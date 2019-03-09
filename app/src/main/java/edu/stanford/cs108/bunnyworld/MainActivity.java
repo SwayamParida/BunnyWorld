@@ -1,18 +1,13 @@
 package edu.stanford.cs108.bunnyworld;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.VideoView;
-
-import java.util.ArrayList;
-import java.util.Random;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
@@ -84,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 //        imageView.setImageBitmap(images.get(rnum));
         mediaPlayer.stop();
         myVideoView.stopPlayback();
-        Intent intent = new Intent(this, WebSearchActivity.class);
+        Intent intent = new Intent(this, SearchForImageActivity.class);
         startActivity(intent);
     }
 

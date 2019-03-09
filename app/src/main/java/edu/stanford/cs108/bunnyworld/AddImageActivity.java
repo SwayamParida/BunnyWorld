@@ -1,6 +1,5 @@
 package edu.stanford.cs108.bunnyworld;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -32,7 +31,7 @@ public class AddImageActivity extends AppCompatActivity implements BunnyWorldCon
         addedImgName = "";
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
-        bitmap = WebSearchActivity.currentImage;
+        bitmap = SearchForImageActivity.currentImage;
         if (bitmap == null) {
             succeeded = false;
             finish();

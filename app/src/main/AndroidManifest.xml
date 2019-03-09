@@ -15,7 +15,7 @@
         android:usesCleartextTraffic="true">
         <activity android:name=".AddImageActivity"></activity>
         <activity
-            android:name=".WebSearchActivity"
+            android:name=".SearchForImageActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:hardwareAccelerated="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />

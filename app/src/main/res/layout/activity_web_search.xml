@@ -5,7 +5,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:context=".WebSearchActivity"
+        tools:context=".SearchForImageActivity"
         android:background="@color/semitransparent"
         android:id="@+id/webLinLayout">
 
@@ -15,14 +15,30 @@
 
         <!-- This FrameLayout insets its children based on system windows using
              android:fitsSystemWindows. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
         <EditText
             android:id="@+id/imgSearchBar"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="75dp"
+            android:layout_weight="1"
             android:maxLines="1"
             android:textAlignment="textStart"
             android:hint="Search for an image">
         </EditText>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="75dp"
+            android:layout_gravity="end"
+            android:textSize="24sp"
+            android:text="Add From Gallery"
+            android:background="@color/semitransparent"
+            android:onClick="addImgFromGallery"/>
+
+    </LinearLayout>
 
         <HorizontalScrollView
             android:layout_width="match_parent"
