@@ -61,9 +61,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
         //context.deleteDatabase(DATABASE_NAME); //Erases database
         if (single_instance == null) {
             single_instance = new DatabaseHelper(context.getApplicationContext());
-        } else {
-            Button button = (Button) ((Activity)mContext).findViewById(R.id.loadGameBtn);
-            button.setEnabled(true);
         }
         return single_instance;
     }

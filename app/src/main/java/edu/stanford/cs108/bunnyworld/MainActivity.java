@@ -29,12 +29,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setup();
+    }
 
-        //EXPERIMENTAL: Search bing for images
-//        BingSearch.setSearchTerm("space");
-//        myThread = new BingSearch();
-//        myThread.start();
+    protected void onResume() {
+        super.onResume();
+        setup();
     }
 
     public void setup() {

@@ -3,12 +3,14 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
+import android.support.v4.widget.CircularProgressDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -58,6 +60,8 @@ public class WebSearchActivity extends AppCompatActivity {
     private EditText searchBar = null;
     private LinearLayout linearLayout;
     DatabaseHelper dbHelper;
+    public static Bitmap currentImage;
+    private static boolean returningFromActivity = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,11 +69,23 @@ public class WebSearchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_web_search);
         getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_IMMERSIVE|
                 SYSTEM_UI_FLAG_FULLSCREEN|SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        linearLayout = findViewById(R.id.webLinLayout);
+        linearLayout = findViewById(R.id.imgLinLayout);
         Toast.makeText(this, "Started", Toast.LENGTH_LONG);
         searchBar = findViewById(R.id.imgSearchBar);
         dbHelper = DatabaseHelper.getInstance(WebSearchActivity.this);
         searchSetup();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!returningFromActivity) return;
+        returningFromActivity = false;
+        if (AddImageActivity.succeeded == true && AddImageActivity.addedImgName != "") {
+            Toast.makeText(WebSearchActivity.this, "Resource '" + AddImageActivity.addedImgName + "' added.", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(WebSearchActivity.this, "No image added.", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void searchSetup() {
@@ -78,7 +94,6 @@ public class WebSearchActivity extends AppCompatActivity {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if ((actionId == EditorInfo.IME_NULL) && event.getAction() == KeyEvent.ACTION_DOWN) {
                     String query = searchBar.getText().toString();
-                    searchBar.setText("");
                     processAction(query);
                 }
                 return true;
@@ -95,7 +110,7 @@ public class WebSearchActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (before == 0 && count == 1 && s.charAt(start) == '\n') {
                     String query = s.subSequence(0, start).toString();
-                    searchBar.setText("");
+                    searchBar.setText(query);
                     processAction(query);
                 }
             }
@@ -106,22 +121,15 @@ public class WebSearchActivity extends AppCompatActivity {
     }
 
     private void processAction(String query) {
+        linearLayout.removeAllViews();
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         if (!query.isEmpty()) performSearch(query);
     }
 
     private void performSearch(String query) {
-        CountDownLatch cdLatch = new CountDownLatch(1);
-        BingSearch searchThread = new BingSearch(WebSearchActivity.this, query, cdLatch);
+        BingSearch searchThread = new BingSearch(WebSearchActivity.this, query);
         searchThread.execute("");
-
-        try {
-            cdLatch.await();
-            updateView(searchThread, query);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
     }
 
@@ -134,23 +142,25 @@ public class WebSearchActivity extends AppCompatActivity {
             public void onClick(View v) {
                 ImageView imageView = (ImageView)v;
                 Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                byte[] bitmapdata = stream.toByteArray();
-                dbHelper.addResource(query, BunnyWorldConstants.IMAGE, bitmapdata);
+                currentImage = bitmap;
+                returningFromActivity = true;
+                Intent intent = new Intent(WebSearchActivity.this, AddImageActivity.class);
+                startActivity(intent);
             }
         };
+
         for (int i = 0; i < imageList.size(); i++) {
             ImageView imageView = new ImageView(this);
             imageView.setId(i);
             imageView.setPadding(padding, padding, padding, padding);
             imageView.setImageBitmap(imageList.get(i));
-            imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-            imageView.setForegroundGravity(Gravity.CENTER_VERTICAL);
-            imageView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            imageView.setForegroundGravity(Gravity.CENTER);
+            imageView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT));
             imageView.setOnClickListener(imgClickListener);
             layout.addView(imageView);
         }
+        searchThread.cancel(true);
 
     }
 
@@ -168,7 +178,7 @@ public class WebSearchActivity extends AppCompatActivity {
         private CountDownLatch outerCdLatch;
         private Context context = null;
 
-        public BingSearch (Context context, String searchTerm, CountDownLatch outerCdLatch) {
+        public BingSearch (Context context, String searchTerm) {
             this.context = context;
             this.searchTerm = searchTerm;
             this.outerCdLatch = outerCdLatch;
@@ -202,9 +212,8 @@ public class WebSearchActivity extends AppCompatActivity {
         protected void onPostExecute(final Boolean success) {
             super.onPostExecute(success);
             dialog.dismiss();
-            if (!success) {
-                Toast.makeText(context, "Error", Toast.LENGTH_LONG).show();
-            }
+            updateView(BingSearch.this, searchTerm);
+
         }
 
         private void runQuery(BingImageSearchAPI client) {
@@ -228,7 +237,6 @@ public class WebSearchActivity extends AppCompatActivity {
                 System.out.println(f.getMessage());
                 f.printStackTrace();
             }
-            outerCdLatch.countDown();
         }
 
         private void initThreads(List<ImageObject> values) {

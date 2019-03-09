@@ -38,6 +38,11 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
 
     }
 
+    protected void onResume() {
+        super.onResume();
+        setupSpinner();
+    }
+
     //Populates spinner with database game names
     private void setupSpinner() {
         Spinner spinner = (Spinner) findViewById(R.id.existingGamesSpinner);
@@ -53,13 +58,6 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
             spinner.setAdapter(adapter);
         }
 
-    }
-
-    //Overrides backbutton pressed to ensure onCreate is called on previous activity (e.g. MainActivity)
-    @Override
-    public void onBackPressed() {
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
     }
 
     //Adds a new game to the database according to what the user types edittext. Checks that gamename is not taken.
