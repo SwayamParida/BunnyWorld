@@ -139,10 +139,12 @@ abstract class Shape {
         this.txtString = txt;
     }
 
+    //get the bounds of the shape
     public RectF getBounds() {
         return bounds;
     }
 
+    //sets the bounds of the shape
     public void setBounds(RectF bounds) {
         this.bounds = bounds;
     }

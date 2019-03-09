@@ -13,6 +13,7 @@
         android:textSize="35sp" />
 
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/scrollview"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
@@ -24,7 +25,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
 
             <TextView
                 android:id="@+id/textView"
@@ -52,14 +52,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center|center_vertical"
-            android:onClick="CHANGETHIS"
+            android:onClick="createNew"
             android:text="Create New Page" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center|center_vertical"
-            android:onClick="CHANGETHIS"
+            android:onClick="deleteSelected"
             android:text="Delete Selected Page" />
     </LinearLayout>
 </LinearLayout>

@@ -6,11 +6,14 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
@@ -80,12 +83,27 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
 
     public void openGameFile(View view) {
         Spinner spinner = (Spinner) findViewById(R.id.existingGamesSpinner);
-        Cursor gameCursor = (Cursor) spinner.getSelectedItem();
-        String gameName = gameCursor.getString(0);
+        String gameName = spinner.getSelectedItem().toString();
         Intent intent = new Intent(this, EditPagesActivity.class);
         intent.putExtra("Game_id", dbHelper.getId(GAMES_TABLE, gameName, NO_PARENT));
         startActivity(intent);
+    }
 
+    //deletes the game from the database
+    public void deleteGameFile(View view){
+        Spinner spinner = (Spinner) findViewById(R.id.existingGamesSpinner);
+        String gameName = spinner.getSelectedItem().toString();
+        if(gameName == null || gameName.isEmpty()) return;
+        //delete that from the database and repopulate the spinner
+        dbHelper.deleteGame(gameName);
+
+        //populate the spinner with the new game list
+        String newCmd = "SELECT * FROM games;";
+        Cursor cursor = dbHelper.db.rawQuery(newCmd, null);
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item,
+                cursor, fromArray, toArray, 0);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
     }
 }
 
