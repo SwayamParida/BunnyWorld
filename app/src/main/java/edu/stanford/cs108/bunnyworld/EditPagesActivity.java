@@ -75,4 +75,6 @@ public class EditPagesActivity extends AppCompatActivity {
             scrollview.addView(layout);
         }
     }
+
+
 }
