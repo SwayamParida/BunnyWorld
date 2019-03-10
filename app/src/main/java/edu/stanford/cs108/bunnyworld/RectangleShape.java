@@ -26,7 +26,7 @@ public class RectangleShape extends Shape {
         scaledCoord = new RectF(newX, newY, newX + newWidth, newY + newHeight);
     }
 
-    //PageView calls this to display shapes
+    //CustomPageView calls this to display shapes
     @Override
     public void draw(Canvas canvas, float xPos, float yPos) {
         //scale them and then store it

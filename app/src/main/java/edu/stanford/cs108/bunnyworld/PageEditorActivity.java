@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
-import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -20,20 +19,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Queue;
 
-public class EditorActivity extends AppCompatActivity {
+public class PageEditorActivity extends AppCompatActivity {
     public static final Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
     public static final Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
 
     private Page page;
-    private PageView pagePreview;
+    private CustomPageView pagePreview;
     private EditText nameEditText, textEditText, xEditText, yEditText, wEditText, hEditText;
     private CheckBox visibleCheckBox, movableCheckBox;
     private HorizontalScrollView imgScrollView;
     private Spinner imgSpinner;
 
-    //array list of text shapes that is retrieved from EditPagesActivity
+    //array list of text shapes that is retrieved from PreviewPagesActivity
     private ArrayList<Shape> shapes;
     private DatabaseHelper dbase;
     private int gameId;
@@ -46,7 +44,7 @@ public class EditorActivity extends AppCompatActivity {
      * Helper method that updates the Spinner to reflect the image clicked by the user
      */
     public static void updateSpinner(Spinner imgSpinner, BitmapDrawable image) {
-        String imageName = EditorActivity.imgStringMap.get(image);
+        String imageName = PageEditorActivity.imgStringMap.get(image);
         ArrayAdapter<String> imgSpinnerAdapter = (ArrayAdapter<String>) imgSpinner.getAdapter();
         imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imageName));
     }
@@ -63,7 +61,7 @@ public class EditorActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_editor);
+        setContentView(R.layout.activity_edit_page);
 
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
@@ -98,7 +96,7 @@ public class EditorActivity extends AppCompatActivity {
         redoList = new PriorityQueue<Shape>();
     }
     /**
-     * Helper method that passes relevant data to PageView
+     * Helper method that passes relevant data to CustomPageView
      */
     private void initPageView(Page page) {
         if(page == null) {

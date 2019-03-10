@@ -1,9 +1,7 @@
 package edu.stanford.cs108.bunnyworld;
 
 import android.app.Activity;
-import android.content.ClipData;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -19,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.PriorityQueue;
 
-public class PageView extends View {
+public class CustomPageView extends View {
     private Page page;
     private BitmapDrawable selectedImage;
     private Shape selectedShape;
@@ -31,7 +29,7 @@ public class PageView extends View {
     private ArrayList<Shape> undoList = new ArrayList<Shape>();
     private PriorityQueue<Shape> redoList = new PriorityQueue<Shape>();
 
-    public PageView(Context context, AttributeSet attrs) {
+    public CustomPageView(Context context, AttributeSet attrs) {
         super(context, attrs);
         xOffset = 0;
         yOffset = 0;
@@ -137,7 +135,7 @@ public class PageView extends View {
             height.setText(String.format(Locale.US,"%f", shape.getBounds().bottom - shape.getBounds().top));
             visible.setChecked(shape.isVisible());
             movable.setChecked(shape.isMovable());
-            EditorActivity.updateSpinner(imgSpinner, shape.getImage());
+            PageEditorActivity.updateSpinner(imgSpinner, shape.getImage());
         } else {
             name.setText("");
             text.setText("");
