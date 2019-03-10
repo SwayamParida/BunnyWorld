@@ -26,6 +26,7 @@ abstract class Shape {
     protected boolean visible, movable;
     protected int viewWidth, viewHeight;
     protected float originalX, originalX2, originalY, originalY2;
+    protected Script script;
 
     private static final Paint outlinePaint = new Paint();
     private static final int PAINT_COLOR = Color.BLUE;

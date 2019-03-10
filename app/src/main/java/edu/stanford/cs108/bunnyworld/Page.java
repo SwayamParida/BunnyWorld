@@ -57,4 +57,8 @@ public class Page {
         }
         return lastFound;
     }
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
