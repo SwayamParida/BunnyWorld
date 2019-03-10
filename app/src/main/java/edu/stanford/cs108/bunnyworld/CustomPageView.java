@@ -76,7 +76,7 @@ public class CustomPageView extends View {
             updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
-        else if (selectedShape.isMovable()){
+        else {
             float newX = selectedShape.getX() + (x2 - x1);
             float newX1 = newX + selectedShape.getWidth();
             float newY = selectedShape.getY() + (y2 - y1);
@@ -86,10 +86,9 @@ public class CustomPageView extends View {
 
             //else update the picture to be dragged and update inspector
             RectF newBounds = new RectF(newX, newY, newX1, newY1);
-            BitmapDrawable newBitMap = selectedShape.getImage();
             selectedShape.setBounds(newBounds);
-            Shape shape = new ImageShape(this, newBounds, newBitMap, null,
-                    true, true, selectedShape.getName());
+            Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
+                    selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
             page.addShape(shape);
             page.deleteShape(selectedShape);
             updateInspector(shape);
