@@ -3,22 +3,17 @@ package edu.stanford.cs108.bunnyworld;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
-public class EditPagesActivity extends AppCompatActivity {
+public class PreviewPagesActivity extends AppCompatActivity {
 
     private int gameId;
     private DatabaseHelper database;
@@ -41,7 +36,7 @@ public class EditPagesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_pages);
+        setContentView(R.layout.activity_preview_pages);
         dbase = DatabaseHelper.getInstance(this);
         Intent editorIntent = getIntent();
         gameId = editorIntent.getIntExtra("Game_id", -1);
@@ -56,7 +51,7 @@ public class EditPagesActivity extends AppCompatActivity {
         String pageName = "page" + count;
         count++;
         boolean insertSuccessful = database.addPage(pageName, gameId);
-        Intent newIntent = new Intent(this, EditorActivity.class);
+        Intent newIntent = new Intent(this, PageEditorActivity.class);
         newIntent.putExtra("containsItems", false);
         newIntent.putExtra("gameId", gameId);
         startActivity(newIntent);
@@ -143,14 +138,14 @@ public class EditPagesActivity extends AppCompatActivity {
         Cursor cursor1 = dbase.db.rawQuery(cmd1, null);
 
         //pass all the shapes to the activity editor and fill the screen
-        Intent intent = new Intent(this, EditorActivity.class);
+        Intent intent = new Intent(this, PageEditorActivity.class);
         ArrayList<Integer> newArr = new ArrayList<Integer>();
         while(cursor1.moveToNext()){
             //get the shape descriptions and add them to the string array
             int shapeId = cursor1.getInt(11);
             newArr.add(shapeId);
         }
-        //pass the array into the intent and move it into the EditorActivity
+        //pass the array into the intent and move it into the PageEditorActivity
         intent.putIntegerArrayListExtra("ShapesArray", newArr);
         intent.putExtra("pageName", selectedPage);
         intent.putExtra("gameId", gameId);

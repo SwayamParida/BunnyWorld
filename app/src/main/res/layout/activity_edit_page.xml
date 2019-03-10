@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EditorActivity">
+    tools:context=".PageEditorActivity">
 
     <android.support.constraint.Guideline
         android:id="@+id/hMargin"
@@ -20,7 +20,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.8"/>
 
-    <edu.stanford.cs108.bunnyworld.PageView
+    <edu.stanford.cs108.bunnyworld.CustomPageView
         android:id="@+id/pagePreview"
         android:layout_width="0dp"
         android:layout_height="0dp"
