@@ -69,13 +69,12 @@
         android:id="@+id/existingGamesSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:outlineProvider="bounds"
         android:prompt="@string/spinnerMsg"
-        app:layout_constraintTop_toBottomOf="@id/editExistingGameText"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:background="@android:color/darker_gray"
-        android:outlineProvider="bounds">
-    </Spinner>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editExistingGameText"></Spinner>
 
     <LinearLayout
         app:layout_constraintTop_toBottomOf="@id/existingGamesSpinner"
