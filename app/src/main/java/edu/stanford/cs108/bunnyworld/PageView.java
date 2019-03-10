@@ -1,11 +1,13 @@
 package edu.stanford.cs108.bunnyworld;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
@@ -38,6 +40,7 @@ public class PageView extends View {
     public void onDraw(Canvas canvas) {
         page.draw(canvas);
     }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch(event.getAction()) {
@@ -52,9 +55,11 @@ public class PageView extends View {
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
         if (x1 == x2 && y1 == y2)
             selectShape(page.findLastShape(x1, y1));
+
         // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
         else if (selectedShape == null){
+            Log.d("tag1","Drawing new shape");
             RectF boundingRect = createBounds(x1, y1, x2, y2);
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null, true, true, null);
             page.addShape(shape);
@@ -62,14 +67,33 @@ public class PageView extends View {
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else if (selectedShape.isMovable()){
-            RectF newBounds = shiftBounds(x1, y1, x2, y2, selectedShape.getBounds());
-            selectedShape.setBounds(newBounds);
+            Log.d("tag2","Moving shape");
+            RectF newBounds = new RectF(x2, y2, x2 + selectedShape.getRectWidth(), y2 +selectedShape.getRectHeight());
+            //selectedShape.setBounds(newBounds);
+            Shape shape = new ImageShape(this, newBounds, selectedImage, null, true, true, null);
+            page.addShape(shape);
             updateInspector(selectedShape);
         }
         invalidate();
 
         return true;
     }
+
+    private final class MyTouchListener implements OnTouchListener {
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                ClipData data = ClipData.newPlainText("", "");
+                DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(
+                        view);
+                view.startDrag(data, shadowBuilder, view, 0);
+                view.setVisibility(View.INVISIBLE);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     /**
      * Helper method that handles all the steps associated with shape selection and deselection
      * @param toSelect When not-null, this Shape is selected. When null, the current selection is cleared.

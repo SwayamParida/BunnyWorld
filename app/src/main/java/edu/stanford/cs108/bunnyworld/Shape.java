@@ -23,12 +23,9 @@ abstract class Shape {
     protected String name;
     protected BitmapDrawable image;
     protected String shapeScript = "";
-    protected boolean visible;
-    protected boolean movable;
-    protected int viewWidth;
-    protected int viewHeight;
-    protected float originalX;
-    protected float originalY;
+    protected boolean visible, movable;
+    protected int viewWidth, viewHeight;
+    protected float originalX, originalX2, originalY, originalY2;
 
     private static final Paint outlinePaint = new Paint();
     private static final int PAINT_COLOR = Color.BLUE;
@@ -45,6 +42,8 @@ abstract class Shape {
         this.bounds = bounds;
         this.originalX = bounds.left;
         this.originalY = bounds.top;
+        this.originalX2 = bounds.right;
+        this.originalY2 = bounds.bottom;
         this.viewHeight = view.getHeight();
         this.viewWidth = view.getWidth();
         this.image = drawable;
@@ -145,6 +144,14 @@ abstract class Shape {
 
     public void setBounds(RectF bounds) {
         this.bounds = bounds;
+    }
+
+    public float getRectWidth() {
+        return originalX2 - originalX;
+    }
+
+    public float getRectHeight() {
+        return originalY2 - originalY;
     }
 
     @Override

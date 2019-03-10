@@ -82,7 +82,7 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
         Spinner spinner = (Spinner) findViewById(R.id.existingGamesSpinner);
         Cursor gameCursor = (Cursor) spinner.getSelectedItem();
         String gameName = gameCursor.getString(0);
-        Intent intent = new Intent(this, EditPagesActivity.class);
+        Intent intent = new Intent(this, EditorActivity.class);
         intent.putExtra("Game_id", dbHelper.getId(GAMES_TABLE, gameName, NO_PARENT));
         startActivity(intent);
 
