@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -58,15 +59,15 @@ public class EditPagesActivity extends AppCompatActivity {
             String newPage = cursor.getString(0);
             if(newPage.isEmpty() || newPage == null) break;
             LinearLayout layout = new LinearLayout(this);
-            TextView view1 = new TextView(this);
-            view1.setText(newPage);
+            ImageView view1 = new ImageView(this);
+            //view1.setAdjustViewBounds(true);
             TextView view2 = new TextView(this);
-            view2.setText(newPage + " contains X shapes");
+            view2.setText(newPage);
             layout.addView(view1);
             layout.addView(view2);
             //set an onclick listener for this layout
             layout.setOnClickListener(v -> {
-                TextView view = (TextView) layout.getChildAt(0);
+                TextView view = (TextView) layout.getChildAt(1);
                 selected = true;
                 selectedPage = view.getText().toString();
                 Toast.makeText(this, selectedPage + " selected", Toast.LENGTH_SHORT).show();

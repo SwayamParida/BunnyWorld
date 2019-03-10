@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.ArrayAdapter;
@@ -93,9 +94,11 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
     public void deleteGameFile(View view){
         Spinner spinner = (Spinner) findViewById(R.id.existingGamesSpinner);
         String gameName = spinner.getSelectedItem().toString();
-        if(gameName == null || gameName.isEmpty()) return;
+        Toast.makeText(this, "Delete Successful", Toast.LENGTH_SHORT);
+        if(gameName.isEmpty()) return;
         //delete that from the database and repopulate the spinner
         dbHelper.deleteGame(gameName);
+        Toast.makeText(this, "Delete Successful", Toast.LENGTH_SHORT);
 
         //populate the spinner with the new game list
         String newCmd = "SELECT * FROM games;";
