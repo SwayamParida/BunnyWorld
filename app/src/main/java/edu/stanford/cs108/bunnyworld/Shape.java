@@ -22,7 +22,7 @@ abstract class Shape {
     protected boolean selected;
     protected String name;
     protected BitmapDrawable image;
-    protected String shapeScript = "";
+    protected ArrayList<String> shapeScript;
     protected boolean visible, movable;
     protected int viewWidth, viewHeight;
     protected float originalX, originalX2, originalY, originalY2;
@@ -42,8 +42,6 @@ abstract class Shape {
         this.bounds = bounds;
         this.originalX = bounds.left;
         this.originalY = bounds.top;
-        this.originalX2 = bounds.right;
-        this.originalY2 = bounds.bottom;
         this.viewHeight = view.getHeight();
         this.viewWidth = view.getWidth();
         this.image = drawable;
@@ -64,12 +62,12 @@ abstract class Shape {
     abstract void draw(Canvas canvas, float xPos, float yPos);
 
     //update the script for the object
-    public void updateScript(String newScript){
+    public void updateScript(ArrayList<String> newScript){
         shapeScript = newScript;
     }
 
     //returns the script for this object
-    public String getShapeScript(){
+    public ArrayList<String> getShapeScript(){
         return shapeScript;
     }
 
@@ -148,12 +146,12 @@ abstract class Shape {
         this.bounds = bounds;
     }
 
-    public float getRectWidth() {
-        return originalX2 - originalX;
+    public float getWidth() {
+        return bounds.width();
     }
 
-    public float getRectHeight() {
-        return originalY2 - originalY;
+    public float getHeight() {
+        return bounds.height();
     }
 
     @Override

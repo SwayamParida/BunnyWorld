@@ -20,7 +20,7 @@ public class Page {
     }
 
     public void addShape(Shape shp){
-        listOfShapes.add(shp);
+        if(shp != null) listOfShapes.add(shp);
     }
 
     public void deleteShape(Shape shp){
@@ -33,6 +33,16 @@ public class Page {
 
     public void setName(String newName){
         this.name = newName;
+    }
+
+    //method that adds in a list of shapes --- a setter
+    public void setListOfShapes(ArrayList<Shape> arrList){
+        listOfShapes = arrList;
+    }
+
+    //gets the list of shapes
+    public ArrayList<Shape> getListOfShapes(){
+        return listOfShapes;
     }
 
     public void draw(Canvas canvas) {
