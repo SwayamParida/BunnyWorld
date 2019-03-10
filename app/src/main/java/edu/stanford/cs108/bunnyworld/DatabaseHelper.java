@@ -536,7 +536,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
             if(cursor1.getCount() != 0){
                 cursor1.moveToFirst();
                 while(cursor1.moveToNext()){
-                    int pageId = cursor.getInt(2);
+                    int pageId = cursor1.getInt(2);
                     //delete all shapes that have the page Id
                     String cmd2 = "DELETE FROM shapes WHERE parent_id = " + pageId + ";";
                     db.execSQL(cmd2);

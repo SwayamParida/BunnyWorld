@@ -126,30 +126,21 @@
             <Button
                 android:id="@+id/save"
                 android:onClick="saveChanges"
-                android:text="Save"/>
+                android:text="Update"/>
+            <Button
+                android:id="@+id/undo"
+                android:onClick="undoChange"
+                android:text="Undo Change" />
 
+            <Button
+                android:id="@+id/savepage"
+                android:onClick="savePage"
+                android:text="Save Page" />
+            <Button
+                android:id="@+id/redo"
+                android:onClick="redoAction"
+                android:text="Redo Change"/>
         </GridLayout>
-
     </android.support.v4.widget.NestedScrollView>
-
-    <Button
-        android:id="@+id/addShape"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="@id/vMargin"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hMargin"
-        app:layout_constraintBottom_toTopOf="@id/deleteShape"
-        android:text="Add Shape"/>
-
-    <Button
-        android:id="@+id/deleteShape"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintStart_toEndOf="@id/vMargin"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/addShape"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:text="Delete Shape"/>
 
 </android.support.constraint.ConstraintLayout>

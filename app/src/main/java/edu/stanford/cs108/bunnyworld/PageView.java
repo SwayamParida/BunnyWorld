@@ -3,6 +3,7 @@ package edu.stanford.cs108.bunnyworld;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -14,7 +15,9 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import java.util.ArrayList;
 import java.util.Locale;
+import java.util.PriorityQueue;
 
 public class PageView extends View {
     private Page page;
@@ -22,9 +25,16 @@ public class PageView extends View {
     private Shape selectedShape;
     // Co-ordinates of user touches - populated in onTouchEvent()
     private float x1, x2, y1, y2;
+    private float xOffset, yOffset;
+
+    //implementation helpers for undo and redo
+    private ArrayList<Shape> undoList = new ArrayList<Shape>();
+    private PriorityQueue<Shape> redoList = new PriorityQueue<Shape>();
 
     public PageView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        xOffset = 0;
+        yOffset = 0;
     }
 
     public void setSelectedImage(BitmapDrawable selectedImage) {
@@ -61,17 +71,27 @@ public class PageView extends View {
         else if (selectedShape == null){
             Log.d("tag1","Drawing new shape");
             RectF boundingRect = createBounds(x1, y1, x2, y2);
+            if(boundingRect.left < 0 || boundingRect.right > this.getWidth() ||
+                    boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null, true, true, null);
             page.addShape(shape);
             updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else if (selectedShape.isMovable()){
-            Log.d("tag2","Moving shape" + x1 + x2 + y1 +y2);
-            float newX = x2 - (x1 - selectedShape.getBounds().left); // Offset by space clicked on image
-            float newY = y2 - (y1 - selectedShape.getBounds().top);
-            RectF newBounds = new RectF(newX, newY, newX + selectedShape.getRectWidth(), newY +selectedShape.getRectHeight());
-            Shape shape = new ImageShape(this, newBounds, selectedImage, null, true, true, null);
+            float newX = selectedShape.getX() + (x2 - x1);
+            float newX1 = newX + selectedShape.getWidth();
+            float newY = selectedShape.getY() + (y2 - y1);
+            float newY1 = newY + selectedShape.getHeight();
+            //check to see if the image is in the bounds of the preview else don't make changes
+            if(newX < 0 || newX1 > this.getWidth() || newY < 0 || newY1 > this.getHeight()) return true;
+
+            //else update the picture to be dragged and update inspector
+            RectF newBounds = new RectF(newX, newY, newX1, newY1);
+            BitmapDrawable newBitMap = selectedShape.getImage();
+            selectedShape.setBounds(newBounds);
+            Shape shape = new ImageShape(this, newBounds, newBitMap, null,
+                    true, true, selectedShape.getName());
             page.addShape(shape);
             page.deleteShape(selectedShape);
             updateInspector(shape);
@@ -80,21 +100,6 @@ public class PageView extends View {
         invalidate();
 
         return true;
-    }
-
-    private final class MyTouchListener implements OnTouchListener {
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                ClipData data = ClipData.newPlainText("", "");
-                DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(
-                        view);
-                view.startDrag(data, shadowBuilder, view, 0);
-                view.setVisibility(View.INVISIBLE);
-                return true;
-            } else {
-                return false;
-            }
-        }
     }
 
     /**
@@ -111,6 +116,7 @@ public class PageView extends View {
         updateInspector(selectedShape);
         invalidate();
     }
+
     private void updateInspector(Shape shape) {
         EditText name = ((Activity) getContext()).findViewById(R.id.name);
         EditText text = ((Activity) getContext()).findViewById(R.id.shapeText);
@@ -175,5 +181,81 @@ public class PageView extends View {
         float newRight = newLeft + originalBounds.width();
         float newBottom = newTop + originalBounds.height();
         return new RectF(newLeft, newTop, newRight, newBottom);
+    }
+
+    //save button method
+    public void savePage(){
+        //call the saveSelectedPage method
+    }
+
+    //undoes an action performed by the user on the screen
+    public boolean undoChange(){
+        //accesses the array list of actions and simply deletes the last activity
+        int size = undoList.size();
+        Shape currentRemove = null;
+        if(size != 0 || size != 1) currentRemove = undoList.remove(size - 1);
+        if(currentRemove == null) return false;
+
+        //get shape name of last element and find old version in undoList
+        //add the removed shape to the queue in case they hit redo
+        String shapeName = currentRemove.getName();
+        Shape toAdd = undoList.get(size - 2);
+        redoList.add(currentRemove);
+
+        //add to the arrayList of the page and call invalidate on PagePreview
+        ArrayList<Shape> pageShape = page.getListOfShapes();
+        int pageSize = pageShape.size() - 1; //for loop might be slightly optimized
+        for(int i = pageSize; i > 0; i--){
+            String name = pageShape.get(i).getName();
+            if(name.equals(shapeName)) {
+                pageShape.remove(i);
+                pageShape.add(i, toAdd);
+                break;
+            }
+        }
+        //update the page arrayList and call invalidate() to redraw shapes
+        page.setListOfShapes(pageShape);
+        this.invalidate();
+        return true;
+    }
+
+    //redo button
+    public boolean redoAction(){
+        //accesses the queue and simply adds that object to the arrayList
+        int size = redoList.size();
+        Shape currentToAdd = null;
+        if(size != 0) currentToAdd = redoList.poll();
+        if(currentToAdd == null) return false;
+
+        //get shape name of first element and find old version in pageShapes
+        //add the removed shape to the arrayList of the undoList in case they hit undo
+        String shapeName = currentToAdd.getName();
+        undoList.add(currentToAdd);
+
+        //add to the arrayList of the page and call invalidate on PagePreview
+        ArrayList<Shape> pageShape = page.getListOfShapes();
+        int pageSize = pageShape.size() - 1; //for loop might be slightly optimized
+        for(int i = pageSize; i > 0; i--){
+            String name = pageShape.get(i).getName();
+            if(name.equals(shapeName)) {
+                pageShape.remove(i);
+                pageShape.add(i, currentToAdd);
+                break;
+            }
+        }
+        //update the page arrayList and call invalidate() to redraw shapes
+        page.setListOfShapes(pageShape);
+        this.invalidate();
+        return true;
+    }
+
+    //saves page to database
+    public ArrayList<Shape> getPageShapes(){ return page.getListOfShapes(); }
+
+    //updates the page when the user clicks to return to previous page back
+    public void updateDatabase(){
+        //calls delete page
+
+        //calls save page
     }
 }
