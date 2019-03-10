@@ -52,12 +52,11 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinner.setAdapter(adapter);
         } else { //Populates spinner with 'no game files' msg if database is empty
-            String[] arraySpinner = new String[]{"No game files"};
+            String[] arraySpinner = new String[]{};
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, arraySpinner);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinner.setAdapter(adapter);
         }
-
     }
 
     //Adds a new game to the database according to what the user types edittext. Checks that gamename is not taken.
@@ -81,11 +80,34 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
     public void openGameFile(View view) {
         Spinner spinner = (Spinner) findViewById(R.id.existingGamesSpinner);
         Cursor gameCursor = (Cursor) spinner.getSelectedItem();
+        if(gameCursor == null){
+            Toast.makeText(this, "No games in database", Toast.LENGTH_LONG).show();
+            return;
+        }
         String gameName = gameCursor.getString(0);
-        Intent intent = new Intent(this, EditorActivity.class);
+        Intent intent = new Intent(this, EditPagesActivity.class);
         intent.putExtra("Game_id", dbHelper.getId(GAMES_TABLE, gameName, NO_PARENT));
         startActivity(intent);
+    }
 
+    public void deleteGameFile(View view){
+        Spinner spinner = (Spinner) findViewById(R.id.existingGamesSpinner);
+        Cursor gameCursor = (Cursor) spinner.getSelectedItem();
+        if(gameCursor == null){
+            Toast.makeText(this, "No games in database", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String gameName = gameCursor.getString(0);
+        //delete that from the database and repopulate the spinner
+        dbHelper.deleteGame(gameName);
+
+        //populate the spinner with the new game list
+        String newCmd = "SELECT * FROM games;";
+        Cursor cursor = dbHelper.db.rawQuery(newCmd, null);
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item,
+                cursor, fromArray, toArray, 0);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
     }
 }
 

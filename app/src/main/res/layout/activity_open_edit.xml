@@ -56,12 +56,11 @@
         android:id="@+id/editExistingGameText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/createGameBtn"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:text="Load Existing Game:"
+        android:text="Edit Game:"
         android:textSize="48sp"
         android:textStyle="bold"
         android:textColor="@color/colorPrimaryDark"/>
@@ -78,15 +77,27 @@
         android:outlineProvider="bounds">
     </Spinner>
 
-    <Button
-        android:id="@+id/loadGameBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <LinearLayout
         app:layout_constraintTop_toBottomOf="@id/existingGamesSpinner"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:text="Load Game"
-        android:textSize="24sp"
-        android:onClick="openGameFile"/>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/loadGameBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Load Game"
+            android:textSize="24sp"
+            android:onClick="openGameFile"/>
+        <Button
+            android:id="@+id/deleteGameBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete Game"
+            android:textSize="24sp"
+            android:onClick="deleteGameFile"/>
+    </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
