@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -524,7 +525,27 @@ public class DatabaseHelper implements BunnyWorldConstants {
     //for optimization:
     //returns true if the game had pages else false
     public void deleteGame(String gameName){
-        String cmd4 = "DELETE FROM games WHERE name = '" + gameName + "';";
-        db.execSQL(cmd4);
+        String cmd = "SELECT * FROM games WHERE name = '" + gameName + "';";
+        Cursor cursor = db.rawQuery(cmd, null);
+        if(cursor.getCount() != 0)  {
+            cursor.moveToFirst();
+            int game_id = cursor.getInt(1);
+            String cmd1 = "SELECT * FROM pages WHERE parent_id = " + game_id + ";";
+            Cursor cursor1 = db.rawQuery(cmd1, null);
+            //loop through each page and delete corresponding shapes
+            if(cursor1.getCount() != 0){
+                cursor1.moveToFirst();
+                while(cursor1.moveToNext()){
+                    int pageId = cursor.getInt(2);
+                    //delete all shapes that have the page Id
+                    String cmd2 = "DELETE FROM shapes WHERE parent_id = " + pageId + ";";
+                    db.execSQL(cmd2);
+                }
+                //then delete the page itself
+                String cmd3 = "DELETE FROM pages WHERE parent_id = " + game_id + ";";
+                db.execSQL(cmd3);
+            }
+        }
+        if(cursor.getCount() != 0) db.execSQL("DELETE FROM games WHERE name = '" + gameName +"';");
     }
 }
