@@ -158,4 +158,12 @@ abstract class Shape {
     public String toString() {
         return name;
     }
+
+    public float getX() {
+        return bounds.left;
+    }
+
+    public float getY() {
+        return bounds.top;
+    }
 }

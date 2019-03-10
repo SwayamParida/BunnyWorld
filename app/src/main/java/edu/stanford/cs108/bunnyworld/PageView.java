@@ -22,9 +22,12 @@ public class PageView extends View {
     private Shape selectedShape;
     // Co-ordinates of user touches - populated in onTouchEvent()
     private float x1, x2, y1, y2;
+    private float xOffset, yOffset;
 
     public PageView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        xOffset = 0;
+        yOffset = 0;
     }
 
     public void setSelectedImage(BitmapDrawable selectedImage) {
@@ -67,12 +70,15 @@ public class PageView extends View {
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else if (selectedShape.isMovable()){
-            Log.d("tag2","Moving shape");
-            RectF newBounds = new RectF(x2, y2, x2 + selectedShape.getRectWidth(), y2 +selectedShape.getRectHeight());
-            //selectedShape.setBounds(newBounds);
+            Log.d("tag2","Moving shape" + x1 + x2 + y1 +y2);
+            float newX = x2 + (x1 - selectedShape.getX());
+            float newY = y2 + (y1 - selectedShape.getY());
+            RectF newBounds = new RectF(newX, newY, newX + selectedShape.getRectWidth(), newY +selectedShape.getRectHeight());
             Shape shape = new ImageShape(this, newBounds, selectedImage, null, true, true, null);
             page.addShape(shape);
-            updateInspector(selectedShape);
+            page.deleteShape(selectedShape);
+            updateInspector(shape);
+            invalidate();
         }
         invalidate();
 
