@@ -22,6 +22,7 @@
         <activity android:name=".PreviewPagesActivity" />
         <activity android:name=".GameLoaderActivity" />
         <activity android:name=".PageEditorActivity" />
+        <activity android:name=".PlayGameActivity" />
         <activity android:name=".IntroScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

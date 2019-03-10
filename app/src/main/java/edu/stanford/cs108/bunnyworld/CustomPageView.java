@@ -73,7 +73,7 @@ public class CustomPageView extends View {
                     boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null, true, true, null);
             page.addShape(shape);
-            updateInspector(shape);
+            //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else {
@@ -125,25 +125,27 @@ public class CustomPageView extends View {
         CheckBox movable = ((Activity) getContext()).findViewById(R.id.movable);
         Spinner imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
 
-        if (selectedShape != null) {
-            name.setText(shape.getName());
-            text.setText(shape.getText());
-            rectX.setText(String.format(Locale.US,"%f", shape.getBounds().left));
-            rectY.setText(String.format(Locale.US,"%f", shape.getBounds().top));
-            width.setText(String.format(Locale.US,"%f", shape.getBounds().right - shape.getBounds().left));
-            height.setText(String.format(Locale.US,"%f", shape.getBounds().bottom - shape.getBounds().top));
-            visible.setChecked(shape.isVisible());
-            movable.setChecked(shape.isMovable());
-            PageEditorActivity.updateSpinner(imgSpinner, shape.getImage());
-        } else {
-            name.setText("");
-            text.setText("");
-            rectX.setText("");
-            rectY.setText("");
-            width.setText("");
-            height.setText("");
-            visible.setChecked(false);
-            movable.setChecked(false);
+        if (name != null) {
+            if (selectedShape != null) {
+                name.setText(shape.getName());
+                text.setText(shape.getText());
+                rectX.setText(String.format(Locale.US, "%f", shape.getBounds().left));
+                rectY.setText(String.format(Locale.US, "%f", shape.getBounds().top));
+                width.setText(String.format(Locale.US, "%f", shape.getBounds().right - shape.getBounds().left));
+                height.setText(String.format(Locale.US, "%f", shape.getBounds().bottom - shape.getBounds().top));
+                visible.setChecked(shape.isVisible());
+                movable.setChecked(shape.isMovable());
+                PageEditorActivity.updateSpinner(imgSpinner, shape.getImage());
+            } else {
+                name.setText("");
+                text.setText("");
+                rectX.setText("");
+                rectY.setText("");
+                width.setText("");
+                height.setText("");
+                visible.setChecked(false);
+                movable.setChecked(false);
+            }
         }
     }
     /**

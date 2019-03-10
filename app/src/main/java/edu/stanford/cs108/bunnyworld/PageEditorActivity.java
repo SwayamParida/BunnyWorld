@@ -80,7 +80,7 @@ public class PageEditorActivity extends AppCompatActivity {
      * Helper method that initializes the relevant views defined in the editor_activity.xml
      * to be referred to later in the code.
      */
-    private void initComponents() {
+    public void initComponents() {
         nameEditText = findViewById(R.id.name);
         textEditText = findViewById(R.id.shapeText);
         xEditText = findViewById(R.id.rectX);
@@ -91,14 +91,14 @@ public class PageEditorActivity extends AppCompatActivity {
         movableCheckBox = findViewById(R.id.movable);
         imgSpinner = findViewById(R.id.imgSpinner);
         imgScrollView = findViewById(R.id.presetImages);
-        pagePreview = findViewById(R.id.pagePreview);
+        pagePreview = findViewById(R.id.pagePreview1);
         undoList = new ArrayList<Shape>();
         redoList = new PriorityQueue<Shape>();
     }
     /**
      * Helper method that passes relevant data to CustomPageView
      */
-    private void initPageView(Page page) {
+    public void initPageView(Page page) {
         if(page == null) {
             page = new Page();
         }
@@ -110,7 +110,7 @@ public class PageEditorActivity extends AppCompatActivity {
     /**
      * Initializes a HashMap that maps the name of an image to the BitmapDrawable associated with it.
      */
-    private void initImageMap() {
+    public void initImageMap() {
         String[] imageNames = { "carrot", "carrot2", "death", "duck", "fire", "mystic" };
         BitmapDrawable[] images = new BitmapDrawable[]{
                 (BitmapDrawable) getResources().getDrawable(R.drawable.carrot),
@@ -129,7 +129,7 @@ public class PageEditorActivity extends AppCompatActivity {
      * Populates the spinner with the list of image choices.
      * Reference: https://www.tutorialspoint.com/android/android_spinner_control.htm
      */
-    private void populateSpinner() {
+    public void populateSpinner() {
         // Create an array adapter using the items in imageNames
         ArrayAdapter<String> imgSpinnerAdapter = new ArrayAdapter<>(
                 this,
@@ -144,7 +144,7 @@ public class PageEditorActivity extends AppCompatActivity {
     /**
      * Populates a HorizontalScrollView with all the preset images available for the user to create a shape out of
      */
-    private void populateImgScrollView() {
+    public void populateImgScrollView() {
         LinearLayout horizontalLayout = new LinearLayout(this);
         for (BitmapDrawable image : stringImgMap.values()) {
             ImageView imageView = new ImageView(this);
@@ -160,7 +160,7 @@ public class PageEditorActivity extends AppCompatActivity {
     }
 
     //writes the text-shapes into the ivar arrayList of text shapes above
-    private Page extractIntentData(Intent intent){
+    public Page extractIntentData(Intent intent){
         gameId = intent.getIntExtra("gameId", -1);
         if(!intent.getBooleanExtra("containsItems", false)) return null;
         ArrayList<Integer> shapesId = intent.getIntegerArrayListExtra("ShapesArray");
@@ -180,6 +180,8 @@ public class PageEditorActivity extends AppCompatActivity {
         newPage.setListOfShapes(shapes);
         return newPage;
     }
+
+
 
     /**
      * Creates a shape object using the attributes specified by the user.

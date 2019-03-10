@@ -21,7 +21,7 @@
         app:layout_constraintGuide_percent="1.0"/>
 
     <edu.stanford.cs108.bunnyworld.CustomPageView
-        android:id="@+id/pagePreview"
+        android:id="@+id/pagePreview1"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
@@ -30,12 +30,16 @@
         app:layout_constraintEnd_toEndOf="@id/vMargin"/>
 
     <HorizontalScrollView
-        android:id="@+id/presetImages"
+        android:id="@+id/presetImages1"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/pagePreview"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/vMargin"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/vMargin"/>
+        app:layout_constraintTop_toBottomOf="@id/pagePreview1" />
+    <Spinner
+        android:id="@+id/imgSpinner1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
 </android.support.constraint.ConstraintLayout>
