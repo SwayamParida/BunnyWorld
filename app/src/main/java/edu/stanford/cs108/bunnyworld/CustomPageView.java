@@ -1,9 +1,7 @@
 package edu.stanford.cs108.bunnyworld;
 
 import android.app.Activity;
-import android.content.ClipData;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -19,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.PriorityQueue;
 
-public class PageView extends View {
+public class CustomPageView extends View {
     private Page page;
     private BitmapDrawable selectedImage;
     private Shape selectedShape;
@@ -31,7 +29,7 @@ public class PageView extends View {
     private ArrayList<Shape> undoList = new ArrayList<Shape>();
     private PriorityQueue<Shape> redoList = new PriorityQueue<Shape>();
 
-    public PageView(Context context, AttributeSet attrs) {
+    public CustomPageView(Context context, AttributeSet attrs) {
         super(context, attrs);
         xOffset = 0;
         yOffset = 0;
@@ -75,10 +73,10 @@ public class PageView extends View {
                     boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null, true, true, null);
             page.addShape(shape);
-            updateInspector(shape);
+            //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
-        else if (selectedShape.isMovable()){
+        else {
             float newX = selectedShape.getX() + (x2 - x1);
             float newX1 = newX + selectedShape.getWidth();
             float newY = selectedShape.getY() + (y2 - y1);
@@ -88,10 +86,9 @@ public class PageView extends View {
 
             //else update the picture to be dragged and update inspector
             RectF newBounds = new RectF(newX, newY, newX1, newY1);
-            BitmapDrawable newBitMap = selectedShape.getImage();
             selectedShape.setBounds(newBounds);
-            Shape shape = new ImageShape(this, newBounds, newBitMap, null,
-                    true, true, selectedShape.getName());
+            Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
+                    selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
             page.addShape(shape);
             page.deleteShape(selectedShape);
             updateInspector(shape);
@@ -128,25 +125,27 @@ public class PageView extends View {
         CheckBox movable = ((Activity) getContext()).findViewById(R.id.movable);
         Spinner imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
 
-        if (selectedShape != null) {
-            name.setText(shape.getName());
-            text.setText(shape.getText());
-            rectX.setText(String.format(Locale.US,"%f", shape.getBounds().left));
-            rectY.setText(String.format(Locale.US,"%f", shape.getBounds().top));
-            width.setText(String.format(Locale.US,"%f", shape.getBounds().right - shape.getBounds().left));
-            height.setText(String.format(Locale.US,"%f", shape.getBounds().bottom - shape.getBounds().top));
-            visible.setChecked(shape.isVisible());
-            movable.setChecked(shape.isMovable());
-            EditorActivity.updateSpinner(imgSpinner, shape.getImage());
-        } else {
-            name.setText("");
-            text.setText("");
-            rectX.setText("");
-            rectY.setText("");
-            width.setText("");
-            height.setText("");
-            visible.setChecked(false);
-            movable.setChecked(false);
+        if (name != null) {
+            if (selectedShape != null) {
+                name.setText(shape.getName());
+                text.setText(shape.getText());
+                rectX.setText(String.format(Locale.US, "%f", shape.getBounds().left));
+                rectY.setText(String.format(Locale.US, "%f", shape.getBounds().top));
+                width.setText(String.format(Locale.US, "%f", shape.getBounds().right - shape.getBounds().left));
+                height.setText(String.format(Locale.US, "%f", shape.getBounds().bottom - shape.getBounds().top));
+                visible.setChecked(shape.isVisible());
+                movable.setChecked(shape.isMovable());
+                PageEditorActivity.updateSpinner(imgSpinner, shape.getImage());
+            } else {
+                name.setText("");
+                text.setText("");
+                rectX.setText("");
+                rectY.setText("");
+                width.setText("");
+                height.setText("");
+                visible.setChecked(false);
+                movable.setChecked(false);
+            }
         }
     }
     /**

@@ -16,7 +16,7 @@ import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE;
 
-public class OpenEditActivity extends AppCompatActivity implements BunnyWorldConstants {
+public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldConstants {
     //iVars
     private DatabaseHelper dbHelper;
     private String[] fromArray = {"name"};
@@ -25,7 +25,7 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_open_edit);
+        setContentView(R.layout.activity_load_game);
         dbHelper = DatabaseHelper.getInstance(this); //Get singleton instance of DBHelper class
 
         //Enters full screen mode
@@ -72,7 +72,7 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
             return;
         }
         dbHelper.addGameToTable(gameName);
-        Intent intent = new Intent(this, EditPagesActivity.class);
+        Intent intent = new Intent(this, PreviewPagesActivity.class);
         intent.putExtra("Game_id", dbHelper.getId(GAMES_TABLE, gameName, NO_PARENT));
         startActivity(intent);
     }
@@ -85,7 +85,7 @@ public class OpenEditActivity extends AppCompatActivity implements BunnyWorldCon
             return;
         }
         String gameName = gameCursor.getString(0);
-        Intent intent = new Intent(this, EditPagesActivity.class);
+        Intent intent = new Intent(this, PreviewPagesActivity.class);
         intent.putExtra("Game_id", dbHelper.getId(GAMES_TABLE, gameName, NO_PARENT));
         startActivity(intent);
     }

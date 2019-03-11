@@ -13,7 +13,7 @@ import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE;
 
-public class MainActivity extends AppCompatActivity {
+public class IntroScreenActivity extends AppCompatActivity {
 
     private MediaPlayer mediaPlayer;
     private VideoView myVideoView;
@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_intro_screen);
     }
 
     protected void onResume() {
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     public void openEditChooser(View view) {
         mediaPlayer.stop();
         myVideoView.stopPlayback();
-        Intent intent = new Intent(this, OpenEditActivity.class);
+        Intent intent = new Intent(this, GameLoaderActivity.class);
         startActivity(intent);
     }
 
@@ -79,7 +79,8 @@ public class MainActivity extends AppCompatActivity {
 //        imageView.setImageBitmap(images.get(rnum));
         mediaPlayer.stop();
         myVideoView.stopPlayback();
-        Intent intent = new Intent(this, SearchForImageActivity.class);
+        //Intent intent = new Intent(this, SearchForImageActivity.class);
+        Intent intent = new Intent(this, PlayGameActivity.class);  // Game selector
         startActivity(intent);
     }
 

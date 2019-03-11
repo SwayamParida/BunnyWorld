@@ -19,11 +19,11 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:hardwareAccelerated="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <activity android:name=".OpenGameActivity" />
-        <activity android:name=".EditPagesActivity" />
-        <activity android:name=".OpenEditActivity" />
-        <activity android:name=".EditorActivity" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".PreviewPagesActivity" />
+        <activity android:name=".GameLoaderActivity" />
+        <activity android:name=".PageEditorActivity" />
+        <activity android:name=".PlayGameActivity" />
+        <activity android:name=".IntroScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
