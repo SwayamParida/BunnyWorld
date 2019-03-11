@@ -6,12 +6,15 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import android.graphics.Bitmap;
+
 
 public class PreviewPagesActivity extends AppCompatActivity {
 
@@ -71,9 +74,6 @@ public class PreviewPagesActivity extends AppCompatActivity {
             int pageId = cursor.getInt(2);
             database.deletePage(pageId);
 
-            //get the layout within which that view is and delete from that
-
-
             //set booleans to false
             selected = false;
             selectedPage = "";
@@ -84,6 +84,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
     }
 
     //fills the scroll view with the names of the pages
+    //OVERWRITTEN TO INSERT THE NEW EDITS
     private void populateScrollView(){
         if(gameId == -1) return;
         String cmd = "SELECT * FROM pages WHERE parent_id = " + gameId + ";";
@@ -98,6 +99,14 @@ public class PreviewPagesActivity extends AppCompatActivity {
             TextView textView = new TextView(this);
             textView.setText(newPage);
             textView.setTextSize(24);
+
+            ImageView myImage = new ImageView(this);
+            myImage.setImageResource(R.drawable.carrot);
+
+            myImage.setMaxHeight(80);
+            myImage.setMaxWidth(120);
+
+
             textView.setOnClickListener(v->{
                 //set previous selected text to blue
                 if(selected){
@@ -108,7 +117,20 @@ public class PreviewPagesActivity extends AppCompatActivity {
                 selectedPage = textView.getText().toString();
                 textView.setTextColor(Color.BLUE);
             });
+
+            myImage.setOnClickListener(v->{
+                //set previous selected text to blue
+                if(selected){
+                    selectedView.setTextColor(Color.GRAY);
+                }
+                selected = true;
+                selectedView = textView;
+                selectedPage = textView.getText().toString();
+                textView.setTextColor(Color.BLUE);
+            });
+            mainVertical.addView(myImage);
             mainVertical.addView(textView);
+
         }
         scrollview.addView(mainVertical);
     }
@@ -128,6 +150,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
     //opens the selected page in the page view
     public void openSelected(View view){
         //Get the list of shapes from the database
+        if(selectedPage == null) return;
         String cmd = "SELECT * FROM pages WHERE name = '"+ selectedPage +"';";
         Cursor cursor = dbase.db.rawQuery(cmd,null);
         cursor.moveToFirst();
