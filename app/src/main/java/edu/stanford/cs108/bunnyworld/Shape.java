@@ -22,10 +22,10 @@ abstract class Shape {
     protected boolean selected;
     protected String name;
     protected BitmapDrawable image;
-    protected ArrayList<String> shapeScript;
     protected boolean visible, movable;
     protected int viewWidth, viewHeight;
     protected float originalX, originalX2, originalY, originalY2;
+    //protected Script script;
 
     private static final Paint outlinePaint = new Paint();
     private static final int PAINT_COLOR = Color.BLUE;
@@ -62,14 +62,14 @@ abstract class Shape {
     abstract void draw(Canvas canvas, float xPos, float yPos);
 
     //update the script for the object
-    public void updateScript(ArrayList<String> newScript){
-        shapeScript = newScript;
-    }
+//    public void setScript(Script newScript){
+//        this.script = newScript;
+//    }
 
     //returns the script for this object
-    public ArrayList<String> getShapeScript(){
-        return shapeScript;
-    }
+//    public Script getScript(){
+//        return script;
+//    }
 
     //bool indicating if the shape is visible
     public boolean isVisible(){

@@ -76,9 +76,6 @@ public class EditPagesActivity extends AppCompatActivity {
             int pageId = cursor.getInt(2);
             database.deletePage(pageId);
 
-            //get the layout within which that view is and delete from that
-
-
             //set booleans to false
             selected = false;
             selectedPage = "";
@@ -89,6 +86,7 @@ public class EditPagesActivity extends AppCompatActivity {
     }
 
     //fills the scroll view with the names of the pages
+    //OVERWRITTEN TO INSERT THE NEW EDITS
     private void populateScrollView(){
         if(gameId == -1) return;
         String cmd = "SELECT * FROM pages WHERE parent_id = " + gameId + ";";
@@ -133,6 +131,7 @@ public class EditPagesActivity extends AppCompatActivity {
     //opens the selected page in the page view
     public void openSelected(View view){
         //Get the list of shapes from the database
+        if(selectedPage == null) return;
         String cmd = "SELECT * FROM pages WHERE name = '"+ selectedPage +"';";
         Cursor cursor = dbase.db.rawQuery(cmd,null);
         cursor.moveToFirst();

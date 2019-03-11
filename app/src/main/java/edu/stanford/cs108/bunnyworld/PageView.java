@@ -183,11 +183,6 @@ public class PageView extends View {
         return new RectF(newLeft, newTop, newRight, newBottom);
     }
 
-    //save button method
-    public void savePage(){
-        //call the saveSelectedPage method
-    }
-
     //undoes an action performed by the user on the screen
     public boolean undoChange(){
         //accesses the array list of actions and simply deletes the last activity
@@ -251,11 +246,4 @@ public class PageView extends View {
 
     //saves page to database
     public ArrayList<Shape> getPageShapes(){ return page.getListOfShapes(); }
-
-    //updates the page when the user clicks to return to previous page back
-    public void updateDatabase(){
-        //calls delete page
-
-        //calls save page
-    }
 }

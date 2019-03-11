@@ -337,7 +337,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @return Returns true if shape is successfully added to shapes table.
      */
     public boolean addShape(String name, int parent_id, int res_id, double x, double y, double width,
-                            double height, String msg, ArrayList<String> scripts, boolean moveable, boolean visible) {
+                            double height, String msg, String scripts, boolean moveable, boolean visible) {
 
         if (entryExists(SHAPES_TABLE, name, parent_id)) {
             Toast.makeText(mContext, "Shape with name '" + name + "' already exists.", Toast.LENGTH_SHORT).show();
@@ -352,7 +352,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         cv.put("width", width);
         cv.put("height", height);
         cv.put("msg", msg);
-        cv.put("scripts", scripts.toString());
+        cv.put("scripts", scripts);
         cv.put("moveable", moveable);
         cv.put("visible", visible);
         db.insert(SHAPES_TABLE, null, cv);
@@ -471,6 +471,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         float width = (float)cursor.getDouble(5);
         float height = (float)cursor.getDouble(6);
         String txtString = cursor.getString(7);
+        String script = (String) cursor.getString(8);
         boolean moveable = cursor.getInt(9) > 0;
         boolean visible = cursor.getInt(10) > 0;
 
@@ -478,6 +479,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         BitmapDrawable drawable = new BitmapDrawable(mContext.getResources(), getImage(res_id));
 
         TextShape shape = new TextShape(view, bounds, drawable, txtString, visible, moveable, name);
+        //shape.setScript(new Script(script));
         cursor.close();
 
         return shape;
@@ -547,5 +549,14 @@ public class DatabaseHelper implements BunnyWorldConstants {
             }
         }
         if(cursor.getCount() != 0) db.execSQL("DELETE FROM games WHERE name = '" + gameName +"';");
+    }
+
+
+    //returns the most recent count number for the pages in that game
+    public int getLatestCount(int gameId){
+        String cmd = "SELECT * FROM games WHERE _id = "+ gameId +";";
+        Cursor cursor = db.rawQuery(cmd, null);
+        int count = cursor.getCount();
+        return count;
     }
 }
