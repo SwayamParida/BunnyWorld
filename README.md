@@ -11,3 +11,5 @@ List of Extensions:
  - Copy/paste support
  - Custom page view
  - Drag to resize implementation
+ - User-drawn custom shapes
+ - Database can be saved to online server
