@@ -353,7 +353,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         cv.put("height", height);
         cv.put("msg", msg);
         cv.put("scripts", scripts);
-        cv.put("moveable", moveable);
+        cv.put("movable", moveable);
         cv.put("visible", visible);
         db.insert(SHAPES_TABLE, null, cv);
         return true;
@@ -459,7 +459,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param view The view in which you want the shape to appear
      * @return TextShape object
      */
-    public TextShape getShape(int shape_id, View view) {
+    public ImageShape getShape(int shape_id, View view) {
         String getShapeRow = "SELECT * FROM " + SHAPES_TABLE + " WHERE _id = " + shape_id + ";";
         Cursor cursor = db.rawQuery(getShapeRow, null);
         cursor.moveToFirst();
@@ -477,8 +477,9 @@ public class DatabaseHelper implements BunnyWorldConstants {
 
         RectF bounds = new RectF(x, y, x + width, y + height);
         BitmapDrawable drawable = new BitmapDrawable(mContext.getResources(), getImage(res_id));
+        drawable = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.carrot);
 
-        TextShape shape = new TextShape(view, bounds, drawable, txtString, visible, moveable, name);
+        ImageShape shape = new ImageShape(view, bounds, drawable, txtString, visible, moveable, name);
         //shape.setScript(new Script(script));
         cursor.close();
 

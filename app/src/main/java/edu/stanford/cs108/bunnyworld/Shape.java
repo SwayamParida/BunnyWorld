@@ -25,7 +25,7 @@ abstract class Shape {
     protected boolean visible, movable;
     protected int viewWidth, viewHeight;
     protected float originalX, originalX2, originalY, originalY2;
-    //protected Script script;
+    protected Script script;
 
     private static final Paint outlinePaint = new Paint();
     private static final int PAINT_COLOR = Color.BLUE;
@@ -53,23 +53,16 @@ abstract class Shape {
     }
 
     //general draw method
-    public void draw(Canvas canvas) {
-        if (selected)
-            canvas.drawRect(bounds, outlinePaint);
-    }
+    public void draw(Canvas canvas) { if (selected) canvas.drawRect(bounds, outlinePaint); }
 
     //specific draw for other canvases
     abstract void draw(Canvas canvas, float xPos, float yPos);
 
     //update the script for the object
-//    public void setScript(Script newScript){
-//        this.script = newScript;
-//    }
+    public void setScript(Script newScript){ this.script = newScript; }
 
     //returns the script for this object
-//    public Script getScript(){
-//        return script;
-//    }
+    public Script getScript(){ return script; }
 
     //bool indicating if the shape is visible
     public boolean isVisible(){
@@ -154,16 +147,16 @@ abstract class Shape {
         return bounds.height();
     }
 
-    @Override
-    public String toString() {
-        return name;
-    }
-
     public float getX() {
         return bounds.left;
     }
 
     public float getY() {
         return bounds.top;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

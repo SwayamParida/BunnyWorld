@@ -9,6 +9,7 @@ import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -29,12 +30,12 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-public class EditorActivity extends AppCompatActivity {
+public class PageEditorActivity extends AppCompatActivity {
     public static final Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
     public static final Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
 
     private Page page;
-    private PageView pagePreview;
+    private CustomPageView pagePreview;
     private EditText nameEditText, textEditText, xEditText, yEditText, wEditText, hEditText;
     private CheckBox visibleCheckBox, movableCheckBox;
     private HorizontalScrollView imgScrollView;
@@ -53,7 +54,7 @@ public class EditorActivity extends AppCompatActivity {
      * Helper method that updates the Spinner to reflect the image clicked by the user
      */
     public static void updateSpinner(Spinner imgSpinner, BitmapDrawable image) {
-        String imageName = EditorActivity.imgStringMap.get(image);
+        String imageName = PageEditorActivity.imgStringMap.get(image);
         ArrayAdapter<String> imgSpinnerAdapter = (ArrayAdapter<String>) imgSpinner.getAdapter();
         imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imageName));
     }
@@ -70,7 +71,7 @@ public class EditorActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_editor);
+        setContentView(R.layout.activity_edit_page);
 
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
@@ -181,7 +182,7 @@ public class EditorActivity extends AppCompatActivity {
         ArrayList<Shape> shapes = new ArrayList<Shape>();
         //populate the shapes list
         for(int id: shapesId){
-            TextShape newShape = dbase.getShape(id, pagePreview);
+            ImageShape newShape = dbase.getShape(id, pagePreview);
             shapes.add(newShape);
         }
 
@@ -232,7 +233,7 @@ public class EditorActivity extends AppCompatActivity {
     public void savePage(View view){
         //call the saveSelectedPage method
         saveToDatabase();
-
+        savedChanges = true;
     }
 
     //undoes an action performed by the user on the screen
@@ -252,54 +253,27 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     //on back pressed update the database by simply calling the save method
-    //booleans for the alert box
-    private boolean clicked = false;
+    //---FIXED
     @Override
     public void onBackPressed(){
         if(!savedChanges){
-            AlertDialog.Builder alertBox = new AlertDialog.Builder(this);
-
-            //create a linear layout with 3 text views
-            LinearLayout lay = new LinearLayout(this);
-            lay.setOrientation(LinearLayout.VERTICAL);
-            TextView txtView = new TextView(this);
-            txtView.setText("Save changes?");
-            txtView.setTextSize(24);
-            txtView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            //boolean generators
-
-            //intentionally swapped their button names for orientation
-            alertBox.setCancelable(true).setNegativeButton(
-                    "No",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            clicked = true;
-                            dialog.cancel();
-                        }
-                    });
-
-            alertBox.setCancelable(true).setPositiveButton(
-                    "Yes",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            clicked = true;
+            AlertDialog.Builder alertBox = new AlertDialog.Builder(this)
+                    .setTitle("Page Edit Changes")
+                    .setMessage("Would you like to save changes?")
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface arg0, int arg1) {
                             saveToDatabase();
-                            dialog.cancel();
+                            Toast.makeText(getApplicationContext(), "Changes saved", Toast.LENGTH_SHORT).show();
+                            PageEditorActivity.super.onBackPressed();
                         }
                     });
-
-            lay.addView(txtView);
-            // set prompts.xml to alert dialog builder
-            alertBox.setView(lay);
-            // create alert dialog
-            AlertDialog alertDialog = alertBox.create();
-            // show it
-            alertDialog.show();
-
-        }
-
-        //return if the button has been clicked
-        if(clicked) super.onBackPressed();
+            //add the no functionality
+            alertBox.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface arg0, int arg1) {
+                    PageEditorActivity.super.onBackPressed();
+                }
+            }).create().show();
+        }else super.onBackPressed();
     }
 
     //method that saves to the database
@@ -319,16 +293,20 @@ public class EditorActivity extends AppCompatActivity {
             //name, parent_id, res_id, x, y, width, height, txtString, scripts, visible, movable
             String name = currShape.getName();
             RectF bounds = currShape.getBounds();
-            ArrayList<String> scripts = currShape.getScript();
+            String script;
+            if(currShape.getScript() != null) script = currShape.getScript().toString();
+            else script = "";
             String txtString = currShape.getText();
             BitmapDrawable newDrawable = currShape.getImage();
             String drawableName = ""; int res_id = -1;
             if(newDrawable != null) {
                 drawableName = imgStringMap.get(newDrawable);
-                res_id = getResources().getIdentifier(drawableName, "drawable", getPackageName());
+                //fix this by moving all the maps to the singleton
+                //res_id = getResources().getIdentifier(drawableName, "drawable", getPackageName());
+                res_id = 0;
             }
             dbase.addShape(name, pageId, res_id, bounds.left, bounds.top, bounds.width(),
-                    bounds.height(), txtString, scripts, currShape.isMovable(), currShape.isVisible());
+                    bounds.height(), txtString, script, currShape.isMovable(), currShape.isVisible());
         }
 
         //saves the name of the page with it's game id

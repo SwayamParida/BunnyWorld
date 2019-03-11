@@ -187,7 +187,7 @@ public class CustomPageView extends View {
         //accesses the array list of actions and simply deletes the last activity
         int size = undoList.size();
         Shape currentRemove = null;
-        if(size != 0 || size != 1) currentRemove = undoList.remove(size - 1);
+        if(size != 0 && size != 1) currentRemove = undoList.remove(size - 1);
         if(currentRemove == null) return false;
 
         //get shape name of last element and find old version in undoList

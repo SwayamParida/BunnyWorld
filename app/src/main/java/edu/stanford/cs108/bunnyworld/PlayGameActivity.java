@@ -119,13 +119,13 @@ public class PlayGameActivity extends AppCompatActivity {
         shapes = new ArrayList<Shape>();
         //populate the shapes list
         for(int id: shapesId){
-            TextShape newShape = dbase.getShape(id, pagePreview);
+            ImageShape newShape = dbase.getShape(id, pagePreview);
             shapes.add(newShape);
         }
 
         //create a new page that has the properties of the previous page
         String pageName = intent.getStringExtra("pageName");
-        Page newPage = new Page();
+        Page newPage = new Page(pageName, -1);
         newPage.setName(pageName);
         newPage.setListOfShapes(shapes);
         return newPage;
@@ -135,9 +135,6 @@ public class PlayGameActivity extends AppCompatActivity {
      * Helper method that passes relevant data to CustomPageView
      */
     public void initPageView(Page page) {
-        if(page == null) {
-            page = new Page();
-        }
         pagePreview.setPage(page);
         pagePreview.invalidate(); //draw contents of the page
         BitmapDrawable defaultImage = stringImgMap.get(((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0));
