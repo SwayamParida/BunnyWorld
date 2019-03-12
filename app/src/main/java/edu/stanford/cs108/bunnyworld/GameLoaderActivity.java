@@ -72,6 +72,7 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
             return;
         }
         dbHelper.addGameToTable(gameName);
+        editText.setText("");
         Intent intent = new Intent(this, PreviewPagesActivity.class);
         intent.putExtra("Game_id", dbHelper.getId(GAMES_TABLE, gameName, NO_PARENT));
         startActivity(intent);
@@ -104,6 +105,7 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
         //populate the spinner with the new game list
         String newCmd = "SELECT * FROM games;";
         Cursor cursor = dbHelper.db.rawQuery(newCmd, null);
+        cursor.moveToFirst();
         SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item,
                 cursor, fromArray, toArray, 0);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

@@ -23,6 +23,14 @@ public class Script {
         this.onEnterActions = onEnterActions;
     }
 
+    /**
+     * Overloaded constructor for the database
+     * @param input
+     */
+    public Script(String input){
+        //calls the parseScript to create a Script outta that
+    }
+
     public Script parseScript(String scriptString) {
         return null; //TODO: Figure out how to use RegEx to parse String
     }

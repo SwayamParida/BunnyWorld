@@ -15,12 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
-
 public class PlayGameActivity extends AppCompatActivity {
 
-    public static final Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
-    public static final Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
+    private HashMap<String, BitmapDrawable> stringImgMap;
+    private HashMap<BitmapDrawable, String> imgStringMap;
     private Spinner imgSpinner;
     private HorizontalScrollView imgScrollView;
     private CustomPageView pagePreview;
@@ -35,8 +33,9 @@ public class PlayGameActivity extends AppCompatActivity {
 
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
+        stringImgMap = dbase.getStringImgMap();
+        imgStringMap = dbase.getImgStringMap();
         initComponents();
-        initImageMap();
         populateSpinner();
         populateImgScrollView();
 
@@ -44,25 +43,6 @@ public class PlayGameActivity extends AppCompatActivity {
         Intent intent = getIntent();
         Page extractedPage = extractIntentData(intent);
         initPageView(extractedPage);
-    }
-
-    /**
-     * Initializes a HashMap that maps the name of an image to the BitmapDrawable associated with it.
-     */
-    public void initImageMap() {
-        String[] imageNames = { "carrot", "carrot2", "death", "duck", "fire", "mystic" };
-        BitmapDrawable[] images = new BitmapDrawable[]{
-                (BitmapDrawable) getResources().getDrawable(R.drawable.carrot),
-                (BitmapDrawable) getResources().getDrawable(R.drawable.carrot2),
-                (BitmapDrawable) getResources().getDrawable(R.drawable.death),
-                (BitmapDrawable) getResources().getDrawable(R.drawable.duck),
-                (BitmapDrawable) getResources().getDrawable(R.drawable.fire),
-                (BitmapDrawable) getResources().getDrawable(R.drawable.mystic),
-        };
-        for (int i = 0; i < images.length; ++i) {
-            stringImgMap.put(imageNames[i], images[i]);
-            imgStringMap.put(images[i], imageNames[i]);
-        }
     }
 
     /**
@@ -81,6 +61,16 @@ public class PlayGameActivity extends AppCompatActivity {
         // Set adapter to spinner
         imgSpinner.setAdapter(imgSpinnerAdapter);
     }
+
+    /**
+     * Helper method that updates the Spinner to reflect the image clicked by the user
+     */
+    private void updateSpinner(Spinner imgSpinner, BitmapDrawable image) {
+        String imageName = imgStringMap.get(image);
+        ArrayAdapter<String> imgSpinnerAdapter = (ArrayAdapter<String>) imgSpinner.getAdapter();
+        imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imageName));
+    }
+
     /**
      * Populates a HorizontalScrollView with all the preset images available for the user to create a shape out of
      */
@@ -125,7 +115,7 @@ public class PlayGameActivity extends AppCompatActivity {
 
         //create a new page that has the properties of the previous page
         String pageName = intent.getStringExtra("pageName");
-        Page newPage = new Page(pageName, -1);
+        Page newPage = new Page(pageName);
         newPage.setName(pageName);
         newPage.setListOfShapes(shapes);
         return newPage;

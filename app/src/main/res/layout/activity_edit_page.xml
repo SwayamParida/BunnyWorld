@@ -183,7 +183,7 @@
         app:layout_constraintTop_toTopOf="@id/hMargin"
         app:layout_constraintBottom_toTopOf="@id/undo"
         android:onClick="saveChanges"
-        android:text="Save Shape"/>
+        android:text="Update Shape"/>
     <Button
         android:id="@+id/savePage"
         android:layout_height="0dp"

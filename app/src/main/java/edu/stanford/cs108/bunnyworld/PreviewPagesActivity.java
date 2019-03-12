@@ -16,7 +16,6 @@ import java.util.HashMap;
 public class PreviewPagesActivity extends AppCompatActivity {
 
     private int gameId;
-    private DatabaseHelper database;
     private static int count = 0;
     private ScrollView scrollview;
     private String selectedPage;
@@ -40,7 +39,6 @@ public class PreviewPagesActivity extends AppCompatActivity {
         dbase = DatabaseHelper.getInstance(this);
         Intent editorIntent = getIntent();
         gameId = editorIntent.getIntExtra("Game_id", -1);
-        database = DatabaseHelper.getInstance(this);
         scrollview = (ScrollView) findViewById(R.id.scrollview);
         populateScrollView();
     }
@@ -48,11 +46,12 @@ public class PreviewPagesActivity extends AppCompatActivity {
     //creates a new page with the current selected game
     //doesn't explicitly handle scrollview because onCreate method will do that
     public void createNew(View view){
+        int count = dbase.getLatestCount(gameId) + 1;
         String pageName = "page" + count;
-        count++;
-        boolean insertSuccessful = database.addPage(pageName, gameId);
+        dbase.addPage(pageName, gameId);
         Intent newIntent = new Intent(this, PageEditorActivity.class);
         newIntent.putExtra("containsItems", false);
+        newIntent.putExtra("pageName", pageName);
         newIntent.putExtra("gameId", gameId);
         startActivity(newIntent);
         //update the scrollview so that changes persist when you return
@@ -63,17 +62,17 @@ public class PreviewPagesActivity extends AppCompatActivity {
     //opens a preexisting page
     //explicitly updates scrollview with the populate method
     public void deleteSelected(View view) {
-        if(selected && !selectedPage.isEmpty()){
+        if(selected){
             //get the autoincrement id and use that to delete the page shapes
             String cmd = "SELECT * FROM pages WHERE name = '" + selectedPage + "';";
-            Cursor cursor = database.db.rawQuery(cmd, null);
+            Cursor cursor = dbase.db.rawQuery(cmd, null);
             cursor.moveToFirst();
             int pageId = cursor.getInt(2);
-            database.deletePage(pageId);
+            dbase.deletePage(pageId);
 
             //set booleans to false
             selected = false;
-            selectedPage = "";
+            selectedPage = null;
             //call populate layout again to repopulate layout after clearing scrollView
             scrollview.removeAllViews();
             populateScrollView();
@@ -85,9 +84,10 @@ public class PreviewPagesActivity extends AppCompatActivity {
     private void populateScrollView(){
         if(gameId == -1) return;
         String cmd = "SELECT * FROM pages WHERE parent_id = " + gameId + ";";
-        Cursor cursor = database.db.rawQuery(cmd, null);
+        Cursor cursor = dbase.db.rawQuery(cmd, null);
         LinearLayout mainVertical = new LinearLayout(this);
-        setProperties(mainVertical, "vertical", PAGEVIEWWIDTH*4, 0);
+        mainVertical.setOrientation(LinearLayout.VERTICAL);
+        //setProperties(mainVertical, "vertical", PAGEVIEWWIDTH*4, 0);
 
         //loops through the cursor and populates the appropraite views
         while(cursor.moveToNext()){
@@ -118,7 +118,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
         if(orient.equals("vertical")) lay.setOrientation(LinearLayout.VERTICAL);
         else if(orient.equals("horizontal")) lay.setOrientation(LinearLayout.HORIZONTAL);
         //set the width
-        lay.setMinimumHeight(width);
+        lay.setMinimumWidth(width);
         //set the height
         if(height != 0) lay.setMinimumHeight(height);
     }
@@ -126,7 +126,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
     //opens the selected page in the page view
     public void openSelected(View view){
         //Get the list of shapes from the database
-        if(selectedPage == null) return;
+        if(selectedPage == null || selectedPage.equals("")) return;
         String cmd = "SELECT * FROM pages WHERE name = '"+ selectedPage +"';";
         Cursor cursor = dbase.db.rawQuery(cmd,null);
         cursor.moveToFirst();
@@ -135,6 +135,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
         //get all the children shapes and write them to the preview and process them there
         String cmd1 = "SELECT * FROM shapes WHERE parent_id = "+ pageId +";";
         Cursor cursor1 = dbase.db.rawQuery(cmd1, null);
+        cursor1.moveToFirst();
 
         //pass all the shapes to the activity editor and fill the screen
         Intent intent = new Intent(this, PageEditorActivity.class);

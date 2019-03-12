@@ -34,7 +34,7 @@ public class TextShape extends Shape {
     //called by any other canvas except the pageEditorView class
     @Override
     public void draw(Canvas canvas) {
-        super.draw(canvas);
+        //super.draw(canvas);
         float width = canvas.getWidth();
         float height = canvas.getHeight();
         canvas.drawText(txtString, textX*width, textY*height, txtPaint);

@@ -27,6 +27,8 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class DatabaseHelper implements BunnyWorldConstants {
@@ -61,6 +63,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         mContext = context;
         //context.deleteDatabase(DATABASE_NAME); //Erases database
         if (single_instance == null) {
+            initImageMap();
             single_instance = new DatabaseHelper(context.getApplicationContext());
         }
         return single_instance;
@@ -160,7 +163,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         db.execSQL(cmd);
         cmd = "CREATE TABLE pages (name Text, parent_id INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create pages table
         db.execSQL(cmd);
-        cmd = "CREATE TABLE shapes (name Text, parent_id INTEGER, res_id INTEGER, x REAL, y REAL, width REAL, height REAL, msg Text, scripts Text, movable BOOLEAN, visible BOOLEAN, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create shapes table
+        cmd = "CREATE TABLE shapes (name Text, parent_id INTEGER, shapeName TEXT, x REAL, y REAL, width REAL, height REAL, msg Text, scripts Text, movable INTEGER, visible INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create shapes table
         db.execSQL(cmd);
         cmd = "CREATE TABLE resources (name Text, resType INTEGER, file BLOB NOT NULL, _id INTEGER PRIMARY KEY AUTOINCREMENT);";
         db.execSQL(cmd);
@@ -196,6 +199,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
+     * EXTENSION PROJECT
      * Adds all audio file resources into database
      */
     private void addAudioResources() {
@@ -239,7 +243,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
-     *
+     *WE MAY NOT NEED THIS AGAIN (POINTERS HAVE BEEN REWIRED)
      * @param res_id Resource id of the wanted image
      * @return Bitmap of image res_id in shapes
      */
@@ -257,6 +261,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
+     * AS AN EXTENSION MAYBE BUT FOR NOW WE FOCUS ON OTHER PERTINENT ASPECTS OF THE PROJECT
      * This method will take in a resource id and attempt to convert it into an mp3.
      * @param res_id The resource id for the audio file you are seeking. Ensure that this
      *               is indeed an audio -- not image -- file.
@@ -322,10 +327,11 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
+     * REMEMBER THAT SQL DOESN'T HAVE BOOL TYPES
      * Adds a shape to the shapes table in the database.
      * @param name Shape name
      * @param parent_id Id of the page the shape belongs to
-     * @param res_id Id of the resource the shape uses
+     * @param shapeName name of the image the shape uses
      * @param x X coordinate
      * @param y Y coordinate
      * @param width Width of shape
@@ -336,26 +342,21 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param visible Boolean representing whether shape is visible on page
      * @return Returns true if shape is successfully added to shapes table.
      */
-    public boolean addShape(String name, int parent_id, int res_id, double x, double y, double width,
+    public boolean addShape(String name, int parent_id, String shapeName, double x, double y, double width,
                             double height, String msg, String scripts, boolean moveable, boolean visible) {
 
         if (entryExists(SHAPES_TABLE, name, parent_id)) {
             Toast.makeText(mContext, "Shape with name '" + name + "' already exists.", Toast.LENGTH_SHORT).show();
             return false;
         }
-        ContentValues cv = new ContentValues();
-        cv.put("name", name);
-        cv.put("parent_id", parent_id);
-        cv.put("res_id", res_id);
-        cv.put("x", x);
-        cv.put("y", y);
-        cv.put("width", width);
-        cv.put("height", height);
-        cv.put("msg", msg);
-        cv.put("scripts", scripts);
-        cv.put("movable", moveable);
-        cv.put("visible", visible);
-        db.insert(SHAPES_TABLE, null, cv);
+        int vis = 0;
+        int mov = 0;
+        if(visible)  vis = 1;
+        if(moveable) mov = 1;
+        String insert = "INSERT INTO shapes VALUES ('"+ name +"', "+ parent_id +", '" + shapeName + "', "+
+                x +", "+ y +", "+ width +", "+ height +", '"+ msg +"', '"+ scripts +"', "+ mov +", "+
+                vis + ", NULL);";
+        db.execSQL(insert);
         return true;
     }
 
@@ -372,10 +373,10 @@ public class DatabaseHelper implements BunnyWorldConstants {
     /**
      * Changes the resource that the shape accesses in the database.
      * @param shape_id id of the shape to be changed
-     * @param res_id id of the new image resource to be added to shape
+     * @param shapeName name of the new image to be added to shape
      */
-    public void changeShapeImage(int shape_id, int res_id) {
-        String cmd = "UPDATE " + SHAPES_TABLE + " SET res_id = " + res_id + " WHERE _id = " + shape_id + ";";
+    public void changeShapeImage(int shape_id, String shapeName) {
+        String cmd = "UPDATE " + SHAPES_TABLE + " SET shapeName = '" + shapeName + "' WHERE _id = " + shape_id + ";";
         db.execSQL(cmd);
     }
 
@@ -428,8 +429,8 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param shape_id id for the applicable shape
      * @param scripts ArrayList<String> containing list of wanted scripts for the specified shape
      */
-    public void changeShapeScript(int shape_id, ArrayList<String> scripts) {
-        String cmd = "UPDATE " + SHAPES_TABLE + " SET scripts = '" + scripts.toString() + "' WHERE _id = " + shape_id + ";";
+    public void changeShapeScript(int shape_id, String scripts) {
+        String cmd = "UPDATE " + SHAPES_TABLE + " SET scripts = '" + scripts + "' WHERE _id = " + shape_id + ";";
         db.execSQL(cmd);
     }
 
@@ -454,7 +455,8 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
-     * Returns a TextShape from database corresonding with its id.
+     * REMEMBER THAT SQL DOESN'T HAVE BOOL TYPES
+     * Returns a TextShape from database corresponding with its id.
      * @param shape_id The id of the shape you want to retrieve
      * @param view The view in which you want the shape to appear
      * @return TextShape object
@@ -465,7 +467,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         cursor.moveToFirst();
 
         String name = cursor.getString(NAME_COL);
-        int res_id = cursor.getInt(2);
+        String shapeName = cursor.getString(2);
         float x = (float)cursor.getDouble(3);
         float y = (float)cursor.getDouble(4);
         float width = (float)cursor.getDouble(5);
@@ -476,11 +478,11 @@ public class DatabaseHelper implements BunnyWorldConstants {
         boolean visible = cursor.getInt(10) > 0;
 
         RectF bounds = new RectF(x, y, x + width, y + height);
-        BitmapDrawable drawable = new BitmapDrawable(mContext.getResources(), getImage(res_id));
-        drawable = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.carrot);
+        //use the shapeName to access the type of drawable
+        BitmapDrawable drawable = stringImgMap.get(shapeName);
 
         ImageShape shape = new ImageShape(view, bounds, drawable, txtString, visible, moveable, name);
-        //shape.setScript(new Script(script));
+        shape.setScript(new Script(script));
         cursor.close();
 
         return shape;
@@ -552,12 +554,40 @@ public class DatabaseHelper implements BunnyWorldConstants {
         if(cursor.getCount() != 0) db.execSQL("DELETE FROM games WHERE name = '" + gameName +"';");
     }
 
-
     //returns the most recent count number for the pages in that game
     public int getLatestCount(int gameId){
-        String cmd = "SELECT * FROM games WHERE _id = "+ gameId +";";
+        String cmd = "SELECT * FROM pages WHERE _id = "+ gameId +";";
         Cursor cursor = db.rawQuery(cmd, null);
         int count = cursor.getCount();
         return count;
     }
+
+
+
+
+    /**
+     * The rest of these methods are responsible for handling the images in the res folder
+     */
+    private static HashMap<String, BitmapDrawable> stringImgMap = new HashMap<>();
+    private static HashMap<BitmapDrawable, String> imgStringMap = new HashMap<>();
+
+    private static void initImageMap() {
+        String[] imageNames = { "carrot", "carrot2", "death", "duck", "fire", "mystic" };
+        BitmapDrawable[] images = new BitmapDrawable[]{
+                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.carrot),
+                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.carrot2),
+                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.death),
+                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.duck),
+                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.fire),
+                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.mystic),
+        };
+        for (int i = 0; i < images.length; ++i) {
+            stringImgMap.put(imageNames[i], images[i]);
+            imgStringMap.put(images[i], imageNames[i]);
+        }
+    }
+
+    //getters for the arrays in other classes
+    public HashMap<String, BitmapDrawable> getStringImgMap(){return stringImgMap;}
+    public HashMap<BitmapDrawable, String> getImgStringMap(){return imgStringMap;};
 }

@@ -44,7 +44,7 @@ public class ImageShape extends Shape {
     //Editor activity calls this version of draw
     @Override
     public void draw(Canvas canvas) {
-        super.draw(canvas);
+       // super.draw(canvas);
         float width = canvas.getWidth();
         float height = canvas.getHeight();
         float newX = scaledCoord.left*width;

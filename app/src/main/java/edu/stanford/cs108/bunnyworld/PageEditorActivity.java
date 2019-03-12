@@ -31,8 +31,8 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 public class PageEditorActivity extends AppCompatActivity {
-    public static final Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
-    public static final Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
+    private static HashMap<String, BitmapDrawable> stringImgMap;
+    private static HashMap<BitmapDrawable, String> imgStringMap;
 
     private Page page;
     private CustomPageView pagePreview;
@@ -46,15 +46,11 @@ public class PageEditorActivity extends AppCompatActivity {
     private int gameId;
     private boolean savedChanges = false;
 
-    //implementation helpers for undo and redo
-    private ArrayList<Shape> undoList;
-    private PriorityQueue<Shape> redoList;
-
     /**
      * Helper method that updates the Spinner to reflect the image clicked by the user
      */
     public static void updateSpinner(Spinner imgSpinner, BitmapDrawable image) {
-        String imageName = PageEditorActivity.imgStringMap.get(image);
+        String imageName = imgStringMap.get(image);
         ArrayAdapter<String> imgSpinnerAdapter = (ArrayAdapter<String>) imgSpinner.getAdapter();
         imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imageName));
     }
@@ -62,10 +58,13 @@ public class PageEditorActivity extends AppCompatActivity {
      * Event handler for when the "Save" button is clicked.
      */
     public void saveChanges(View view) {
-        Shape selectedShape = pagePreview.getSelectedShape();
-        page.deleteShape(selectedShape);
-        page.addShape(updatedShape());
-        pagePreview.invalidate();
+        String name = nameEditText.getText().toString();
+        if(!name.isEmpty()){
+            Shape selectedShape = pagePreview.getSelectedShape();
+            page.deleteShape(selectedShape);
+            page.addShape(updatedShape());
+            pagePreview.invalidate();
+        }
     }
 
     @Override
@@ -75,8 +74,9 @@ public class PageEditorActivity extends AppCompatActivity {
 
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
+        stringImgMap = dbase.getStringImgMap();
+        imgStringMap = dbase.getImgStringMap();
         initComponents();
-        initImageMap();
         populateSpinner();
         populateImgScrollView();
 
@@ -84,6 +84,8 @@ public class PageEditorActivity extends AppCompatActivity {
         Intent intent = getIntent();
         page = extractIntentData(intent);
         initPageView();
+        //after loading page draw contents
+        pagePreview.invalidate();
     }
 
     /**
@@ -102,45 +104,21 @@ public class PageEditorActivity extends AppCompatActivity {
         imgSpinner = findViewById(R.id.imgSpinner);
         imgScrollView = findViewById(R.id.presetImages);
         pagePreview = findViewById(R.id.pagePreview);
-        undoList = new ArrayList<Shape>();
-        redoList = new PriorityQueue<Shape>();
     }
+
     /**
      * Helper method that passes relevant data to PageView
      */
     private void initPageView() {
-        if(page == null) {
-            int getLatestCount = dbase.getLatestCount(gameId);
-            page = new Page(null,getLatestCount + 1);
-            //add page to the database
-            addToDatabase();
-        }
         pagePreview.setPage(page);
-        pagePreview.invalidate(); //draw contents of the page
         BitmapDrawable defaultImage = stringImgMap.get(((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0));
         pagePreview.setSelectedImage(defaultImage);
     }
-    /**
-     * Initializes a HashMap that maps the name of an image to the BitmapDrawable associated with it.
-     */
-    private void initImageMap() {
-        String[] imageNames = { "carrot", "carrot2", "death", "duck", "fire", "mystic" };
-        BitmapDrawable[] images = new BitmapDrawable[]{
-                (BitmapDrawable) getResources().getDrawable(R.drawable.carrot),
-                (BitmapDrawable) getResources().getDrawable(R.drawable.carrot2),
-                (BitmapDrawable) getResources().getDrawable(R.drawable.death),
-                (BitmapDrawable) getResources().getDrawable(R.drawable.duck),
-                (BitmapDrawable) getResources().getDrawable(R.drawable.fire),
-                (BitmapDrawable) getResources().getDrawable(R.drawable.mystic),
-        };
-        for (int i = 0; i < images.length; ++i) {
-            stringImgMap.put(imageNames[i], images[i]);
-            imgStringMap.put(images[i], imageNames[i]);
-        }
-    }
+
     /**
      * Populates the spinner with the list of image choices.
      * Reference: https://www.tutorialspoint.com/android/android_spinner_control.htm
+     * //get the keyset from the singleton
      */
     private void populateSpinner() {
         // Create an array adapter using the items in imageNames
@@ -156,6 +134,7 @@ public class PageEditorActivity extends AppCompatActivity {
     }
     /**
      * Populates a HorizontalScrollView with all the preset images available for the user to create a shape out of
+     * //access the map from the singleton
      */
     private void populateImgScrollView() {
         LinearLayout horizontalLayout = new LinearLayout(this);
@@ -175,9 +154,14 @@ public class PageEditorActivity extends AppCompatActivity {
     //writes the text-shapes into the ivar arrayList of text shapes above
     private Page extractIntentData(Intent intent){
         gameId = intent.getIntExtra("gameId", -1);
-        if(!intent.getBooleanExtra("containsItems", false)) return null;
+        //create a new page that has the properties of the previous page
+        String pageName = intent.getStringExtra("pageName");
+        if(!intent.getBooleanExtra("containsItems", false)){
+            Page newPage = new Page(pageName);
+            return newPage;
+        }
+        Page newPage = new Page(pageName);
         ArrayList<Integer> shapesId = intent.getIntegerArrayListExtra("ShapesArray");
-
         //instantiate the text-shapes ivar array
         ArrayList<Shape> shapes = new ArrayList<Shape>();
         //populate the shapes list
@@ -185,12 +169,6 @@ public class PageEditorActivity extends AppCompatActivity {
             ImageShape newShape = dbase.getShape(id, pagePreview);
             shapes.add(newShape);
         }
-
-        //create a new page that has the properties of the previous page
-        String pageName = intent.getStringExtra("pageName");
-
-        Page newPage = new Page(pageName, -1);
-        newPage.setName(pageName);
         newPage.setListOfShapes(shapes);
         return newPage;
     }
@@ -263,6 +241,7 @@ public class PageEditorActivity extends AppCompatActivity {
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface arg0, int arg1) {
                             saveToDatabase();
+                            savedChanges = true;
                             Toast.makeText(getApplicationContext(), "Changes saved", Toast.LENGTH_SHORT).show();
                             PageEditorActivity.super.onBackPressed();
                         }
@@ -298,24 +277,12 @@ public class PageEditorActivity extends AppCompatActivity {
             else script = "";
             String txtString = currShape.getText();
             BitmapDrawable newDrawable = currShape.getImage();
-            String drawableName = ""; int res_id = -1;
+            String drawableName = "";
             if(newDrawable != null) {
                 drawableName = imgStringMap.get(newDrawable);
-                //fix this by moving all the maps to the singleton
-                //res_id = getResources().getIdentifier(drawableName, "drawable", getPackageName());
-                res_id = 0;
             }
-            dbase.addShape(name, pageId, res_id, bounds.left, bounds.top, bounds.width(),
+            dbase.addShape(name, pageId, drawableName, bounds.left, bounds.top, bounds.width(),
                     bounds.height(), txtString, script, currShape.isMovable(), currShape.isVisible());
         }
-
-        //saves the name of the page with it's game id
-        dbase.addPage(pageName, gameId);
-    }
-
-    //adds the newly created page to the database
-    public void addToDatabase(){
-        int getLatestCount = dbase.getLatestCount(gameId);
-        dbase.addPage(page.getName(), gameId);
     }
 }
