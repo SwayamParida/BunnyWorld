@@ -10,6 +10,7 @@ import java.util.Map;
 public interface BunnyWorldConstants {
     int AUDIO = 0;
     int IMAGE = 1;
+    int DIR_TYPE = -1;
     int FILE_COL_INDEX = 2;
     int NAME_COL = 0;
     int NO_PARENT = -1;
@@ -21,6 +22,7 @@ public interface BunnyWorldConstants {
     double NO_CHANGE_Y = -Double.MAX_VALUE;
     double NO_CHANGE_WIDTH = -Double.MAX_VALUE;
     double NO_CHANGE_HEIGHT = -Double.MAX_VALUE;
+
 
     String DATABASE_NAME = "BunnyWorldDB";
 

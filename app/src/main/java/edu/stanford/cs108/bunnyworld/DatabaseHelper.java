@@ -2,6 +2,7 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -34,6 +35,8 @@ public class DatabaseHelper implements BunnyWorldConstants {
     private static DatabaseHelper single_instance = null;
     public SQLiteDatabase db;
     private static Context mContext;
+    private static String directoryPath;
+    private static File directory;
 /**********************************************/
 
     /**
@@ -44,6 +47,10 @@ public class DatabaseHelper implements BunnyWorldConstants {
         Cursor cursor = db.rawQuery("SELECT * FROM sqlite_master WHERE type ='table' AND name = 'games';", null);
         if (cursor.getCount() == 0) {
             initializeDB();
+        } else {
+            Cursor dirCur = db.rawQuery("SELECT * FROM " + RESOURCE_TABLE + " WHERE resType = " + DIR_TYPE + ";", null);
+            directoryPath = dirCur.getString(2);
+            directory = new File(directoryPath);
         }
         cursor.close();
     }
@@ -157,8 +164,21 @@ public class DatabaseHelper implements BunnyWorldConstants {
         db.execSQL(cmd);
         cmd = "CREATE TABLE shapes (name Text, parent_id INTEGER, res_id INTEGER, x REAL, y REAL, width REAL, height REAL, msg Text, scripts Text, movable BOOLEAN, visible BOOLEAN, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create shapes table
         db.execSQL(cmd);
-        cmd = "CREATE TABLE resources (name Text, resType INTEGER, file BLOB NOT NULL, _id INTEGER PRIMARY KEY AUTOINCREMENT);";
+        cmd = "CREATE TABLE resources (name Text, resType INTEGER, file Text, _id INTEGER PRIMARY KEY AUTOINCREMENT);";
         db.execSQL(cmd);
+
+        //Adds resource directy as first entry in resources table
+        ContextWrapper cw = new ContextWrapper(mContext);
+        directory = cw.getDir("resDir", Context.MODE_PRIVATE);
+
+        directoryPath = directory.getAbsolutePath();
+        ContentValues cv = new ContentValues();
+        cv.put("name", "MAIN_DIRECTORY");
+        cv.put("resType", DIR_TYPE);
+        cv.put("file", directoryPath);
+        db.insert(RESOURCE_TABLE, null, cv);
+
+
         addAudioResources();
         addImageResources();
     }
@@ -167,26 +187,31 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * Adds all drawable image resources into the database.
      */
     private void addImageResources() {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
         for (int curr : imgList) {
             String resourceName = mContext.getResources().getResourceEntryName(curr);
+            File currFile = new File(directory, resourceName);
             Bitmap bitmap = ((BitmapDrawable) Objects.requireNonNull(mContext.getDrawable(curr))).getBitmap();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] bitmapdata = stream.toByteArray();
+            FileOutputStream stream = null;
+
+            try { //Read image to file within main directory
+                stream = new FileOutputStream(currFile);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
 
             ContentValues cv = new ContentValues();
             cv.put("resourceName", resourceName);
             cv.put("resType", IMAGE);
-            cv.put("file", bitmapdata);
+            cv.put("file", currFile.getAbsolutePath());
             db.insert("resources", null, cv);
-            stream.reset();
-        }
-
-        try {
-            stream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -195,28 +220,19 @@ public class DatabaseHelper implements BunnyWorldConstants {
      */
     private void addAudioResources() {
         InputStream inputStream = null;
-        FileInputStream fin = null;
-
         for (int curr : audioList) {
             String name = mContext.getResources().getResourceEntryName(curr);
             inputStream = mContext.getResources().openRawResource(curr);
-            File tempFile = null;
+            File currFile = new File(directory, name);
             try {
                 //Read mp3 resource as a file
-                tempFile = File.createTempFile("name", "mp3");
-                tempFile.deleteOnExit();
-                Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(inputStream, currFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-                //Store audio data file as byte[]
-                byte[] audioBytes = new byte[(int)tempFile.length()];
-                fin = new FileInputStream(tempFile);
-                fin.read(audioBytes);
-
-                //Put audio resource into db
+                //Put audio resource path into db
                 ContentValues cv = new ContentValues();
                 cv.put("name", name);
                 cv.put("resType", AUDIO);
-                cv.put("file", audioBytes);
+                cv.put("file", currFile.getAbsolutePath());
                 db.insert("resources", null, cv);
 
             } catch (FileNotFoundException e) {
@@ -227,7 +243,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
         }
         try {
             if (inputStream != null) inputStream.close();
-            if (fin != null) fin.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -525,6 +540,19 @@ public class DatabaseHelper implements BunnyWorldConstants {
         cv.put("parent_id", parent_id);
         db.insert(PAGES_TABLE, null, cv);
         return true;
+    }
+
+    /**
+     * Returns a bitmap of the page rendering from the database
+     * @param page_id Id of the decided page
+     * @return Bitmap of page rendering from table
+     */
+    public Bitmap getPageRendering(int page_id) {
+        String cmd = "SELECT * FROM " + PAGES_TABLE + " WHERE _id = " + page_id + ";";
+        Cursor cursor = db.rawQuery(cmd, null);
+        cursor.moveToFirst();
+        byte[] imgByte = cursor.getBlob(2);
+        return BitmapFactory.decodeByteArray(imgByte, 0, imgByte.length);
     }
 
     /**
