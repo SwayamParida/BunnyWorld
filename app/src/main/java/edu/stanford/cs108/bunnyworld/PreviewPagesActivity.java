@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -105,8 +106,19 @@ public class PreviewPagesActivity extends AppCompatActivity {
             ImageView myImage = new ImageView(this);
             myImage.setImageResource(R.drawable.carrot);
 
-            myImage.setMaxHeight(80);
-            myImage.setMaxWidth(120);
+//            myImage.setMinimumWidth(200);
+//            myImage.setMaxWidth(200);
+//
+//            myImage.setMaxHeight(200);
+//            myImage.setMinimumHeight(200);
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            params.gravity = Gravity.CENTER;
+            myImage.setLayoutParams(params);
+
+            myImage.getLayoutParams().height = 500;
+            myImage.getLayoutParams().width = 500;
+
 
 
             textView.setOnClickListener(v->{
