@@ -303,17 +303,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         dbase.addPage(page.getName(), page.getPageRender(), gameId);
     }
 
-    //gets a screenshot of the page
-    public static Bitmap getBitmapFromView(View view) {
-        view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),
-                Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        view.layout(0, 0, view.getWidth(), view.getHeight());
-        view.draw(canvas);
-        return bitmap;
-    }
-
     //get the bitmap of the visible view
     private Bitmap getScreenView(View v){
         v.setDrawingCacheEnabled(true);
