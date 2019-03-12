@@ -1,5 +1,6 @@
 package edu.stanford.cs108.bunnyworld;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ public class Page {
     private ArrayList<Shape> listOfShapes = new ArrayList<>();
     private String name;
     private String backGroundImageName;
+    private Bitmap pageRender;
 
     public boolean getIsStarterPage(){
         return this.isStarterPage;
@@ -64,5 +66,13 @@ public class Page {
         if(name != null) this.name = name;
         else
             this.name = "Page"+count;
+    }
+
+    public void setPageRender(Bitmap pageRender) {
+        this.pageRender = pageRender;
+    }
+
+    public Bitmap getPageRender(){
+        return this.pageRender;
     }
 }

@@ -55,7 +55,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
     public void createNew(View view){
         String pageName = "page" + count;
         count++;
-        boolean insertSuccessful = database.addPage(pageName, gameId);
+        database.addPage(pageName, null, gameId);
         Intent newIntent = new Intent(this, PageEditorActivity.class);
         newIntent.putExtra("containsItems", false);
         newIntent.putExtra("gameId", gameId);
