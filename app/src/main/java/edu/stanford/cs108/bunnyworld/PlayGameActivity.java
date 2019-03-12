@@ -17,8 +17,8 @@ import java.util.PriorityQueue;
 
 public class PlayGameActivity extends AppCompatActivity {
 
-    private HashMap<String, BitmapDrawable> stringImgMap;
-    private HashMap<BitmapDrawable, String> imgStringMap;
+    public static final Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
+    public static final Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
     private Spinner imgSpinner;
     private HorizontalScrollView imgScrollView;
     private CustomPageView pagePreview;
@@ -33,9 +33,8 @@ public class PlayGameActivity extends AppCompatActivity {
 
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
-        stringImgMap = dbase.getStringImgMap();
-        imgStringMap = dbase.getImgStringMap();
         initComponents();
+        initImageMap();
         populateSpinner();
         populateImgScrollView();
 

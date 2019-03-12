@@ -41,9 +41,6 @@ public class CustomPageView extends View {
     public Shape getSelectedShape() {
         return selectedShape;
     }
-
-//    public void setSelectedShape(Shape selected){this.selectedShape = selected;}
-
     public void setPage(Page page) {
         this.page = page;
     }
@@ -64,9 +61,8 @@ public class CustomPageView extends View {
         }
 
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
-        if (x1 == x2 && y1 == y2) {
+        if (x1 == x2 && y1 == y2)
             selectShape(page.findLastShape(x1, y1));
-        }
 
         // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
@@ -75,17 +71,11 @@ public class CustomPageView extends View {
             RectF boundingRect = createBounds(x1, y1, x2, y2);
             if(boundingRect.left < 0 || boundingRect.right > this.getWidth() ||
                     boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
-            //delete the old shape and add to the undo list
-            Shape newShape = page.findLastShape(x1,y1);
-            String shpName = null;
-            if(newShape != null) {
-                shpName = newShape.getName();
-                undoList.add(newShape);
-                page.deleteShape(newShape);
-            }
-            Shape shape = new ImageShape(this, boundingRect, selectedImage, "", true, true, shpName);
+            Shape shape = new ImageShape(this, boundingRect, selectedImage, null, true, true, null);
             page.addShape(shape);
+            selectShape(shape);
             updateInspector(shape);
+            //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else {
@@ -96,20 +86,19 @@ public class CustomPageView extends View {
             //check to see if the image is in the bounds of the preview else don't make changes
             if(newX < 0 || newX1 > this.getWidth() || newY < 0 || newY1 > this.getHeight()) return true;
 
-            //else update the picture to be dragged and update inspector and add to undolist
+            //else update the picture to be dragged and update inspector
             RectF newBounds = new RectF(newX, newY, newX1, newY1);
             selectedShape.setBounds(newBounds);
             Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
                     selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
             page.addShape(shape);
             page.deleteShape(selectedShape);
-            undoList.add(selectedShape);
-//            selectedShape.setSelected(false);
-//            selectedShape = null;
-            //updateInspector(shape);
+            selectShape(shape);
+            updateInspector(shape);
             invalidate();
         }
         invalidate();
+
         return true;
     }
 
@@ -118,11 +107,11 @@ public class CustomPageView extends View {
      * @param toSelect When not-null, this Shape is selected. When null, the current selection is cleared.
      */
     private void selectShape(Shape toSelect) {
-        if (toSelect != null)
-            toSelect.setSelected(true);
         if (selectedShape != null) {
             selectedShape.setSelected(false);
         }
+        if (toSelect != null)
+            toSelect.setSelected(true);
         selectedShape = toSelect;
         updateInspector(selectedShape);
         invalidate();
@@ -213,7 +202,7 @@ public class CustomPageView extends View {
         //add to the arrayList of the page and call invalidate on PagePreview
         ArrayList<Shape> pageShape = page.getListOfShapes();
         int pageSize = pageShape.size() - 1; //for loop might be slightly optimized
-        for(int i = pageSize; i >= 0; i--){
+        for(int i = pageSize; i > 0; i--){
             String name = pageShape.get(i).getName();
             if(name.equals(shapeName)) {
                 pageShape.remove(i);
@@ -223,7 +212,7 @@ public class CustomPageView extends View {
         }
         //update the page arrayList and call invalidate() to redraw shapes
         page.setListOfShapes(pageShape);
-        invalidate();
+        this.invalidate();
         return true;
     }
 
@@ -243,7 +232,7 @@ public class CustomPageView extends View {
         //add to the arrayList of the page and call invalidate on PagePreview
         ArrayList<Shape> pageShape = page.getListOfShapes();
         int pageSize = pageShape.size() - 1; //for loop might be slightly optimized
-        for(int i = pageSize; i >= 0; i--){
+        for(int i = pageSize; i > 0; i--){
             String name = pageShape.get(i).getName();
             if(name.equals(shapeName)) {
                 pageShape.remove(i);
@@ -253,7 +242,7 @@ public class CustomPageView extends View {
         }
         //update the page arrayList and call invalidate() to redraw shapes
         page.setListOfShapes(pageShape);
-        invalidate();
+        this.invalidate();
         return true;
     }
 

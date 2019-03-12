@@ -27,8 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class DatabaseHelper implements BunnyWorldConstants {
@@ -48,8 +46,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
         db = context.openOrCreateDatabase(DATABASE_NAME, Context.MODE_PRIVATE, null);
         Cursor cursor = db.rawQuery("SELECT * FROM sqlite_master WHERE type ='table' AND name = 'games';", null);
         if (cursor.getCount() == 0) {
-            Button button = (Button) ((Activity)mContext).findViewById(R.id.loadGameBtn);
-            button.setEnabled(false);
             initializeDB();
         }
         cursor.close();
@@ -63,7 +59,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
         mContext = context;
         //context.deleteDatabase(DATABASE_NAME); //Erases database
         if (single_instance == null) {
-            initImageMap();
             single_instance = new DatabaseHelper(context.getApplicationContext());
         }
         return single_instance;
@@ -137,7 +132,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param tableName String name of the game.
      * @param entryName of the desired entry
      * @param parent_id Must be used if getting id of page or shape. Enter -1 otherwise.
-     * @return id of corresponding game. Returns -1 if game does not exist.
+     * @return id of corresponding entry. Returns -1 if entry does not exist.
      */
     public int getId(String tableName, String entryName, int parent_id) {
         if(!entryExists(tableName, entryName)) return -1;
@@ -161,9 +156,9 @@ public class DatabaseHelper implements BunnyWorldConstants {
     private void initializeDB() {
         String cmd = "CREATE TABLE games (name Text, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create games table
         db.execSQL(cmd);
-        cmd = "CREATE TABLE pages (name Text, parent_id INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create pages table
+        cmd = "CREATE TABLE pages (name Text, parent_id INTEGER, rendering BLOB NOT NULL, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create pages table
         db.execSQL(cmd);
-        cmd = "CREATE TABLE shapes (name Text, parent_id INTEGER, shapeName TEXT, x REAL, y REAL, width REAL, height REAL, msg Text, scripts Text, movable INTEGER, visible INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create shapes table
+        cmd = "CREATE TABLE shapes (name Text, parent_id INTEGER, res_id INTEGER, x REAL, y REAL, width REAL, height REAL, msg Text, scripts Text, movable BOOLEAN, visible BOOLEAN, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create shapes table
         db.execSQL(cmd);
         cmd = "CREATE TABLE resources (name Text, resType INTEGER, file BLOB NOT NULL, _id INTEGER PRIMARY KEY AUTOINCREMENT);";
         db.execSQL(cmd);
@@ -199,7 +194,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
-     * EXTENSION PROJECT
      * Adds all audio file resources into database
      */
     private void addAudioResources() {
@@ -243,7 +237,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
-     *WE MAY NOT NEED THIS AGAIN (POINTERS HAVE BEEN REWIRED)
+     *
      * @param res_id Resource id of the wanted image
      * @return Bitmap of image res_id in shapes
      */
@@ -261,7 +255,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
-     * AS AN EXTENSION MAYBE BUT FOR NOW WE FOCUS ON OTHER PERTINENT ASPECTS OF THE PROJECT
      * This method will take in a resource id and attempt to convert it into an mp3.
      * @param res_id The resource id for the audio file you are seeking. Ensure that this
      *               is indeed an audio -- not image -- file.
@@ -327,11 +320,10 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
-     * REMEMBER THAT SQL DOESN'T HAVE BOOL TYPES
      * Adds a shape to the shapes table in the database.
      * @param name Shape name
      * @param parent_id Id of the page the shape belongs to
-     * @param shapeName name of the image the shape uses
+     * @param res_id Id of the resource the shape uses
      * @param x X coordinate
      * @param y Y coordinate
      * @param width Width of shape
@@ -342,21 +334,26 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param visible Boolean representing whether shape is visible on page
      * @return Returns true if shape is successfully added to shapes table.
      */
-    public boolean addShape(String name, int parent_id, String shapeName, double x, double y, double width,
+    public boolean addShape(String name, int parent_id, int res_id, double x, double y, double width,
                             double height, String msg, String scripts, boolean moveable, boolean visible) {
 
         if (entryExists(SHAPES_TABLE, name, parent_id)) {
             Toast.makeText(mContext, "Shape with name '" + name + "' already exists.", Toast.LENGTH_SHORT).show();
             return false;
         }
-        int vis = 0;
-        int mov = 0;
-        if(visible)  vis = 1;
-        if(moveable) mov = 1;
-        String insert = "INSERT INTO shapes VALUES ('"+ name +"', "+ parent_id +", '" + shapeName + "', "+
-                x +", "+ y +", "+ width +", "+ height +", '"+ msg +"', '"+ scripts +"', "+ mov +", "+
-                vis + ", NULL);";
-        db.execSQL(insert);
+        ContentValues cv = new ContentValues();
+        cv.put("name", name);
+        cv.put("parent_id", parent_id);
+        cv.put("res_id", res_id);
+        cv.put("x", x);
+        cv.put("y", y);
+        cv.put("width", width);
+        cv.put("height", height);
+        cv.put("msg", msg);
+        cv.put("scripts", scripts);
+        cv.put("movable", moveable);
+        cv.put("visible", visible);
+        db.insert(SHAPES_TABLE, null, cv);
         return true;
     }
 
@@ -373,10 +370,10 @@ public class DatabaseHelper implements BunnyWorldConstants {
     /**
      * Changes the resource that the shape accesses in the database.
      * @param shape_id id of the shape to be changed
-     * @param shapeName name of the new image to be added to shape
+     * @param res_id id of the new image resource to be added to shape
      */
-    public void changeShapeImage(int shape_id, String shapeName) {
-        String cmd = "UPDATE " + SHAPES_TABLE + " SET shapeName = '" + shapeName + "' WHERE _id = " + shape_id + ";";
+    public void changeShapeImage(int shape_id, int res_id) {
+        String cmd = "UPDATE " + SHAPES_TABLE + " SET res_id = " + res_id + " WHERE _id = " + shape_id + ";";
         db.execSQL(cmd);
     }
 
@@ -429,8 +426,8 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param shape_id id for the applicable shape
      * @param scripts ArrayList<String> containing list of wanted scripts for the specified shape
      */
-    public void changeShapeScript(int shape_id, String scripts) {
-        String cmd = "UPDATE " + SHAPES_TABLE + " SET scripts = '" + scripts + "' WHERE _id = " + shape_id + ";";
+    public void changeShapeScript(int shape_id, ArrayList<String> scripts) {
+        String cmd = "UPDATE " + SHAPES_TABLE + " SET scripts = '" + scripts.toString() + "' WHERE _id = " + shape_id + ";";
         db.execSQL(cmd);
     }
 
@@ -455,8 +452,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
-     * REMEMBER THAT SQL DOESN'T HAVE BOOL TYPES
-     * Returns a TextShape from database corresponding with its id.
+     * Returns a ImageShape from database corresonding with its id.
      * @param shape_id The id of the shape you want to retrieve
      * @param view The view in which you want the shape to appear
      * @return TextShape object
@@ -467,7 +463,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         cursor.moveToFirst();
 
         String name = cursor.getString(NAME_COL);
-        String shapeName = cursor.getString(2);
+        int res_id = cursor.getInt(2);
         float x = (float)cursor.getDouble(3);
         float y = (float)cursor.getDouble(4);
         float width = (float)cursor.getDouble(5);
@@ -478,29 +474,52 @@ public class DatabaseHelper implements BunnyWorldConstants {
         boolean visible = cursor.getInt(10) > 0;
 
         RectF bounds = new RectF(x, y, x + width, y + height);
-        //use the shapeName to access the type of drawable
-        BitmapDrawable drawable = stringImgMap.get(shapeName);
+        BitmapDrawable drawable = new BitmapDrawable(mContext.getResources(), getImage(res_id));
+        drawable = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.carrot);
 
         ImageShape shape = new ImageShape(view, bounds, drawable, txtString, visible, moveable, name);
-        shape.setScript(new Script(script));
+        //shape.setScript(new Script(script));
         cursor.close();
 
         return shape;
     }
 
     /**
+     * Return a list of shapes within a page.
+     * @param parent_id The id of the page where images are stored
+     * @param view Pass in the view of the caller
+     * @return Return an arraylist of all shapes within a page
+     */
+    public ArrayList<ImageShape> getPageShapes(int parent_id, View view) {
+        ArrayList<ImageShape> pageShapes = new ArrayList<>();
+        String cmd = "SELECT * FROM " + SHAPES_TABLE + " WHERE parent_id = " + parent_id + ";";
+        Cursor cursor = db.rawQuery(cmd, null);
+        while (cursor.moveToNext()) {
+            int shape_id = cursor.getInt(11);
+            pageShapes.add(getShape(shape_id, view));
+        }
+        return pageShapes;
+    }
+
+    /**
      * Inserts a new page into pages database.
      * @param pageName Desired name of page.
+     * @param rendering Bitmap of page rendering. Pass NULL if none.
      * @param parent_id Id of game that page belongs to.
      * @return Returns true if page is successfully added to database.
      */
-    public boolean addPage(String pageName, int parent_id) {
+    public boolean addPage(String pageName, Bitmap rendering, int parent_id) {
         if (entryExists(PAGES_TABLE, pageName, parent_id)) {
             Toast.makeText(mContext, "Page with name '" + pageName +"' already exists.", Toast.LENGTH_SHORT).show();
             return false;
         }
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] bitmapdata = stream.toByteArray();
+
         ContentValues cv = new ContentValues();
         cv.put("name", pageName);
+        cv.put("rendering", bitmapdata);
         cv.put("parent_id", parent_id);
         db.insert(PAGES_TABLE, null, cv);
         return true;
@@ -527,9 +546,27 @@ public class DatabaseHelper implements BunnyWorldConstants {
         db.execSQL(cmd);
     }
 
+    /**
+     * Updates a given page's rendering thumbnail with specified bitmap.
+     * @param page_id Table ID of the specified page.
+     * @param rendering Bitmap of desired img resolution.
+     */
+    public void changePageThumbnail(int page_id, Bitmap rendering) {
+        if (rendering == null) {
+            String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + -1 + " WHERE _id = " + page_id + ";";
+            db.execSQL(cmd);
+            return;
+        }
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] bitmapdata = stream.toByteArray();
+        String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + bitmapdata + " WHERE _id = " + page_id + ";";
+        db.execSQL(cmd);
+    }
+
     //for optimization:
     //returns true if the game had pages else false
-    public void deleteGame(String gameName){
+    public void deleteGame(String gameName) {
         String cmd = "SELECT * FROM games WHERE name = '" + gameName + "';";
         Cursor cursor = db.rawQuery(cmd, null);
         if(cursor.getCount() != 0)  {
@@ -554,40 +591,31 @@ public class DatabaseHelper implements BunnyWorldConstants {
         if(cursor.getCount() != 0) db.execSQL("DELETE FROM games WHERE name = '" + gameName +"';");
     }
 
-    //returns the most recent count number for the pages in that game
+    /**
+     * returns the most recent count number for the pages in that game
+     * @param gameId id of the game
+     * @return
+     */
     public int getLatestCount(int gameId){
-        String cmd = "SELECT * FROM pages WHERE _id = "+ gameId +";";
+        String cmd = "SELECT * FROM games WHERE _id = "+ gameId +";";
         Cursor cursor = db.rawQuery(cmd, null);
         int count = cursor.getCount();
         return count;
     }
 
-
-
-
     /**
-     * The rest of these methods are responsible for handling the images in the res folder
+     * Returns an ArrayList of page names for a specified game
+     * @param gameId The id of the given game as stored in the games table in the database
+     * @return Arraylist of page names within specified game
      */
-    private static HashMap<String, BitmapDrawable> stringImgMap = new HashMap<>();
-    private static HashMap<BitmapDrawable, String> imgStringMap = new HashMap<>();
-
-    private static void initImageMap() {
-        String[] imageNames = { "carrot", "carrot2", "death", "duck", "fire", "mystic" };
-        BitmapDrawable[] images = new BitmapDrawable[]{
-                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.carrot),
-                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.carrot2),
-                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.death),
-                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.duck),
-                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.fire),
-                (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.mystic),
-        };
-        for (int i = 0; i < images.length; ++i) {
-            stringImgMap.put(imageNames[i], images[i]);
-            imgStringMap.put(images[i], imageNames[i]);
+    public ArrayList<String> getGamePageNames(int gameId) {
+        ArrayList<String> pageNames = new ArrayList<>();
+        String cmd = "SELECT * FROM " + PAGES_TABLE + " WHERE parent_id =" + gameId +";";
+        Cursor cursor = db.rawQuery(cmd, null);
+        while (cursor.moveToNext()) {
+            String pageName = cursor.getString(NAME_COL);
+            pageNames.add(pageName);
         }
+        return pageNames;
     }
-
-    //getters for the arrays in other classes
-    public HashMap<String, BitmapDrawable> getStringImgMap(){return stringImgMap;}
-    public HashMap<BitmapDrawable, String> getImgStringMap(){return imgStringMap;};
 }
