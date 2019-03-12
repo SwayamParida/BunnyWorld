@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.MediaPlayer;
 import android.view.View;
 import android.widget.Toast;
 
@@ -486,8 +487,8 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param view Pass in the view of the caller
      * @return Return an arraylist of all shapes within a page
      */
-    public ArrayList<ImageShape> getPageShapes(int parent_id, View view) {
-        ArrayList<ImageShape> pageShapes = new ArrayList<>();
+    public ArrayList<Shape> getPageShapes(int parent_id, View view) {
+        ArrayList<Shape> pageShapes = new ArrayList<>();
         String cmd = "SELECT * FROM " + SHAPES_TABLE + " WHERE parent_id = " + parent_id + ";";
         Cursor cursor = db.rawQuery(cmd, null);
         while (cursor.moveToNext()) {
@@ -639,7 +640,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         Cursor cursor = db.rawQuery(cmd, null);
         while (cursor.moveToNext()) {
             int res_id = cursor.getInt(2);
-            Cursor resCursor = db.rawQuery("SELECT * FROM " + RESOURCE_TABLE + " WHERE _id = " + res_id + ";", null);
+            Cursor resCursor = db.rawQuery("SELECT * FROM " + RESOURCE_TABLE + " WHERE _id = " + res_id + "AND resType = " + IMAGE + ";", null);
             String resName = resCursor.getString(NAME_COL);
             resMap.put(getImage(res_id), resName);
             cursor.close();
@@ -647,5 +648,21 @@ public class DatabaseHelper implements BunnyWorldConstants {
         cursor.close();
 
         return resMap;
+     }
+
+     public Map<File, String> getAudioResMap(int page_id) {
+         Map<File, String> resMap = new HashMap<>();
+         String cmd = "SELECT * FROM " + SHAPES_TABLE + "WHERE parent_id = " + page_id + ";";
+         Cursor cursor = db.rawQuery(cmd, null);
+         while (cursor.moveToNext()) {
+             int res_id = cursor.getInt(2);
+             Cursor resCursor = db.rawQuery("SELECT * FROM " + RESOURCE_TABLE + " WHERE _id = " + res_id + "AND resType = " + AUDIO + ";", null);
+             String resName = resCursor.getString(NAME_COL);
+             resMap.put(getAudioFile(res_id), resName);
+             cursor.close();
+         }
+         cursor.close();
+
+         return resMap;
      }
 }
