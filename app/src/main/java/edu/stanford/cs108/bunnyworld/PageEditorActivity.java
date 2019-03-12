@@ -69,18 +69,16 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_page);
 
-        //initialize necessary UIs and helpers
         database = DatabaseHelper.getInstance(this);
+        page = extractIntentPage(getIntent());
+
+        initPageView();
         initComponents();
         populateImgSpinner();
         populateImgScrollView();
         populateVerbSpinner();
         populateEventSpinner();
         initModifierSpinner();
-
-        //access the intents and use that to fill the page
-        page = extractIntentPage(getIntent());
-        initPageView();
     }
     /**
      * Helper method that initializes the relevant views defined in the editor_activity.xml
