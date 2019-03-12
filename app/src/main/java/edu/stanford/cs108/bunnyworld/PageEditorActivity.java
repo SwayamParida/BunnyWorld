@@ -21,9 +21,12 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 public class PageEditorActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
@@ -56,7 +59,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         Shape selectedShape = pagePreview.getSelectedShape();
         if (selectedShape != null) {
             page.deleteShape(selectedShape);
-            page.addShape(updatedShape());
+            page.addShape(updateShape());
             pagePreview.invalidate();
         }
     }
@@ -66,19 +69,16 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_page);
 
-        //initialize necessary UIs and helpers
         database = DatabaseHelper.getInstance(this);
+        page = extractIntentPage(getIntent());
+
+        initPageView();
         initComponents();
         populateImgSpinner();
         populateImgScrollView();
         populateVerbSpinner();
         populateEventSpinner();
         initModifierSpinner();
-
-        //access the intents and use that to fill the page
-        Intent intent = getIntent();
-        page = extractIntentData(intent);
-        initPageView();
     }
     /**
      * Helper method that initializes the relevant views defined in the editor_activity.xml
@@ -119,7 +119,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         // Set a default image to be selected so that something is drawn when nothing is selected
         String defaultImageName = (((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0));
         int defaultImageID = database.getId(RESOURCE_TABLE, defaultImageName, -1);
-        pagePreview.setSelectedImageID(defaultImageID);
+        pagePreview.setSelectedImageID(database, defaultImageID);
     }
     /**
      * Populates the spinner with the list of image choices.
@@ -130,7 +130,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         ArrayAdapter<String> imgSpinnerAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                new ArrayList<>(/*FIXME: Helper method that gets all image names*/)
+                new ArrayList<>(database.getImgResMap(page.getPageID()).values())
         );
         // Set spinner dropdown layout
         imgSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
@@ -142,14 +142,19 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      */
     private void populateImgScrollView() {
         LinearLayout horizontalLayout = new LinearLayout(this);
-        for (BitmapDrawable image : /*FIXME: Helper method that gets all images*/) {
+        Set<Bitmap> bitmaps = database.getImgResMap(page.getPageID()).keySet();
+        List<BitmapDrawable> bitmapDrawables = new ArrayList<>();
+        bitmaps.forEach(bitmap -> bitmapDrawables.add(new BitmapDrawable(bitmap)));
+
+        for (BitmapDrawable image : bitmapDrawables) {
             ImageView imageView = new ImageView(this);
             imageView.setImageDrawable(image);
             imageView.setOnClickListener(v -> {
-                BitmapDrawable selectedImage = (BitmapDrawable) ((ImageView) v).getDrawable();
-                int selectedImageID = /*FIXME: Helper method to get imageID from Image*/;
-                pagePreview.setSelectedImageID(selectedImage);
-                updateSpinner(imgSpinner, /*FIXME: Helper method that gets image ID from image*/);
+                Bitmap selectedImage = ((BitmapDrawable) ((ImageView) v).getDrawable()).getBitmap();
+                String selectedImageName = database.getImgResMap(page.getPageID()).get(selectedImage);
+                int selectedImageID = database.getId(RESOURCE_TABLE, selectedImageName, -1);
+                pagePreview.setSelectedImageID(database, selectedImageID);
+                updateSpinner(imgSpinner, selectedImageName);
             });
             horizontalLayout.addView(imageView);
         }
@@ -161,11 +166,19 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 switch (Script.actionVerbs[position]) {
                     case "goto":
+                        populateModifierSpinner(database.getGamePageNames(page.getGameID()));
                         break;
                     case "play":
+                        Set<File> allAudioFiles = database.getAudioResMap(page.getPageID()).keySet();
+                        List<String> audioNames = new ArrayList<>();
+                        allAudioFiles.forEach(audio -> audioNames.add(audio.getName()));
                         populateModifierSpinner(audioNames);
                         break;
                     case "hide": case "show":
+                        ArrayList<Shape> allShapes = database.getPageShapes(page.getPageID(), pagePreview);
+                        List<String> shapeNames = new ArrayList<>();
+                        allShapes.forEach(shape -> shapeNames.add(shape.getName()));
+                        populateModifierSpinner(shapeNames);
                         break;
                 }
             }
@@ -192,17 +205,17 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         eventSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
         eventSpinner.setAdapter(eventSpinnerAdapter);
     }
-    private void populateModifierSpinner(String[] list) {
+    private void populateModifierSpinner(List<String> list) {
         ArrayAdapter<String> modSpinnerAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                Arrays.asList(list)
+                list
         );
         modSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
         modifierSpinner.setAdapter(modSpinnerAdapter);
     }
     //writes the text-shapes into the ivar arrayList of text shapes above
-    private Page extractIntentData(Intent intent){
+    private Page extractIntentPage(Intent intent){
         gameId = intent.getIntExtra("gameId", -1);
         if(!intent.getBooleanExtra("containsItems", false)) return null;
         ArrayList<Integer> shapesId = intent.getIntegerArrayListExtra("ShapesArray");
@@ -228,7 +241,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * Based on the image and text attributes, determines which subclass of Shape needs to be instantiated.
      * @return new Shape using the updated attributes
      */
-    private Shape updatedShape() {
+    private Shape updateShape() {
         String name = nameEditText.getText().toString();
         String text = textEditText.getText().toString();
         boolean visible = visibleCheckBox.isChecked();
@@ -259,8 +272,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
 
     //save button method
     public void savePage(View view){
-        //call the saveSelectedPage method
-        saveBitmapToDataBase(view);
+        page.setPageRender(getBitmapFromView(pagePreview));
         saveToDatabase();
         savedChanges = true;
     }
@@ -307,41 +319,29 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
 
     //method that saves to the database
     public void saveToDatabase(){
-        ArrayList<Shape> shapesList = pagePreview.getPageShapes();
         //saves all the shapes from the array list populated here
         String pageName = page.getName();
+        int pageID = page.getPageID();
 
-        String cmd = "SELECT * FROM pages WHERE name = '"+ pageName +"';";
-        Cursor cursor = database.db.rawQuery(cmd, null);
-        cursor.moveToFirst();
-        int pageId = cursor.getInt(2);
-
-        //delete old shapes and re-add new shapes
-        database.db.execSQL("DELETE FROM shapes WHERE parent_id = " + pageId + ";");
-        for(Shape currShape: shapesList){
-            //name, parent_id, res_id, x, y, width, height, txtString, scripts, visible, movable
-            String name = currShape.getName();
-            RectF bounds = currShape.getBounds();
-            String script;
-            if(currShape.getScript() != null) script = currShape.getScript().toString();
-            else script = "";
-            String txtString = currShape.getText();
-            BitmapDrawable newDrawable = currShape.getImage();
-            String drawableName = ""; int res_id = -1;
-            if(newDrawable != null) {
-                // FIXME: imgStringMap needs to be removed and replaced with database lookup idioms
-                drawableName = imgStringMap.get(newDrawable);
-                //fix this by moving all the maps to the singleton
-                //res_id = getResources().getIdentifier(drawableName, "drawable", getPackageName());
-                res_id = 0;
-            }
-            database.addShape(name, pageId, res_id, bounds.left, bounds.top, bounds.width(),
-                    bounds.height(), txtString, script, currShape.isMovable(), currShape.isVisible());
-        }
-
+        // Deleting old shapes
+        database.deletePage(page.getPageID());
         //saves the name of the page with it's game id
         database.addPage(pageName, page.getPageRender(), gameId);
-//        dbase.addRendering(pageName, page.getName()) //Kivalu has to do this
+        // Adding new shapes
+        for(Shape shape: page.getListOfShapes()){
+            //name, parent_id, res_id, x, y, width, height, txtString, scripts, visible, movable
+            String name = shape.getName();
+            RectF bounds = shape.getBounds();
+            String script = shape.getScript().toString();
+            String txtString = shape.getText();
+            int imageID = shape.getImageID();
+            database.addShape(name, pageID, imageID, bounds.left, bounds.top, bounds.width(),
+                    bounds.height(), txtString, script, shape.isMovable(), shape.isVisible());
+        }
+    }
+
+    public void addActionRow(View view) {
+        LinearLayout linearLayout = new LinearLayout(this);
     }
 
     //adds the newly created page to the database
@@ -359,11 +359,4 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         view.draw(canvas);
         return bitmap;
     }
-
-    public void saveBitmapToDataBase(View view){
-        Bitmap renderToSave = getBitmapFromView(view);
-        page.setPageRender(renderToSave);
-
-    }
-
 }
