@@ -46,8 +46,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
         db = context.openOrCreateDatabase(DATABASE_NAME, Context.MODE_PRIVATE, null);
         Cursor cursor = db.rawQuery("SELECT * FROM sqlite_master WHERE type ='table' AND name = 'games';", null);
         if (cursor.getCount() == 0) {
-            Button button = (Button) ((Activity)mContext).findViewById(R.id.loadGameBtn);
-            button.setEnabled(false);
             initializeDB();
         }
         cursor.close();
@@ -548,9 +546,26 @@ public class DatabaseHelper implements BunnyWorldConstants {
         db.execSQL(cmd);
     }
 
+    /**
+     * Updates a given page's rendering thumbnail with specified bitmap.
+     * @param page_id Table ID of the specified page.
+     * @param rendering Bitmap of desired img resolution.
+     */
+    public boolean changePageThumbnail(int page_id, Bitmap rendering) {
+        if (rendering == null) {
+            String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + -1 + " WHERE _id = " + page_id + ";";
+            db.execSQL(cmd);
+        }
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] bitmapdata = stream.toByteArray();
+        String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + bitmapdata + " WHERE _id = " + page_id + ";";
+        db.execSQL(cmd);
+    }
+
     //for optimization:
     //returns true if the game had pages else false
-    public void deleteGame(String gameName){
+    public void deleteGame(String gameName) {
         String cmd = "SELECT * FROM games WHERE name = '" + gameName + "';";
         Cursor cursor = db.rawQuery(cmd, null);
         if(cursor.getCount() != 0)  {
