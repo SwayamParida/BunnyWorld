@@ -551,7 +551,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param page_id Table ID of the specified page.
      * @param rendering Bitmap of desired img resolution.
      */
-    public boolean changePageThumbnail(int page_id, Bitmap rendering) {
+    public void changePageThumbnail(int page_id, Bitmap rendering) {
         if (rendering == null) {
             String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + -1 + " WHERE _id = " + page_id + ";";
             db.execSQL(cmd);
