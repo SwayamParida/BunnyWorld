@@ -1,24 +1,34 @@
 package edu.stanford.cs108.bunnyworld;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+import android.provider.ContactsContract;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Queue;
 
 public class PageEditorActivity extends AppCompatActivity {
     public static final Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
@@ -31,10 +41,10 @@ public class PageEditorActivity extends AppCompatActivity {
     private HorizontalScrollView imgScrollView;
     private Spinner imgSpinner;
 
-    //array list of text shapes that is retrieved from PreviewPagesActivity
-    private ArrayList<Shape> shapes;
+    //array list of text shapes that is retrieved from EditPagesActivity
     private DatabaseHelper dbase;
     private int gameId;
+    private boolean savedChanges = false;
 
     //implementation helpers for undo and redo
     private ArrayList<Shape> undoList;
@@ -53,9 +63,11 @@ public class PageEditorActivity extends AppCompatActivity {
      */
     public void saveChanges(View view) {
         Shape selectedShape = pagePreview.getSelectedShape();
-        page.deleteShape(selectedShape);
-        page.addShape(updatedShape());
-        pagePreview.invalidate();
+        if (selectedShape != null) {
+            page.deleteShape(selectedShape);
+            page.addShape(updatedShape());
+            pagePreview.invalidate();
+        }
     }
 
     @Override
@@ -72,8 +84,8 @@ public class PageEditorActivity extends AppCompatActivity {
 
         //access the intents and use that to fill the page
         Intent intent = getIntent();
-        Page extractedPage = extractIntentData(intent);
-        initPageView(extractedPage);
+        page = extractIntentData(intent);
+        initPageView();
     }
 
     /**
@@ -96,11 +108,14 @@ public class PageEditorActivity extends AppCompatActivity {
         redoList = new PriorityQueue<Shape>();
     }
     /**
-     * Helper method that passes relevant data to CustomPageView
+     * Helper method that passes relevant data to PageView
      */
-    private void initPageView(Page page) {
+    private void initPageView() {
         if(page == null) {
-            page = new Page();
+            int getLatestCount = dbase.getLatestCount(gameId);
+            page = new Page(null,getLatestCount + 1);
+            //add page to the database
+            addToDatabase();
         }
         pagePreview.setPage(page);
         pagePreview.invalidate(); //draw contents of the page
@@ -166,16 +181,17 @@ public class PageEditorActivity extends AppCompatActivity {
         ArrayList<Integer> shapesId = intent.getIntegerArrayListExtra("ShapesArray");
 
         //instantiate the text-shapes ivar array
-        shapes = new ArrayList<Shape>();
+        ArrayList<Shape> shapes = new ArrayList<Shape>();
         //populate the shapes list
         for(int id: shapesId){
-            TextShape newShape = dbase.getShape(id, pagePreview);
+            ImageShape newShape = dbase.getShape(id, pagePreview);
             shapes.add(newShape);
         }
 
         //create a new page that has the properties of the previous page
         String pageName = intent.getStringExtra("pageName");
-        Page newPage = new Page();
+
+        Page newPage = new Page(pageName, -1);
         newPage.setName(pageName);
         newPage.setListOfShapes(shapes);
         return newPage;
@@ -218,45 +234,90 @@ public class PageEditorActivity extends AppCompatActivity {
     //save button method
     public void savePage(View view){
         //call the saveSelectedPage method
+        saveToDatabase();
+        savedChanges = true;
+    }
+
+    //undoes an action performed by the user on the screen
+    public void undoChange(View view){
+        //accesses the array list of actions and simply deletes the last activity
+        boolean undo = pagePreview.undoChange();
+        if(!undo) Toast.makeText(this, "Action undo successful", Toast.LENGTH_SHORT).show();
+        savedChanges = false;
+    }
+
+    //redo button
+    public void redoAction(View view) {
+        //accesses the queue and simply adds that object to the arrayList
+        boolean redo = pagePreview.redoAction();
+        if(!redo) Toast.makeText(this, "Action redo successful", Toast.LENGTH_SHORT).show();
+        savedChanges = false;
+    }
+
+    //on back pressed update the database by simply calling the save method
+    //---FIXED
+    @Override
+    public void onBackPressed(){
+        if(!savedChanges){
+            AlertDialog.Builder alertBox = new AlertDialog.Builder(this)
+                    .setTitle("Page Edit Changes")
+                    .setMessage("Would you like to save changes?")
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            saveToDatabase();
+                            Toast.makeText(getApplicationContext(), "Changes saved", Toast.LENGTH_SHORT).show();
+                            PageEditorActivity.super.onBackPressed();
+                        }
+                    });
+            //add the no functionality
+            alertBox.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface arg0, int arg1) {
+                    PageEditorActivity.super.onBackPressed();
+                }
+            }).create().show();
+        }else super.onBackPressed();
+    }
+
+    //method that saves to the database
+    public void saveToDatabase(){
         ArrayList<Shape> shapesList = pagePreview.getPageShapes();
         //saves all the shapes from the array list populated here
         String pageName = page.getName();
 
         String cmd = "SELECT * FROM pages WHERE name = '"+ pageName +"';";
         Cursor cursor = dbase.db.rawQuery(cmd, null);
+        cursor.moveToFirst();
         int pageId = cursor.getInt(2);
 
         //delete old shapes and re-add new shapes
-        dbase.db.execSQL("DELETE FROM shapes WHERE parent_id =" + pageId + ";");
+        dbase.db.execSQL("DELETE FROM shapes WHERE parent_id = " + pageId + ";");
         for(Shape currShape: shapesList){
             //name, parent_id, res_id, x, y, width, height, txtString, scripts, visible, movable
             String name = currShape.getName();
             RectF bounds = currShape.getBounds();
-            ArrayList<String> scripts = currShape.getShapeScript();
+            String script;
+            if(currShape.getScript() != null) script = currShape.getScript().toString();
+            else script = "";
             String txtString = currShape.getText();
             BitmapDrawable newDrawable = currShape.getImage();
             String drawableName = ""; int res_id = -1;
             if(newDrawable != null) {
                 drawableName = imgStringMap.get(newDrawable);
-                res_id = getResources().getIdentifier(drawableName, "drawable", getPackageName());
+                //fix this by moving all the maps to the singleton
+                //res_id = getResources().getIdentifier(drawableName, "drawable", getPackageName());
+                res_id = 0;
             }
             dbase.addShape(name, pageId, res_id, bounds.left, bounds.top, bounds.width(),
-                    bounds.height(), txtString, scripts, currShape.isMovable(), currShape.isVisible());
+                    bounds.height(), txtString, script, currShape.isMovable(), currShape.isVisible());
         }
 
         //saves the name of the page with it's game id
         dbase.addPage(pageName, gameId);
     }
 
-    //undoes an action performed by the user on the screen
-    public void undoChange(View view){
-        //accesses the array list of actions and simply deletes the last activity
-        pagePreview.undoChange();
-    }
-
-    //redo button
-    public void redoAction(View view) {
-        //accesses the queue and simply adds that object to the arrayList
-        pagePreview.redoAction();
+    //adds the newly created page to the database
+    public void addToDatabase(){
+        int getLatestCount = dbase.getLatestCount(gameId);
+        dbase.addPage(page.getName(), gameId);
     }
 }

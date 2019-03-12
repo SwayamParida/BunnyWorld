@@ -79,7 +79,8 @@ public class IntroScreenActivity extends AppCompatActivity {
 //        imageView.setImageBitmap(images.get(rnum));
         mediaPlayer.stop();
         myVideoView.stopPlayback();
-        Intent intent = new Intent(this, SearchForImageActivity.class);
+        //Intent intent = new Intent(this, SearchForImageActivity.class);
+        Intent intent = new Intent(this, PlayGameActivity.class);  // Game selector
         startActivity(intent);
     }
 

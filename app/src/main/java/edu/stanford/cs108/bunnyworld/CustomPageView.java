@@ -73,10 +73,12 @@ public class CustomPageView extends View {
                     boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null, true, true, null);
             page.addShape(shape);
+            selectShape(shape);
             updateInspector(shape);
+            //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
-        else if (selectedShape.isMovable()){
+        else {
             float newX = selectedShape.getX() + (x2 - x1);
             float newX1 = newX + selectedShape.getWidth();
             float newY = selectedShape.getY() + (y2 - y1);
@@ -86,12 +88,12 @@ public class CustomPageView extends View {
 
             //else update the picture to be dragged and update inspector
             RectF newBounds = new RectF(newX, newY, newX1, newY1);
-            BitmapDrawable newBitMap = selectedShape.getImage();
             selectedShape.setBounds(newBounds);
-            Shape shape = new ImageShape(this, newBounds, newBitMap, null,
-                    true, true, selectedShape.getName());
+            Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
+                    selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
             page.addShape(shape);
             page.deleteShape(selectedShape);
+            selectShape(shape);
             updateInspector(shape);
             invalidate();
         }
@@ -105,11 +107,11 @@ public class CustomPageView extends View {
      * @param toSelect When not-null, this Shape is selected. When null, the current selection is cleared.
      */
     private void selectShape(Shape toSelect) {
-        if (toSelect != null)
-            toSelect.setSelected(true);
         if (selectedShape != null) {
             selectedShape.setSelected(false);
         }
+        if (toSelect != null)
+            toSelect.setSelected(true);
         selectedShape = toSelect;
         updateInspector(selectedShape);
         invalidate();
@@ -126,25 +128,27 @@ public class CustomPageView extends View {
         CheckBox movable = ((Activity) getContext()).findViewById(R.id.movable);
         Spinner imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
 
-        if (selectedShape != null) {
-            name.setText(shape.getName());
-            text.setText(shape.getText());
-            rectX.setText(String.format(Locale.US,"%f", shape.getBounds().left));
-            rectY.setText(String.format(Locale.US,"%f", shape.getBounds().top));
-            width.setText(String.format(Locale.US,"%f", shape.getBounds().right - shape.getBounds().left));
-            height.setText(String.format(Locale.US,"%f", shape.getBounds().bottom - shape.getBounds().top));
-            visible.setChecked(shape.isVisible());
-            movable.setChecked(shape.isMovable());
-            PageEditorActivity.updateSpinner(imgSpinner, shape.getImage());
-        } else {
-            name.setText("");
-            text.setText("");
-            rectX.setText("");
-            rectY.setText("");
-            width.setText("");
-            height.setText("");
-            visible.setChecked(false);
-            movable.setChecked(false);
+        if (name != null) {
+            if (selectedShape != null) {
+                name.setText(shape.getName());
+                text.setText(shape.getText());
+                rectX.setText(String.format(Locale.US, "%f", shape.getBounds().left));
+                rectY.setText(String.format(Locale.US, "%f", shape.getBounds().top));
+                width.setText(String.format(Locale.US, "%f", shape.getBounds().right - shape.getBounds().left));
+                height.setText(String.format(Locale.US, "%f", shape.getBounds().bottom - shape.getBounds().top));
+                visible.setChecked(shape.isVisible());
+                movable.setChecked(shape.isMovable());
+                PageEditorActivity.updateSpinner(imgSpinner, shape.getImage());
+            } else {
+                name.setText("");
+                text.setText("");
+                rectX.setText("");
+                rectY.setText("");
+                width.setText("");
+                height.setText("");
+                visible.setChecked(false);
+                movable.setChecked(false);
+            }
         }
     }
     /**
@@ -181,17 +185,12 @@ public class CustomPageView extends View {
         return new RectF(newLeft, newTop, newRight, newBottom);
     }
 
-    //save button method
-    public void savePage(){
-        //call the saveSelectedPage method
-    }
-
     //undoes an action performed by the user on the screen
     public boolean undoChange(){
         //accesses the array list of actions and simply deletes the last activity
         int size = undoList.size();
         Shape currentRemove = null;
-        if(size != 0 || size != 1) currentRemove = undoList.remove(size - 1);
+        if(size != 0 && size != 1) currentRemove = undoList.remove(size - 1);
         if(currentRemove == null) return false;
 
         //get shape name of last element and find old version in undoList
@@ -249,11 +248,4 @@ public class CustomPageView extends View {
 
     //saves page to database
     public ArrayList<Shape> getPageShapes(){ return page.getListOfShapes(); }
-
-    //updates the page when the user clicks to return to previous page back
-    public void updateDatabase(){
-        //calls delete page
-
-        //calls save page
-    }
 }

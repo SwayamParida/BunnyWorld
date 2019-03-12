@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public class Page {
 
+    private static int count = 0;
     private boolean isStarterPage = false;
     private ArrayList<Shape> listOfShapes = new ArrayList<>();
     private String name;
@@ -56,5 +57,12 @@ public class Page {
                 lastFound = shape;
         }
         return lastFound;
+    }
+
+    //a constructor that sets the name
+    public Page(String name, int count){
+        if(name != null) this.name = name;
+        else
+            this.name = "Page"+count;
     }
 }
