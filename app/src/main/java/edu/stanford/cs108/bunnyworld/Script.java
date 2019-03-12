@@ -2,16 +2,12 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.media.MediaPlayer;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class Script {
+public class Script implements BunnyWorldConstants {
     private boolean onClick, onEnter, onDrop;
     private List<Action> onClickActions, onEnterActions, onDropActions;
-
-    private final static String VERB_MODIFIER_DELIMITER = " ";
-    private final static String ACTION_DELIMITER = "; ";
-    private final static String TRIGGER_DELIMITER = "}\n ";
-    private final static String regex = "trigger: { (verb modifier; )*}\n";
 
     public Script(boolean onClick, boolean onEnter, boolean onDrop,
                   List<Action> onClickActions, List<Action> onDropActions, List<Action> onEnterActions) {
@@ -23,17 +19,24 @@ public class Script {
         this.onEnterActions = onEnterActions;
     }
 
-    public Script parseScript(String scriptString) {
+    public static Script parseScript(String scriptString) {
         return null; //TODO: Figure out how to use RegEx to parse String
     }
 
     @Override
     public String toString() {
         StringBuilder scriptBuilder = new StringBuilder();
-        add(onClick, "onClick: { ", onClickActions, scriptBuilder);
-        add(onDrop, "onDrop: { ", onDropActions, scriptBuilder);
-        add(onEnter, "onEnter: { ", onEnterActions, scriptBuilder);
+        add(onClick, triggerEvents[0], onClickActions, scriptBuilder);
+        add(onDrop, triggerEvents[1], onDropActions, scriptBuilder);
+        add(onEnter, triggerEvents[2], onEnterActions, scriptBuilder);
         return scriptBuilder.toString();
+    }
+    public List<Action> getActions() {
+        List<Action> actions = new ArrayList<>();
+        actions.addAll(onClickActions);
+        actions.addAll(onDropActions);
+        actions.addAll(onEnterActions);
+        return actions;
     }
 
     private void add(boolean shouldAdd, String actionLabel, Object toAdd, StringBuilder stringBuilder) {
@@ -48,6 +51,7 @@ public class Script {
         if (!shouldAdd) return;
 
         stringBuilder.append(triggerLabel);
+        stringBuilder.append(EVENT_ACTION_DELIMITER);
         toAdd.forEach(action -> stringBuilder.append(action));
         stringBuilder.append(TRIGGER_DELIMITER);
     }
@@ -74,10 +78,10 @@ public class Script {
         @Override
         public String toString() {
             StringBuilder scriptBuilder = new StringBuilder();
-            add(goTo, "goto ", gotoPage, scriptBuilder);
-            add(play, "play ", audio, scriptBuilder);
-            add(hide, "hide ", hideShape, scriptBuilder);
-            add(show, "show ", showShape, scriptBuilder);
+            add(goTo, actionVerbs[0], gotoPage, scriptBuilder);
+            add(play, actionVerbs[1], audio, scriptBuilder);
+            add(hide, actionVerbs[2], hideShape, scriptBuilder);
+            add(show, actionVerbs[3], showShape, scriptBuilder);
             return scriptBuilder.toString();
         }
     }

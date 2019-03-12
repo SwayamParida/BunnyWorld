@@ -21,6 +21,7 @@ abstract class Shape {
     protected RectF bounds;
     protected boolean selected;
     protected String name;
+    protected int imageID;
     protected BitmapDrawable image;
     protected boolean visible, movable;
     protected int viewWidth, viewHeight;
@@ -32,7 +33,7 @@ abstract class Shape {
     private static final Paint.Style PAINT_STYLE = Paint.Style.STROKE;
     private static final float STROKE_WIDTH = 15.0f;
 
-    Shape(View view, RectF bounds, BitmapDrawable drawable, String txtString,
+    Shape(View view, RectF bounds, int imageID, BitmapDrawable drawable, String txtString,
           boolean visible, boolean movable, String name){
         if(name == null || name.equals("")){
             this.name = "shape" + count++;
@@ -44,6 +45,7 @@ abstract class Shape {
         this.originalY = bounds.top;
         this.viewHeight = view.getHeight();
         this.viewWidth = view.getWidth();
+        this.imageID = imageID;
         this.image = drawable;
         this.txtString = txtString;
 
@@ -117,6 +119,10 @@ abstract class Shape {
     //update bitmap
     public void updateImage(BitmapDrawable file){
         this.image = file;
+    }
+
+    public int getImageID() {
+        return imageID;
     }
 
     //returns the text string

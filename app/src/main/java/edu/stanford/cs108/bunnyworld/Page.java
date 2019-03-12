@@ -10,6 +10,7 @@ public class Page {
     private boolean isStarterPage = false;
     private ArrayList<Shape> listOfShapes = new ArrayList<>();
     private String name;
+    private int ID;
     private String backGroundImageName;
 
     public boolean getIsStarterPage(){
@@ -34,6 +35,10 @@ public class Page {
 
     public void setName(String newName){
         this.name = newName;
+    }
+
+    public int getID() {
+        return ID;
     }
 
     //method that adds in a list of shapes --- a setter
