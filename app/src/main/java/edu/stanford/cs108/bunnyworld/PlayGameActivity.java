@@ -81,6 +81,7 @@ public class PlayGameActivity extends AppCompatActivity {
         // Set adapter to spinner
         imgSpinner.setAdapter(imgSpinnerAdapter);
     }
+
     /**
      * Populates a HorizontalScrollView with all the preset images available for the user to create a shape out of
      */

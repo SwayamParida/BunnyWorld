@@ -63,9 +63,11 @@ public class PageEditorActivity extends AppCompatActivity {
      */
     public void saveChanges(View view) {
         Shape selectedShape = pagePreview.getSelectedShape();
-        page.deleteShape(selectedShape);
-        page.addShape(updatedShape());
-        pagePreview.invalidate();
+        if (selectedShape != null) {
+            page.deleteShape(selectedShape);
+            page.addShape(updatedShape());
+            pagePreview.invalidate();
+        }
     }
 
     @Override
