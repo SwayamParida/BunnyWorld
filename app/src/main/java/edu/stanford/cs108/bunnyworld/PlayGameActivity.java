@@ -105,7 +105,7 @@ public class PlayGameActivity extends AppCompatActivity {
      * to be referred to later in the code.
      */
     public void initComponents() {
-        imgScrollView = findViewById(R.id.presetImages1);
+        imgScrollView = findViewById(R.id.inventory);
         pagePreview = findViewById(R.id.pagePreview1);
         imgSpinner = findViewById(R.id.imgSpinner1);
     }

@@ -74,8 +74,6 @@ public class CustomPageView extends View {
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null, true, true, null);
             page.addShape(shape);
             selectShape(shape);
-            updateInspector(shape);
-            //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else {
@@ -94,8 +92,6 @@ public class CustomPageView extends View {
             page.addShape(shape);
             page.deleteShape(selectedShape);
             selectShape(shape);
-            updateInspector(shape);
-            invalidate();
         }
         invalidate();
 

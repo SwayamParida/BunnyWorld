@@ -513,16 +513,20 @@ public class DatabaseHelper implements BunnyWorldConstants {
             Toast.makeText(mContext, "Page with name '" + pageName +"' already exists.", Toast.LENGTH_SHORT).show();
             return false;
         }
-        ContentValues cv = new ContentValues();
+
+        byte[] bitmapdata;
         if (rendering == null) {
-            cv.put("rendering", -1);
-        } else {
+            bitmapdata = new byte[0];
+        }
+        else {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] bitmapdata = stream.toByteArray();
-            cv.put("rendering", bitmapdata);
+            bitmapdata = stream.toByteArray();
         }
+
+        ContentValues cv = new ContentValues();
         cv.put("name", pageName);
+        cv.put("rendering", bitmapdata);
         cv.put("parent_id", parent_id);
         db.insert(PAGES_TABLE, null, cv);
         return true;

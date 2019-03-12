@@ -19,10 +19,11 @@ public class TextShape extends Shape {
                      boolean visible, boolean movable, String name){
         super(view, bounds, image, txtString, visible, movable, name);
         txtPaint.setColor(Color.BLACK);
+        txtPaint.setTextSize(30f);
         this.viewHeight = view.getHeight();
         this.viewWidth = view.getWidth();
         textX = bounds.left/viewWidth;
-        textY = bounds.right/viewHeight; // Shouldn't this be bounds.top/viewHeight?
+        textY = bounds.top/viewHeight;
     }
 
     //Called by any other canvas with new x and y positions for the object

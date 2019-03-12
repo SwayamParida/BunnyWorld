@@ -30,7 +30,7 @@
         app:layout_constraintEnd_toEndOf="@id/vMargin"/>
 
     <HorizontalScrollView
-        android:id="@+id/presetImages1"
+        android:id="@+id/inventory"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
