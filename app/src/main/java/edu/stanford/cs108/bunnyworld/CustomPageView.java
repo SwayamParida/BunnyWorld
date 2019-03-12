@@ -73,6 +73,8 @@ public class CustomPageView extends View {
                     boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null, true, true, null);
             page.addShape(shape);
+            selectShape(shape);
+            updateInspector(shape);
             //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
@@ -91,6 +93,7 @@ public class CustomPageView extends View {
                     selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
             page.addShape(shape);
             page.deleteShape(selectedShape);
+            selectShape(shape);
             updateInspector(shape);
             invalidate();
         }
@@ -104,11 +107,11 @@ public class CustomPageView extends View {
      * @param toSelect When not-null, this Shape is selected. When null, the current selection is cleared.
      */
     private void selectShape(Shape toSelect) {
-        if (toSelect != null)
-            toSelect.setSelected(true);
         if (selectedShape != null) {
             selectedShape.setSelected(false);
         }
+        if (toSelect != null)
+            toSelect.setSelected(true);
         selectedShape = toSelect;
         updateInspector(selectedShape);
         invalidate();

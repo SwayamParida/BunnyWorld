@@ -5,13 +5,18 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import android.graphics.Bitmap;
+
 
 public class PreviewPagesActivity extends AppCompatActivity {
 
@@ -96,6 +101,26 @@ public class PreviewPagesActivity extends AppCompatActivity {
             TextView textView = new TextView(this);
             textView.setText(newPage);
             textView.setTextSize(24);
+            textView.setGravity(Gravity.CENTER);
+
+            ImageView myImage = new ImageView(this);
+            myImage.setImageResource(R.drawable.carrot);
+
+//            myImage.setMinimumWidth(200);
+//            myImage.setMaxWidth(200);
+//
+//            myImage.setMaxHeight(200);
+//            myImage.setMinimumHeight(200);
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            params.gravity = Gravity.CENTER;
+            myImage.setLayoutParams(params);
+
+            myImage.getLayoutParams().height = 500;
+            myImage.getLayoutParams().width = 500;
+
+
+
             textView.setOnClickListener(v->{
                 //set previous selected text to blue
                 if(selected){
@@ -106,7 +131,20 @@ public class PreviewPagesActivity extends AppCompatActivity {
                 selectedPage = textView.getText().toString();
                 textView.setTextColor(Color.BLUE);
             });
+
+            myImage.setOnClickListener(v->{
+                //set previous selected text to blue
+                if(selected){
+                    selectedView.setTextColor(Color.GRAY);
+                }
+                selected = true;
+                selectedView = textView;
+                selectedPage = textView.getText().toString();
+                textView.setTextColor(Color.BLUE);
+            });
+            mainVertical.addView(myImage);
             mainVertical.addView(textView);
+
         }
         scrollview.addView(mainVertical);
     }
