@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -99,6 +100,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
             TextView textView = new TextView(this);
             textView.setText(newPage);
             textView.setTextSize(24);
+            textView.setGravity(Gravity.CENTER);
 
             ImageView myImage = new ImageView(this);
             myImage.setImageResource(R.drawable.carrot);
