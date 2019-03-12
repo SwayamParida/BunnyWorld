@@ -3,6 +3,8 @@ package edu.stanford.cs108.bunnyworld;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.AlertDialog;
@@ -257,6 +259,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     //save button method
     public void savePage(View view){
         //call the saveSelectedPage method
+        saveBitmapToDataBase(view);
         saveToDatabase();
         savedChanges = true;
     }
@@ -336,12 +339,30 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         }
 
         //saves the name of the page with it's game id
-        database.addPage(pageName, gameId);
+        database.addPage(pageName, page.getPageRender(), gameId);
+//        dbase.addRendering(pageName, page.getName()) //Kivalu has to do this
     }
 
     //adds the newly created page to the database
     public void addToDatabase(){
         int getLatestCount = database.getLatestCount(gameId);
-        database.addPage(page.getName(), gameId);
+        database.addPage(page.getName(), page.getPageRender(), gameId);
     }
+
+    public static Bitmap getBitmapFromView(View view) {
+        view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(),
+                Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        view.draw(canvas);
+        return bitmap;
+    }
+
+    public void saveBitmapToDataBase(View view){
+        Bitmap renderToSave = getBitmapFromView(view);
+        page.setPageRender(renderToSave);
+
+    }
+
 }

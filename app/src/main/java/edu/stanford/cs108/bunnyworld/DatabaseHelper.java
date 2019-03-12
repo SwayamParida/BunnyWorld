@@ -46,8 +46,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
         db = context.openOrCreateDatabase(DATABASE_NAME, Context.MODE_PRIVATE, null);
         Cursor cursor = db.rawQuery("SELECT * FROM sqlite_master WHERE type ='table' AND name = 'games';", null);
         if (cursor.getCount() == 0) {
-            Button button = (Button) ((Activity)mContext).findViewById(R.id.loadGameBtn);
-            button.setEnabled(false);
             initializeDB();
         }
         cursor.close();
@@ -134,7 +132,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param tableName String name of the game.
      * @param entryName of the desired entry
      * @param parent_id Must be used if getting id of page or shape. Enter -1 otherwise.
-     * @return id of corresponding game. Returns -1 if game does not exist.
+     * @return id of corresponding entry. Returns -1 if entry does not exist.
      */
     public int getId(String tableName, String entryName, int parent_id) {
         if(!entryExists(tableName, entryName)) return -1;
@@ -158,7 +156,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     private void initializeDB() {
         String cmd = "CREATE TABLE games (name Text, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create games table
         db.execSQL(cmd);
-        cmd = "CREATE TABLE pages (name Text, parent_id INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create pages table
+        cmd = "CREATE TABLE pages (name Text, parent_id INTEGER, rendering BLOB NOT NULL, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create pages table
         db.execSQL(cmd);
         cmd = "CREATE TABLE shapes (name Text, parent_id INTEGER, res_id INTEGER, x REAL, y REAL, width REAL, height REAL, msg Text, scripts Text, movable BOOLEAN, visible BOOLEAN, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create shapes table
         db.execSQL(cmd);
@@ -454,7 +452,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
-     * Returns a TextShape from database corresonding with its id.
+     * Returns a ImageShape from database corresonding with its id.
      * @param shape_id The id of the shape you want to retrieve
      * @param view The view in which you want the shape to appear
      * @return TextShape object
@@ -487,17 +485,43 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
+     * Return a list of shapes within a page.
+     * @param parent_id The id of the page where images are stored
+     * @param view Pass in the view of the caller
+     * @return Return an arraylist of all shapes within a page
+     */
+    public ArrayList<ImageShape> getPageShapes(int parent_id, View view) {
+        ArrayList<ImageShape> pageShapes = new ArrayList<>();
+        String cmd = "SELECT * FROM " + SHAPES_TABLE + " WHERE parent_id = " + parent_id + ";";
+        Cursor cursor = db.rawQuery(cmd, null);
+        while (cursor.moveToNext()) {
+            int shape_id = cursor.getInt(11);
+            pageShapes.add(getShape(shape_id, view));
+        }
+        return pageShapes;
+    }
+
+    /**
      * Inserts a new page into pages database.
      * @param pageName Desired name of page.
+     * @param rendering Bitmap of page rendering. Pass NULL if none.
      * @param parent_id Id of game that page belongs to.
      * @return Returns true if page is successfully added to database.
      */
-    public boolean addPage(String pageName, int parent_id) {
+    public boolean addPage(String pageName, Bitmap rendering, int parent_id) {
         if (entryExists(PAGES_TABLE, pageName, parent_id)) {
             Toast.makeText(mContext, "Page with name '" + pageName +"' already exists.", Toast.LENGTH_SHORT).show();
             return false;
         }
         ContentValues cv = new ContentValues();
+        if (rendering == null) {
+            cv.put("rendering", -1);
+        } else {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] bitmapdata = stream.toByteArray();
+            cv.put("rendering", bitmapdata);
+        }
         cv.put("name", pageName);
         cv.put("parent_id", parent_id);
         db.insert(PAGES_TABLE, null, cv);
@@ -525,9 +549,27 @@ public class DatabaseHelper implements BunnyWorldConstants {
         db.execSQL(cmd);
     }
 
+    /**
+     * Updates a given page's rendering thumbnail with specified bitmap.
+     * @param page_id Table ID of the specified page.
+     * @param rendering Bitmap of desired img resolution.
+     */
+    public void changePageThumbnail(int page_id, Bitmap rendering) {
+        if (rendering == null) {
+            String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + -1 + " WHERE _id = " + page_id + ";";
+            db.execSQL(cmd);
+            return;
+        }
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] bitmapdata = stream.toByteArray();
+        String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + bitmapdata + " WHERE _id = " + page_id + ";";
+        db.execSQL(cmd);
+    }
+
     //for optimization:
     //returns true if the game had pages else false
-    public void deleteGame(String gameName){
+    public void deleteGame(String gameName) {
         String cmd = "SELECT * FROM games WHERE name = '" + gameName + "';";
         Cursor cursor = db.rawQuery(cmd, null);
         if(cursor.getCount() != 0)  {
@@ -552,12 +594,31 @@ public class DatabaseHelper implements BunnyWorldConstants {
         if(cursor.getCount() != 0) db.execSQL("DELETE FROM games WHERE name = '" + gameName +"';");
     }
 
-
-    //returns the most recent count number for the pages in that game
+    /**
+     * returns the most recent count number for the pages in that game
+     * @param gameId id of the game
+     * @return
+     */
     public int getLatestCount(int gameId){
         String cmd = "SELECT * FROM games WHERE _id = "+ gameId +";";
         Cursor cursor = db.rawQuery(cmd, null);
         int count = cursor.getCount();
         return count;
+    }
+
+    /**
+     * Returns an ArrayList of page names for a specified game
+     * @param gameId The id of the given game as stored in the games table in the database
+     * @return Arraylist of page names within specified game
+     */
+    public ArrayList<String> getGamePageNames(int gameId) {
+        ArrayList<String> pageNames = new ArrayList<>();
+        String cmd = "SELECT * FROM " + PAGES_TABLE + " WHERE parent_id =" + gameId +";";
+        Cursor cursor = db.rawQuery(cmd, null);
+        while (cursor.moveToNext()) {
+            String pageName = cursor.getString(NAME_COL);
+            pageNames.add(pageName);
+        }
+        return pageNames;
     }
 }
