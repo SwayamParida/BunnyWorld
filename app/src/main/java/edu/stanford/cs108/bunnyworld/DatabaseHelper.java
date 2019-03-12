@@ -634,14 +634,13 @@ public class DatabaseHelper implements BunnyWorldConstants {
         return name;
     }
 
-    public Map<Bitmap, String> getImgResMap(int page_id) {
+    public Map<Bitmap, String> getImgResMap() {
         Map<Bitmap, String> resMap = new HashMap<>();
-        String cmd = "SELECT * FROM " + SHAPES_TABLE + "WHERE parent_id = " + page_id + ";";
+        String cmd = "SELECT * FROM " + RESOURCE_TABLE  + " WHERE resType = " + IMAGE + ";";
         Cursor cursor = db.rawQuery(cmd, null);
         while (cursor.moveToNext()) {
             int res_id = cursor.getInt(2);
-            Cursor resCursor = db.rawQuery("SELECT * FROM " + RESOURCE_TABLE + " WHERE _id = " + res_id + "AND resType = " + IMAGE + ";", null);
-            String resName = resCursor.getString(NAME_COL);
+            String resName = cursor.getString(NAME_COL);
             resMap.put(getImage(res_id), resName);
             cursor.close();
         }
@@ -652,12 +651,11 @@ public class DatabaseHelper implements BunnyWorldConstants {
 
      public Map<File, String> getAudioResMap(int page_id) {
          Map<File, String> resMap = new HashMap<>();
-         String cmd = "SELECT * FROM " + SHAPES_TABLE + "WHERE parent_id = " + page_id + ";";
+         String cmd = "SELECT * FROM " + RESOURCE_TABLE  + " WHERE resType = " + IMAGE + ";";
          Cursor cursor = db.rawQuery(cmd, null);
          while (cursor.moveToNext()) {
              int res_id = cursor.getInt(2);
-             Cursor resCursor = db.rawQuery("SELECT * FROM " + RESOURCE_TABLE + " WHERE _id = " + res_id + "AND resType = " + AUDIO + ";", null);
-             String resName = resCursor.getString(NAME_COL);
+             String resName = cursor.getString(NAME_COL);
              resMap.put(getAudioFile(res_id), resName);
              cursor.close();
          }
