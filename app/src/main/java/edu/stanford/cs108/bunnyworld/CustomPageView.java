@@ -141,7 +141,7 @@ public class CustomPageView extends View implements BunnyWorldConstants {
                 height.setText(String.format(Locale.US, "%f", shape.getBounds().bottom - shape.getBounds().top));
                 visible.setChecked(shape.isVisible());
                 movable.setChecked(shape.isMovable());
-                PageEditorActivity.updateSpinner(imgSpinner, database.getImgResMap(page.getPageID()).get(selectedImage));
+                PageEditorActivity.updateSpinner(imgSpinner, database.getImgResMap().get(selectedImage));
 //                updateScriptSpinners(shape.getScript());
             } else {
                 name.setText("");

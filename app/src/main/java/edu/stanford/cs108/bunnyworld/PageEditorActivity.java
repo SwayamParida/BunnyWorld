@@ -72,13 +72,13 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         database = DatabaseHelper.getInstance(this);
         page = extractIntentPage(getIntent());
 
-        initPageView();
         initComponents();
         populateImgSpinner();
         populateImgScrollView();
         populateVerbSpinner();
         populateEventSpinner();
         initModifierSpinner();
+        initPageView();
     }
     /**
      * Helper method that initializes the relevant views defined in the editor_activity.xml
@@ -108,16 +108,10 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * Helper method that passes relevant data to PageView
      */
     private void initPageView() {
-        if(page == null) {
-            int getLatestCount = database.getLatestCount(gameId);
-            page = new Page(null,getLatestCount + 1);
-            //add page to the database
-            addToDatabase();
-        }
         pagePreview.setPage(page);
         pagePreview.invalidate();
         // Set a default image to be selected so that something is drawn when nothing is selected
-        String defaultImageName = (((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0));
+        String defaultImageName = (((ArrayAdapter<String>) imgSpinner.getAdapter()).getItem(0));
         int defaultImageID = database.getId(RESOURCE_TABLE, defaultImageName, -1);
         pagePreview.setSelectedImageID(database, defaultImageID);
     }
@@ -130,7 +124,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         ArrayAdapter<String> imgSpinnerAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                new ArrayList<>(database.getImgResMap(page.getPageID()).values())
+                new ArrayList<>(database.getImgResMap().values())
         );
         // Set spinner dropdown layout
         imgSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
@@ -142,7 +136,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      */
     private void populateImgScrollView() {
         LinearLayout horizontalLayout = new LinearLayout(this);
-        Set<Bitmap> bitmaps = database.getImgResMap(page.getPageID()).keySet();
+        Set<Bitmap> bitmaps = database.getImgResMap().keySet();
         List<BitmapDrawable> bitmapDrawables = new ArrayList<>();
         bitmaps.forEach(bitmap -> bitmapDrawables.add(new BitmapDrawable(bitmap)));
 
@@ -151,7 +145,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             imageView.setImageDrawable(image);
             imageView.setOnClickListener(v -> {
                 Bitmap selectedImage = ((BitmapDrawable) ((ImageView) v).getDrawable()).getBitmap();
-                String selectedImageName = database.getImgResMap(page.getPageID()).get(selectedImage);
+                String selectedImageName = database.getImgResMap().get(selectedImage);
                 int selectedImageID = database.getId(RESOURCE_TABLE, selectedImageName, -1);
                 pagePreview.setSelectedImageID(database, selectedImageID);
                 updateSpinner(imgSpinner, selectedImageName);
@@ -217,7 +211,13 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     //writes the text-shapes into the ivar arrayList of text shapes above
     private Page extractIntentPage(Intent intent){
         gameId = intent.getIntExtra("gameId", -1);
-        if(!intent.getBooleanExtra("containsItems", false)) return null;
+        if(!intent.getBooleanExtra("containsItems", false)) {
+            int getLatestCount = database.getLatestCount(gameId);
+            Page page = new Page(null,getLatestCount + 1);
+            //add page to the database
+            addToDatabase(page);
+            return page;
+        }
         ArrayList<Integer> shapesId = intent.getIntegerArrayListExtra("ShapesArray");
 
         //instantiate the text-shapes ivar array
@@ -345,7 +345,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     //adds the newly created page to the database
-    public void addToDatabase(){
+    public void addToDatabase(Page page){
         int getLatestCount = database.getLatestCount(gameId);
         database.addPage(page.getName(), page.getPageRender(), gameId);
     }
