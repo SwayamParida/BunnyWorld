@@ -15,9 +15,9 @@ public class TextShape extends Shape {
     private float textY;
 
     //superclass constructor
-    public TextShape(View view, RectF bounds, BitmapDrawable image, String txtString,
+    public TextShape(View view, RectF bounds, BitmapDrawable image, String txtString, int resourceId,
                      boolean visible, boolean movable, String name){
-        super(view, bounds, image, txtString, visible, movable, name);
+        super(view, bounds, image, txtString, resourceId, visible, movable, name);
         txtPaint.setColor(Color.BLACK);
         this.viewHeight = view.getHeight();
         this.viewWidth = view.getWidth();
@@ -34,7 +34,7 @@ public class TextShape extends Shape {
     //called by any other canvas except the pageEditorView class
     @Override
     public void draw(Canvas canvas) {
-        //super.draw(canvas);
+        super.draw(canvas);
         float width = canvas.getWidth();
         float height = canvas.getHeight();
         canvas.drawText(txtString, textX*width, textY*height, txtPaint);

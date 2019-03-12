@@ -32,29 +32,25 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-public class PageEditorActivity extends AppCompatActivity {
-    public static final Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
-    public static final Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
-
+public class PageEditorActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
     private CustomPageView pagePreview;
     private EditText nameEditText, textEditText, xEditText, yEditText, wEditText, hEditText;
     private CheckBox visibleCheckBox, movableCheckBox;
     private HorizontalScrollView imgScrollView;
     private Spinner imgSpinner;
+    private ArrayList<String> resources;
 
     //array list of text shapes that is retrieved from EditPagesActivity
     private DatabaseHelper dbase;
     private int gameId;
-    private boolean savedChanges = false;
 
     /**
      * Helper method that updates the Spinner to reflect the image clicked by the user
      */
-    public static void updateSpinner(Spinner imgSpinner, BitmapDrawable image) {
-        String imageName = PageEditorActivity.imgStringMap.get(image);
+    public static void updateSpinner(Spinner imgSpinner, String imgName) {
         ArrayAdapter<String> imgSpinnerAdapter = (ArrayAdapter<String>) imgSpinner.getAdapter();
-        imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imageName));
+        imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imgName));
     }
     /**
      * Event handler for when the "Save" button is clicked.
@@ -76,7 +72,6 @@ public class PageEditorActivity extends AppCompatActivity {
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
         initComponents();
-        initImageMap();
         populateSpinner();
         populateImgScrollView();
 
@@ -110,7 +105,10 @@ public class PageEditorActivity extends AppCompatActivity {
      */
     private void initPageView() {
         pagePreview.setPage(page);
-        BitmapDrawable defaultImage = stringImgMap.get(((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0));
+        String imgName = ((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0);
+        Bitmap newBitmap = dbase.getImage(imgName);
+        //use the database to get the object
+        BitmapDrawable defaultImage = new BitmapDrawable(newBitmap);
         pagePreview.setSelectedImage(defaultImage);
     }
 
@@ -119,11 +117,13 @@ public class PageEditorActivity extends AppCompatActivity {
      * Reference: https://www.tutorialspoint.com/android/android_spinner_control.htm
      */
     private void populateSpinner() {
+        //get the arraylist of resources and
+        resources = dbase.getResourceNames();
         // Create an array adapter using the items in imageNames
-        ArrayAdapter<String> imgSpinnerAdapter = new ArrayAdapter<>(
+        ArrayAdapter<String> imgSpinnerAdapter = new ArrayAdapter<String>(
                 this,
                 android.R.layout.simple_spinner_item,
-                new ArrayList<>(stringImgMap.keySet())
+                resources
         );
         // Set spinner dropdown layout
         imgSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
@@ -135,13 +135,17 @@ public class PageEditorActivity extends AppCompatActivity {
      */
     private void populateImgScrollView() {
         LinearLayout horizontalLayout = new LinearLayout(this);
-        for (BitmapDrawable image : stringImgMap.values()) {
+        //get the corresponding images from the map
+        for (String imgName : resources) {
             ImageView imageView = new ImageView(this);
-            imageView.setImageDrawable(image);
+            //get the image from the database and create new drawable
+            Bitmap imgBitmap = dbase.getImage(imgName);
+            if(imgBitmap == null) Log.d("imgName", "Not found");
+            imageView.setImageDrawable(new BitmapDrawable(imgBitmap));
             imageView.setOnClickListener(v -> {
                 BitmapDrawable selectedImage = (BitmapDrawable) ((ImageView) v).getDrawable();
                 pagePreview.setSelectedImage(selectedImage);
-                updateSpinner(imgSpinner, selectedImage);
+                updateSpinner(imgSpinner, imgName);
             });
             horizontalLayout.addView(imageView);
         }
@@ -183,7 +187,7 @@ public class PageEditorActivity extends AppCompatActivity {
         boolean movable = movableCheckBox.isChecked();
 
         String imageName = imgSpinner.getSelectedItem().toString();
-        BitmapDrawable image = stringImgMap.get(imageName);
+        BitmapDrawable image = new BitmapDrawable(dbase.getImage(imageName));
 
         float x = Float.parseFloat(xEditText.getText().toString());
         float y = Float.parseFloat(yEditText.getText().toString());
@@ -193,14 +197,16 @@ public class PageEditorActivity extends AppCompatActivity {
 
         Shape shape;
         // When only image is provided
-        if (image != null && text.isEmpty())
-            shape = new ImageShape(pagePreview, boundingRect, image, text, visible, movable, name);
-        // When text is provided, it takes precedence over any other object
-        else if (!text.isEmpty())
-            shape = new TextShape(pagePreview, boundingRect, image, text, visible, movable, name);
+        if (image != null && text.isEmpty()) {
+            //get the image id and pass it in
+            int imgId = dbase.getId(RESOURCE_TABLE, imageName, NO_PARENT);
+            shape = new ImageShape(pagePreview, boundingRect, image, text, imgId, visible, movable, name);
+            // When text is provided, it takes precedence over any other object
+        } else if (!text.isEmpty())
+            shape = new TextShape(pagePreview, boundingRect, image, text, -1, visible, movable, name);
         // When neither image nor text is provided
         else
-            shape = new RectangleShape(pagePreview, boundingRect, visible, movable, name);
+            shape = new RectangleShape(pagePreview, boundingRect, -1, visible, movable, name);
 
         return shape;
     }
@@ -208,9 +214,11 @@ public class PageEditorActivity extends AppCompatActivity {
     //save button method
     public void savePage(View view){
         //call the saveSelectedPage method
-        saveBitmapToDataBase(view);
-        saveToDatabase();
-        savedChanges = true;
+        if(pagePreview.getChangesMadeBool()){
+            savePageBitmap(pagePreview);
+            saveToDatabase();
+        }
+        pagePreview.setChangesMadeBool(false);
     }
 
     //undoes an action performed by the user on the screen
@@ -218,7 +226,7 @@ public class PageEditorActivity extends AppCompatActivity {
         //accesses the array list of actions and simply deletes the last activity
         boolean undo = pagePreview.undoChange();
         if(!undo) Toast.makeText(this, "Action undo successful", Toast.LENGTH_SHORT).show();
-        savedChanges = false;
+        pagePreview.setChangesMadeBool(false);
     }
 
     //redo button
@@ -226,21 +234,21 @@ public class PageEditorActivity extends AppCompatActivity {
         //accesses the queue and simply adds that object to the arrayList
         boolean redo = pagePreview.redoAction();
         if(!redo) Toast.makeText(this, "Action redo successful", Toast.LENGTH_SHORT).show();
-        savedChanges = false;
+        pagePreview.setChangesMadeBool(false);
     }
 
     //on back pressed update the database by simply calling the save method
     //---FIXED
     @Override
     public void onBackPressed(){
-        if(!savedChanges){
+        if(pagePreview.getChangesMadeBool()){
             AlertDialog.Builder alertBox = new AlertDialog.Builder(this)
                     .setTitle("Page Edit Changes")
                     .setMessage("Would you like to save changes?")
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface arg0, int arg1) {
                             saveToDatabase();
-                            savedChanges = true;
+                            pagePreview.setChangesMadeBool(false);
                             Toast.makeText(getApplicationContext(), "Changes saved", Toast.LENGTH_SHORT).show();
                             PageEditorActivity.super.onBackPressed();
                         }
@@ -262,34 +270,31 @@ public class PageEditorActivity extends AppCompatActivity {
 
         String cmd = "SELECT * FROM pages WHERE name = '"+ pageName +"';";
         Cursor cursor = dbase.db.rawQuery(cmd, null);
-        cursor.moveToFirst();
-        int pageId = cursor.getInt(2);
-
         //delete old shapes and re-add new shapes
-        dbase.db.execSQL("DELETE FROM shapes WHERE parent_id = " + pageId + ";");
+        int pageId = -1;
+        if(cursor.getCount() != 0){
+            cursor.moveToFirst();
+            pageId = cursor.getInt(2);
+            dbase.db.execSQL("DELETE FROM shapes WHERE parent_id = " + pageId + ";");
+        }
+
+        //else create the page and get the id for its children
+        if(pageId == -1) {
+            boolean success = dbase.addPage(pageName, page.getPageRender(), gameId);
+            if(success) pageId = dbase.getId(PAGES_TABLE, pageName, gameId);
+        }
         for(Shape currShape: shapesList){
             //name, parent_id, res_id, x, y, width, height, txtString, scripts, visible, movable
             String name = currShape.getName();
-            RectF bounds = currShape.getBounds();
             String script;
             if(currShape.getScript() != null) script = currShape.getScript().toString();
             else script = "";
             String txtString = currShape.getText();
-            BitmapDrawable newDrawable = currShape.getImage();
-            String drawableName = ""; int res_id = -1;
-            if(newDrawable != null) {
-                drawableName = imgStringMap.get(newDrawable);
-                //fix this by moving all the maps to the singleton
-                //res_id = getResources().getIdentifier(drawableName, "drawable", getPackageName());
-                res_id = 0;
-            }
-            dbase.addShape(name, pageId, res_id, bounds.left, bounds.top, bounds.width(),
-                    bounds.height(), txtString, script, currShape.isMovable(), currShape.isVisible());
+            if(txtString == null) txtString = "";
+            int resId = currShape.getResId();
+            dbase.addShape(name, pageId, resId, currShape.getX(), currShape.getY(), currShape.getWidth(),
+                    currShape.getHeight(), txtString, script, currShape.isMovable(), currShape.isVisible());
         }
-
-        //saves the name of the page with it's game id
-        dbase.addPage(pageName, page.getPageRender(), gameId);
-//        dbase.addRendering(pageName, page.getName()) //Kivalu has to do this
     }
 
     //adds the newly created page to the database
@@ -298,20 +303,30 @@ public class PageEditorActivity extends AppCompatActivity {
         dbase.addPage(page.getName(), page.getPageRender(), gameId);
     }
 
+    //gets a screenshot of the page
     public static Bitmap getBitmapFromView(View view) {
         view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(),
+        Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),
                 Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
-        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        view.layout(0, 0, view.getWidth(), view.getHeight());
         view.draw(canvas);
         return bitmap;
     }
 
-    public void saveBitmapToDataBase(View view){
-        Bitmap renderToSave = getBitmapFromView(view);
-        page.setPageRender(renderToSave);
-
+    //get the bitmap of the visible view
+    private Bitmap getScreenView(View v){
+        v.setDrawingCacheEnabled(true);
+        v.buildDrawingCache(true);
+        Bitmap newBitmap = Bitmap.createBitmap(v.getDrawingCache());
+        v.setDrawingCacheEnabled(false);
+        return newBitmap;
     }
 
+    //saves the bitmap to the page
+    public void savePageBitmap(View view){
+        //Bitmap renderToSave = getBitmapFromView(view);
+        Bitmap renderToSave = getScreenView(view);
+        page.setPageRender(renderToSave);
+    }
 }

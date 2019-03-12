@@ -2,6 +2,7 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.app.Activity;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -17,10 +18,13 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.PriorityQueue;
 
-public class CustomPageView extends View {
+public class CustomPageView extends View implements BunnyWorldConstants{
     private Page page;
+    private DatabaseHelper dbase = DatabaseHelper.getInstance(getContext());
     private BitmapDrawable selectedImage;
     private Shape selectedShape;
+    private Spinner imgSpinner;
+    private boolean changesMade = false;
     // Co-ordinates of user touches - populated in onTouchEvent()
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
@@ -71,10 +75,15 @@ public class CustomPageView extends View {
             RectF boundingRect = createBounds(x1, y1, x2, y2);
             if(boundingRect.left < 0 || boundingRect.right > this.getWidth() ||
                     boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
-            Shape shape = new ImageShape(this, boundingRect, selectedImage, null, true, true, null);
+            //get the resource Id of the image
+            String latestSelected = getLatestSelected();
+            int res_id = dbase.getId(RESOURCE_TABLE, latestSelected, -1);
+            Shape shape = new ImageShape(this, boundingRect, selectedImage, null,
+                    res_id, true, true, null);
             page.addShape(shape);
             selectShape(shape);
             updateInspector(shape);
+            changesMade = true;
             //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
@@ -90,16 +99,31 @@ public class CustomPageView extends View {
             RectF newBounds = new RectF(newX, newY, newX1, newY1);
             selectedShape.setBounds(newBounds);
             Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
-                    selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+                    selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
             page.addShape(shape);
             page.deleteShape(selectedShape);
             selectShape(shape);
             updateInspector(shape);
+            changesMade = true;
             invalidate();
         }
         invalidate();
 
         return true;
+    }
+
+    /**
+     *
+     * @return returns the current highlighted within the spinner
+     */
+    public String getLatestSelected(){
+        String name;
+        if(imgSpinner != null) name = imgSpinner.getSelectedItem().toString();
+        else {
+            imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
+            name = imgSpinner.getSelectedItem().toString();
+        }
+        return name;
     }
 
     /**
@@ -117,6 +141,10 @@ public class CustomPageView extends View {
         invalidate();
     }
 
+    /**
+     * Spinner is made ivar because we access it multiple times in this activity
+     * @param shape the shape to be updated
+     */
     private void updateInspector(Shape shape) {
         EditText name = ((Activity) getContext()).findViewById(R.id.name);
         EditText text = ((Activity) getContext()).findViewById(R.id.shapeText);
@@ -126,7 +154,7 @@ public class CustomPageView extends View {
         EditText height = ((Activity) getContext()).findViewById(R.id.height);
         CheckBox visible = ((Activity) getContext()).findViewById(R.id.visible);
         CheckBox movable = ((Activity) getContext()).findViewById(R.id.movable);
-        Spinner imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
+        imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
 
         if (name != null) {
             if (selectedShape != null) {
@@ -138,7 +166,7 @@ public class CustomPageView extends View {
                 height.setText(String.format(Locale.US, "%f", shape.getBounds().bottom - shape.getBounds().top));
                 visible.setChecked(shape.isVisible());
                 movable.setChecked(shape.isMovable());
-                PageEditorActivity.updateSpinner(imgSpinner, shape.getImage());
+                PageEditorActivity.updateSpinner(imgSpinner, shape.getName());
             } else {
                 name.setText("");
                 text.setText("");
@@ -248,4 +276,8 @@ public class CustomPageView extends View {
 
     //saves page to database
     public ArrayList<Shape> getPageShapes(){ return page.getListOfShapes(); }
+
+    //getters and setters for changes made boolean
+    public boolean getChangesMadeBool(){return changesMade;}
+    public void setChangesMadeBool(boolean bool){changesMade = bool;}
 }

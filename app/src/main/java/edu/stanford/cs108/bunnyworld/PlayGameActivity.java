@@ -34,7 +34,6 @@ public class PlayGameActivity extends AppCompatActivity {
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
         initComponents();
-        initImageMap();
         populateSpinner();
         populateImgScrollView();
 

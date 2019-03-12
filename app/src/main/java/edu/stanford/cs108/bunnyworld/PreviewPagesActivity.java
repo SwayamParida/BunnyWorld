@@ -3,8 +3,11 @@ package edu.stanford.cs108.bunnyworld;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,9 +19,10 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.HashMap;
 import android.graphics.Bitmap;
+import android.widget.Toast;
 
 
-public class PreviewPagesActivity extends AppCompatActivity {
+public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorldConstants {
 
     private int gameId;
     private static int count = 0;
@@ -46,6 +50,9 @@ public class PreviewPagesActivity extends AppCompatActivity {
         gameId = editorIntent.getIntExtra("Game_id", -1);
         scrollview = (ScrollView) findViewById(R.id.scrollview);
         populateScrollView();
+
+        Cursor cursor = dbase.db.rawQuery("SELECT * FROM resources;", null);
+        if(cursor.getCount() == 0) Log.d("Tag1", "Nothing in resources");
     }
 
     //creates a new page with the current selected game
@@ -53,7 +60,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
     public void createNew(View view){
         int count = dbase.getLatestCount(gameId) + 1;
         String pageName = "page" + count;
-        dbase.addPage(pageName, null, gameId);
+        //add to the database afterwards------------------------------------------------------------
         Intent newIntent = new Intent(this, PageEditorActivity.class);
         newIntent.putExtra("containsItems", false);
         newIntent.putExtra("pageName", pageName);
@@ -89,7 +96,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
     private void populateScrollView(){
         if(gameId == -1) return;
         String cmd = "SELECT * FROM pages WHERE parent_id = " + gameId + ";";
-        Cursor cursor = database.db.rawQuery(cmd, null);
+        Cursor cursor = dbase.db.rawQuery(cmd, null);
         LinearLayout mainVertical = new LinearLayout(this);
         mainVertical.setOrientation(LinearLayout.VERTICAL);
         //setProperties(mainVertical, "vertical", PAGEVIEWWIDTH*4, 0);
@@ -104,15 +111,18 @@ public class PreviewPagesActivity extends AppCompatActivity {
             textView.setGravity(Gravity.CENTER);
 
             ImageView myImage = new ImageView(this);
-            myImage.setImageResource(R.drawable.carrot);
+            //get the bitmap rendering of the page
+            int pageId = dbase.getId(PAGES_TABLE, newPage, gameId);
+            Bitmap imgBitmap = dbase.getPageRendering(pageId);
+            BitmapDrawable newDrawable = null;
+            if(imgBitmap != null){
+                Bitmap newBitmap = Bitmap.createScaledBitmap(imgBitmap, 300,300, false);
+                myImage.setImageBitmap(newBitmap);
+            } else
+                myImage.setImageResource(R.drawable.edit_icon);
 
-//            myImage.setMinimumWidth(200);
-//            myImage.setMaxWidth(200);
-//
-//            myImage.setMaxHeight(200);
-//            myImage.setMinimumHeight(200);
-
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT);
             params.gravity = Gravity.CENTER;
             myImage.setLayoutParams(params);
 
@@ -164,10 +174,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
     public void openSelected(View view){
         //Get the list of shapes from the database
         if(selectedPage == null) return;
-        String cmd = "SELECT * FROM pages WHERE name = '"+ selectedPage +"';";
-        Cursor cursor = dbase.db.rawQuery(cmd,null);
-        cursor.moveToFirst();
-        int pageId = cursor.getInt(2);
+        int pageId = dbase.getId(PAGES_TABLE, selectedPage, gameId);
 
         //get all the children shapes and write them to the preview and process them there
         String cmd1 = "SELECT * FROM shapes WHERE parent_id = "+ pageId +";";
@@ -182,6 +189,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
             int shapeId = cursor1.getInt(11);
             newArr.add(shapeId);
         }
+
         //pass the array into the intent and move it into the PageEditorActivity
         intent.putIntegerArrayListExtra("ShapesArray", newArr);
         intent.putExtra("pageName", selectedPage);

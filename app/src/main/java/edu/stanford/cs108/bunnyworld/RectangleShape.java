@@ -13,9 +13,9 @@ public class RectangleShape extends Shape {
     private Paint defaultPaint = new Paint();
 
     //superclass constructor
-    public RectangleShape(View view, RectF bounds, boolean visible, boolean movable, String name) {
+    public RectangleShape(View view, RectF bounds, int resourceId, boolean visible, boolean movable, String name) {
         //scale before storing the rectF
-        super(view, bounds, null, null, visible, movable, name);
+        super(view, bounds, null, null, resourceId, visible, movable, name);
         defaultPaint.setColor(Color.rgb(211,211,211));
 
         //scale and set new RectF for other canvas sizes

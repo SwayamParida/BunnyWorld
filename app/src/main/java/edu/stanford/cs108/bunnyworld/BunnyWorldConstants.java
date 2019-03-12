@@ -21,7 +21,7 @@ public interface BunnyWorldConstants {
     public static final String DATABASE_NAME = "BunnyWorldDB";
     public static final ArrayList<Integer> imgList = new ArrayList<Integer>(Arrays.asList
             (R.drawable.carrot, R.drawable.carrot2, R.drawable.death, R.drawable.duck,
-                    R.drawable.edit_icon, R.drawable.fire, R.drawable.mystic, R.drawable.play_icon));
+                    R.drawable.fire, R.drawable.mystic, R.drawable.play_icon, R.drawable.edit_icon));
     public static final ArrayList<Integer> audioList = new ArrayList<Integer>(Arrays.asList
             (R.raw.carrotcarrotcarrot, R.raw.evillaugh, R.raw.fire, R.raw.hooray, R.raw.intro_music,
                     R.raw.munch, R.raw.munching, R.raw.woof));

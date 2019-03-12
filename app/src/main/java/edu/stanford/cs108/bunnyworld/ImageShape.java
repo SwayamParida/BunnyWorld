@@ -13,9 +13,9 @@ public class ImageShape extends Shape {
     private boolean drawOriginalDim = false;
 
     //superclass constructor--- canvas refers to main canvas area for the editor
-    public ImageShape(View view, RectF bounds, BitmapDrawable drawable, String txtString,
+    public ImageShape(View view, RectF bounds, BitmapDrawable drawable, String txtString, int resourceId,
                       boolean visible, boolean movable, String name){
-        super(view, bounds, drawable, txtString, visible, movable, name);
+        super(view, bounds, drawable, txtString, resourceId, visible, movable, name);
 
         //scale and store new image bounds for other canvas sizes
         float newX = originalX/viewWidth;
