@@ -175,7 +175,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         for (int curr : imgList) {
             String resourceName = mContext.getResources().getResourceEntryName(curr);
             Bitmap bitmap = ((BitmapDrawable) Objects.requireNonNull(mContext.getDrawable(curr))).getBitmap();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 1, stream);
             byte[] bitmapdata = stream.toByteArray();
 
             ContentValues cv = new ContentValues();
@@ -514,7 +514,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
             return false;
         }
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        rendering.compress(Bitmap.CompressFormat.PNG, 1, stream);
         byte[] bitmapdata = stream.toByteArray();
 
         ContentValues cv = new ContentValues();
@@ -558,7 +558,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
             return;
         }
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        rendering.compress(Bitmap.CompressFormat.PNG, 1, stream);
         byte[] bitmapdata = stream.toByteArray();
         String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + bitmapdata + " WHERE _id = " + page_id + ";";
         db.execSQL(cmd);

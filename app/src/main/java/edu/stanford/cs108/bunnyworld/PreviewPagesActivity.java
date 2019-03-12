@@ -104,13 +104,12 @@ public class PreviewPagesActivity extends AppCompatActivity {
             textView.setGravity(Gravity.CENTER);
 
             ImageView myImage = new ImageView(this);
-            myImage.setImageResource(R.drawable.carrot);
+            DatabaseHelper dbse = DatabaseHelper.getInstance(this);
+            int resId = dbse.getId(BunnyWorldConstants.PAGES_TABLE,newPage,gameId);
+            Bitmap bmp = dbse.getImage(resId);
 
-//            myImage.setMinimumWidth(200);
-//            myImage.setMaxWidth(200);
-//
-//            myImage.setMaxHeight(200);
-//            myImage.setMinimumHeight(200);
+            myImage.setImageBitmap(bmp);
+
 
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
             params.gravity = Gravity.CENTER;
