@@ -477,7 +477,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         BitmapDrawable drawable = new BitmapDrawable(mContext.getResources(), getImage(res_id));
         drawable = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.carrot);
 
-        ImageShape shape = new ImageShape(view, bounds, drawable, txtString, visible, moveable, name);
+        ImageShape shape = new ImageShape(view, bounds, res_id, drawable, txtString, visible, moveable, name);
         //shape.setScript(new Script(script));
         cursor.close();
 

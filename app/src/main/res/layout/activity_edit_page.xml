@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.8"/>
+        app:layout_constraintGuide_percent="0.65"/>
 
     <edu.stanford.cs108.bunnyworld.CustomPageView
         android:id="@+id/pagePreview"
@@ -138,7 +138,7 @@
                     android:id="@+id/verb1"
                     android:layout_height="wrap_content"
                     android:layout_width="0dp"
-                    android:layout_weight="2" />
+                    android:layout_weight="2"/>
                 <Spinner
                     android:id="@+id/modifier1"
                     android:layout_height="wrap_content"
@@ -149,6 +149,11 @@
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
                     android:text="+"/>
+                <Button
+                    android:id="@+id/deleteScriptRow1"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:text="-"/>
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/scriptTriggers"
@@ -156,20 +161,25 @@
                 android:layout_columnSpan="2"
                 android:layout_width="match_parent">
                 <Spinner
-                    android:id="@+id/trigger1"
+                    android:id="@+id/event1"
                     android:layout_height="wrap_content"
                     android:layout_width="0dp"
-                    android:layout_weight="2" />
+                    android:layout_weight="3" />
                 <Spinner
                     android:id="@+id/action1"
                     android:layout_height="wrap_content"
                     android:layout_width="0dp"
-                    android:layout_weight="2" />
+                    android:layout_weight="3" />
                 <Button
                     android:id="@+id/addTriggerRow1"
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
                     android:text="+"/>
+                <Button
+                    android:id="@+id/deleteTriggerRow1"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:text="-"/>
             </LinearLayout>
         </GridLayout>
     </android.support.v4.widget.NestedScrollView>

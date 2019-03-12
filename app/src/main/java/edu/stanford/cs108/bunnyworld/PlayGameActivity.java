@@ -13,7 +13,6 @@ import android.widget.Spinner;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
 
@@ -92,8 +91,8 @@ public class PlayGameActivity extends AppCompatActivity {
             imageView.setImageDrawable(image);
             imageView.setOnClickListener(v -> {
                 BitmapDrawable selectedImage = (BitmapDrawable) ((ImageView) v).getDrawable();
-                pagePreview.setSelectedImage(selectedImage);
-                updateSpinner(imgSpinner, selectedImage);
+                pagePreview.setSelectedImageID(selectedImage);
+                updateSpinner(imgSpinner, imgStringMap.get(selectedImage));
             });
             horizontalLayout.addView(imageView);
         }
@@ -139,6 +138,6 @@ public class PlayGameActivity extends AppCompatActivity {
         pagePreview.setPage(page);
         pagePreview.invalidate(); //draw contents of the page
         BitmapDrawable defaultImage = stringImgMap.get(((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0));
-        pagePreview.setSelectedImage(defaultImage);
+        pagePreview.setSelectedImageID(defaultImage);
     }
 }

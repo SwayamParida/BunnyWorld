@@ -15,9 +15,9 @@ public class TextShape extends Shape {
     private float textY;
 
     //superclass constructor
-    public TextShape(View view, RectF bounds, BitmapDrawable image, String txtString,
+    public TextShape(View view, RectF bounds, int imageID, BitmapDrawable image, String txtString,
                      boolean visible, boolean movable, String name){
-        super(view, bounds, image, txtString, visible, movable, name);
+        super(view, bounds, imageID, image, txtString, visible, movable, name);
         txtPaint.setColor(Color.BLACK);
         txtPaint.setTextSize(30f);
         this.viewHeight = view.getHeight();

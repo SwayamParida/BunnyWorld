@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
@@ -17,9 +16,9 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.PriorityQueue;
 
-public class CustomPageView extends View {
+public class CustomPageView extends View implements BunnyWorldConstants {
     private Page page;
-    private BitmapDrawable selectedImage;
+    private int selectedImageID;
     private Shape selectedShape;
     // Co-ordinates of user touches - populated in onTouchEvent()
     private float x1, x2, y1, y2;
@@ -35,8 +34,8 @@ public class CustomPageView extends View {
         yOffset = 0;
     }
 
-    public void setSelectedImage(BitmapDrawable selectedImage) {
-        this.selectedImage = selectedImage;
+    public void setSelectedImageID(int selectedImageID) {
+        this.selectedImageID = selectedImageID;
     }
     public Shape getSelectedShape() {
         return selectedShape;
@@ -51,6 +50,8 @@ public class CustomPageView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        DatabaseHelper database = DatabaseHelper.getInstance(getContext());
+
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 x1 = event.getX();
@@ -67,11 +68,10 @@ public class CustomPageView extends View {
         // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
         else if (selectedShape == null){
-            Log.d("tag1","Drawing new shape");
             RectF boundingRect = createBounds(x1, y1, x2, y2);
             if(boundingRect.left < 0 || boundingRect.right > this.getWidth() ||
                     boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
-            Shape shape = new ImageShape(this, boundingRect, selectedImage, null, true, true, null);
+            Shape shape = new ImageShape(this, boundingRect, selectedImageID, new BitmapDrawable(database.getImage(selectedImageID)), null, true, true, null);
             page.addShape(shape);
             selectShape(shape);
         }
@@ -87,8 +87,8 @@ public class CustomPageView extends View {
             //else update the picture to be dragged and update inspector
             RectF newBounds = new RectF(newX, newY, newX1, newY1);
             selectedShape.setBounds(newBounds);
-            Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
-                    selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+            Shape shape = new ImageShape(this, newBounds, selectedShape.getImageID(), selectedShape.getImage(),
+                    selectedShape.getText(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
             page.addShape(shape);
             page.deleteShape(selectedShape);
             selectShape(shape);
@@ -134,7 +134,9 @@ public class CustomPageView extends View {
                 height.setText(String.format(Locale.US, "%f", shape.getBounds().bottom - shape.getBounds().top));
                 visible.setChecked(shape.isVisible());
                 movable.setChecked(shape.isMovable());
-                PageEditorActivity.updateSpinner(imgSpinner, shape.getImage());
+                // FIXME: imgStringMap needs to be removed and replaced with database lookup idioms
+                PageEditorActivity.updateSpinner(imgSpinner, /*FIXME: Helper method to get imageName from image*/));
+//                updateScriptSpinners(shape.getScript());
             } else {
                 name.setText("");
                 text.setText("");
@@ -144,9 +146,15 @@ public class CustomPageView extends View {
                 height.setText("");
                 visible.setChecked(false);
                 movable.setChecked(false);
+                updateScriptSpinners(null);
             }
         }
     }
+
+    private void updateScriptSpinners(Script script) {
+        // TODO: Implement
+    }
+
     /**
      * Helper method that creates a RectF object, enforcing that left <= right and top <= bottom.
      * @param x1 One of the horizontal components
