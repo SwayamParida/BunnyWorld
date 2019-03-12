@@ -158,7 +158,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     private void initializeDB() {
         String cmd = "CREATE TABLE games (name Text, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create games table
         db.execSQL(cmd);
-        cmd = "CREATE TABLE pages (name Text, parent_id INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create pages table
+        cmd = "CREATE TABLE pages (name Text, parent_id INTEGER, rendering BLOB NOT NULL, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create pages table
         db.execSQL(cmd);
         cmd = "CREATE TABLE shapes (name Text, parent_id INTEGER, res_id INTEGER, x REAL, y REAL, width REAL, height REAL, msg Text, scripts Text, movable BOOLEAN, visible BOOLEAN, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create shapes table
         db.execSQL(cmd);
@@ -506,16 +506,22 @@ public class DatabaseHelper implements BunnyWorldConstants {
     /**
      * Inserts a new page into pages database.
      * @param pageName Desired name of page.
+     * @param rendering Bitmap of page rendering. Pass NULL if none.
      * @param parent_id Id of game that page belongs to.
      * @return Returns true if page is successfully added to database.
      */
-    public boolean addPage(String pageName, int parent_id) {
+    public boolean addPage(String pageName, Bitmap rendering, int parent_id) {
         if (entryExists(PAGES_TABLE, pageName, parent_id)) {
             Toast.makeText(mContext, "Page with name '" + pageName +"' already exists.", Toast.LENGTH_SHORT).show();
             return false;
         }
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] bitmapdata = stream.toByteArray();
+
         ContentValues cv = new ContentValues();
         cv.put("name", pageName);
+        cv.put("rendering", bitmapdata);
         cv.put("parent_id", parent_id);
         db.insert(PAGES_TABLE, null, cv);
         return true;
