@@ -147,6 +147,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             imageView.setImageDrawable(image);
             imageView.setOnClickListener(v -> {
                 BitmapDrawable selectedImage = (BitmapDrawable) ((ImageView) v).getDrawable();
+                int selectedImageID = /*FIXME: Helper method to get imageID from Image*/;
                 pagePreview.setSelectedImageID(selectedImage);
                 updateSpinner(imgSpinner, /*FIXME: Helper method that gets image ID from image*/);
             });
