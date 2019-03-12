@@ -175,7 +175,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         for (int curr : imgList) {
             String resourceName = mContext.getResources().getResourceEntryName(curr);
             Bitmap bitmap = ((BitmapDrawable) Objects.requireNonNull(mContext.getDrawable(curr))).getBitmap();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 1, stream);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
             byte[] bitmapdata = stream.toByteArray();
 
             ContentValues cv = new ContentValues();
@@ -477,7 +477,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         BitmapDrawable drawable = new BitmapDrawable(mContext.getResources(), getImage(res_id));
         drawable = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.carrot);
 
-        ImageShape shape = new ImageShape(view, bounds, drawable, txtString, visible, moveable, name);
+        ImageShape shape = new ImageShape(view, bounds, res_id, drawable, txtString, visible, moveable, name);
         //shape.setScript(new Script(script));
         cursor.close();
 
@@ -513,13 +513,16 @@ public class DatabaseHelper implements BunnyWorldConstants {
             Toast.makeText(mContext, "Page with name '" + pageName +"' already exists.", Toast.LENGTH_SHORT).show();
             return false;
         }
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        rendering.compress(Bitmap.CompressFormat.PNG, 1, stream);
-        byte[] bitmapdata = stream.toByteArray();
-
         ContentValues cv = new ContentValues();
+        if (rendering == null) {
+            cv.put("rendering", -1);
+        } else {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] bitmapdata = stream.toByteArray();
+            cv.put("rendering", bitmapdata);
+        }
         cv.put("name", pageName);
-        cv.put("rendering", bitmapdata);
         cv.put("parent_id", parent_id);
         db.insert(PAGES_TABLE, null, cv);
         return true;
@@ -558,7 +561,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
             return;
         }
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        rendering.compress(Bitmap.CompressFormat.PNG, 1, stream);
+        rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] bitmapdata = stream.toByteArray();
         String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + bitmapdata + " WHERE _id = " + page_id + ";";
         db.execSQL(cmd);
