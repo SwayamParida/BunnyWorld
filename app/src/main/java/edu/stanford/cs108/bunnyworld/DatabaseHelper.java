@@ -555,6 +555,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         if (rendering == null) {
             String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + -1 + " WHERE _id = " + page_id + ";";
             db.execSQL(cmd);
+            return;
         }
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
