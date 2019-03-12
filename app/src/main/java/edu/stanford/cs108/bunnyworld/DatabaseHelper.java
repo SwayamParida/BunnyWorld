@@ -134,7 +134,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param tableName String name of the game.
      * @param entryName of the desired entry
      * @param parent_id Must be used if getting id of page or shape. Enter -1 otherwise.
-     * @return id of corresponding game. Returns -1 if game does not exist.
+     * @return id of corresponding entry. Returns -1 if entry does not exist.
      */
     public int getId(String tableName, String entryName, int parent_id) {
         if(!entryExists(tableName, entryName)) return -1;
@@ -454,7 +454,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     }
 
     /**
-     * Returns a TextShape from database corresonding with its id.
+     * Returns a ImageShape from database corresonding with its id.
      * @param shape_id The id of the shape you want to retrieve
      * @param view The view in which you want the shape to appear
      * @return TextShape object
@@ -484,6 +484,23 @@ public class DatabaseHelper implements BunnyWorldConstants {
         cursor.close();
 
         return shape;
+    }
+
+    /**
+     * Return a list of shapes within a page.
+     * @param parent_id The id of the page where images are stored
+     * @param view Pass in the view of the caller
+     * @return Return an arraylist of all shapes within a page
+     */
+    public ArrayList<ImageShape> getPageShapes(int parent_id, View view) {
+        ArrayList<ImageShape> pageShapes = new ArrayList<>();
+        String cmd = "SELECT * FROM " + SHAPES_TABLE + " WHERE parent_id = " + parent_id + ";";
+        Cursor cursor = db.rawQuery(cmd, null);
+        while (cursor.moveToNext()) {
+            int shape_id = cursor.getInt(11);
+            pageShapes.add(getShape(shape_id, view));
+        }
+        return pageShapes;
     }
 
     /**
@@ -552,12 +569,31 @@ public class DatabaseHelper implements BunnyWorldConstants {
         if(cursor.getCount() != 0) db.execSQL("DELETE FROM games WHERE name = '" + gameName +"';");
     }
 
-
-    //returns the most recent count number for the pages in that game
+    /**
+     * returns the most recent count number for the pages in that game
+     * @param gameId id of the game
+     * @return
+     */
     public int getLatestCount(int gameId){
         String cmd = "SELECT * FROM games WHERE _id = "+ gameId +";";
         Cursor cursor = db.rawQuery(cmd, null);
         int count = cursor.getCount();
         return count;
+    }
+
+    /**
+     * Returns an ArrayList of page names for a specified game
+     * @param gameId The id of the given game as stored in the games table in the database
+     * @return Arraylist of page names within specified game
+     */
+    public ArrayList<String> getGamePageNames(int gameId) {
+        ArrayList<String> pageNames = new ArrayList<>();
+        String cmd = "SELECT * FROM " + PAGES_TABLE + " WHERE parent_id =" + gameId +";";
+        Cursor cursor = db.rawQuery(cmd, null);
+        while (cursor.moveToNext()) {
+            String pageName = cursor.getString(NAME_COL);
+            pageNames.add(pageName);
+        }
+        return pageNames;
     }
 }
