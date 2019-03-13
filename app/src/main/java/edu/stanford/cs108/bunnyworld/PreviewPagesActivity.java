@@ -25,7 +25,7 @@ import android.widget.Toast;
 public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorldConstants {
 
     private int gameId;
-    private static int count = 0;
+    private int count = 0;
     private ScrollView scrollview;
     private String selectedPage;
     private TextView selectedView;
@@ -39,6 +39,7 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         dbase = DatabaseHelper.getInstance(this);
         Intent editorIntent = getIntent();
         gameId = editorIntent.getIntExtra("Game_id", -1);
+        count = dbase.getLatestCount(PAGES_TABLE, gameId);
         scrollview = (ScrollView) findViewById(R.id.scrollview);
         populateScrollView();
 
@@ -49,10 +50,8 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
     //creates a new page with the current selected game
     //doesn't explicitly handle scrollview because onCreate method will do that
     public void createNew(View view){
-        //int count = dbase.getLatestCount(gameId) + 1;
-        String pageName = "page" + count;
-        count++;
-        //add to the database afterwards------------------------------------------------------------
+        count += 1;
+        String pageName = "Page " + count;
         Intent newIntent = new Intent(this, PageEditorActivity.class);
         newIntent.putExtra("containsItems", false);
         newIntent.putExtra("pageName", pageName);

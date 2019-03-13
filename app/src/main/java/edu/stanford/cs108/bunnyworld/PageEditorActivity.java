@@ -55,7 +55,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imgName));
     }
     /**
-     * Event handler for when the "Save" button is clicked.
+     * Event handler for when the "Update" button is clicked.
      */
     public void saveChanges(View view) {
         Shape selectedShape = pagePreview.getSelectedShape();
@@ -81,8 +81,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         Intent intent = getIntent();
         page = extractIntentData(intent);
         initPageView();
-        //after loading page draw contents
-        pagePreview.invalidate();
     }
 
     /**
@@ -118,12 +116,17 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * Helper method that passes relevant data to PageView
      */
     private void initPageView() {
+        pagePreview.setPageId(dbase.getId(PAGES_TABLE, page.getName(), gameId));
         pagePreview.setPage(page);
         String imgName = ((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0);
         Bitmap newBitmap = dbase.getImage(imgName);
         //use the database to get the object
         BitmapDrawable defaultImage = new BitmapDrawable(newBitmap);
         pagePreview.setSelectedImage(defaultImage);
+
+
+
+        pagePreview.invalidate();
     }
 
     /**
@@ -178,7 +181,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         }
         Page newPage = new Page(pageName);
         ArrayList<Integer> shapesId = intent.getIntegerArrayListExtra("ShapesArray");
-
         //instantiate the text-shapes ivar array
         ArrayList<Shape> shapes = new ArrayList<Shape>();
         //populate the shapes list

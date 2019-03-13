@@ -13,9 +13,6 @@ import java.util.List;
 abstract class Shape {
     static int count = 0;
 
-    //an Array List for editing the shapes
-    static List shapesList = new ArrayList<Shape>();
-
     //ivars for all shapes
     protected int res_id;
     protected String txtString;

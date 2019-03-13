@@ -18,8 +18,11 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.PriorityQueue;
 
+import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
+
 public class CustomPageView extends View implements BunnyWorldConstants{
     private Page page;
+    private int pageId;
     private DatabaseHelper dbase = DatabaseHelper.getInstance(getContext());
     private BitmapDrawable selectedImage;
     private Shape selectedShape;
@@ -28,6 +31,9 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     // Co-ordinates of user touches - populated in onTouchEvent()
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
+
+    //get the current number of shapes in the folder
+    private int shapeCount = dbase.getLatestCount(SHAPES_TABLE, pageId);
 
     //implementation helpers for undo and redo
     private ArrayList<Shape> undoList = new ArrayList<Shape>();
@@ -65,8 +71,15 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         }
 
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
-        if (x1 == x2 && y1 == y2)
+        if (x1 == x2 && y1 == y2){
             selectShape(page.findLastShape(x1, y1));
+            //update the spinner
+            if(selectedShape != null){
+                int id = selectedShape.getResId();
+                String name = dbase.getResourceName(id);
+                updateSpinner(imgSpinner, name);
+            }
+        }
         // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
         else if (selectedShape == null){
@@ -77,8 +90,10 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             //get the resource Id of the image
             String latestSelected = getLatestSelected();
             int res_id = dbase.getId(RESOURCE_TABLE, latestSelected, -1);
+            shapeCount += 1;
+            String shapeName = "Shape "+ shapeCount;
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null,
-                    res_id, true, true, null);
+                    res_id, true, true, shapeName);
             page.addShape(shape);
             selectShape(shape);
             updateInspector(shape);
@@ -165,7 +180,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
                 height.setText(String.format(Locale.US, "%f", shape.getBounds().bottom - shape.getBounds().top));
                 visible.setChecked(shape.isVisible());
                 movable.setChecked(shape.isMovable());
-                PageEditorActivity.updateSpinner(imgSpinner, shape.getName());
+                updateSpinner(imgSpinner, shape.getName());
             } else {
                 name.setText("");
                 text.setText("");
@@ -178,6 +193,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             }
         }
     }
+
     /**
      * Helper method that creates a RectF object, enforcing that left <= right and top <= bottom.
      * @param x1 One of the horizontal components
@@ -279,4 +295,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     //getters and setters for changes made boolean
     public boolean getChangesMadeBool(){return changesMade;}
     public void setChangesMadeBool(boolean bool){changesMade = bool;}
+
+    //getters and setters for the pageId
+    public void setPageId(int pageId){this.pageId = pageId;}
 }
