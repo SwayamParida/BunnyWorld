@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
@@ -13,6 +14,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -176,11 +178,14 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         gameId = intent.getIntExtra("gameId", -1);
         //create a new page that has the properties of the previous page
         String pageName = intent.getStringExtra("pageName");
+        getSupportActionBar().setTitle("BunnyWorld Editor: "+pageName);
+
+        Page newPage = new Page(pageName);
+        pagePreview.setPage(newPage);
         if(!intent.getBooleanExtra("containsItems", false)){
-            Page newPage = new Page(pageName);
             return newPage;
         }
-        Page newPage = new Page(pageName);
+
         ArrayList<Integer> shapesId = intent.getIntegerArrayListExtra("ShapesArray");
         //instantiate the text-shapes ivar array
         ArrayList<Shape> shapes = new ArrayList<Shape>();
@@ -190,6 +195,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             ImageShape newShape = new ImageShape(pagePreview, readShape.getBounds(),
                     readShape.getImage(), readShape.getText(), readShape.getResId(), readShape.isVisible(),
                     readShape.isMovable(), readShape.getName());
+            Log.d("width", Integer.toString(pagePreview.getWidth()));
             Log.d("Image", readShape.getImage().toString());
             Log.d("ResId", Integer.toString(readShape.getResId()));
             Log.d("bounds", readShape.getBounds().toString());
@@ -262,6 +268,12 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         pagePreview.setChangesMadeBool(false);
     }
 
+    public void passValuesBack() {
+        Intent intent = new Intent(PageEditorActivity.this, PreviewPagesActivity.class);
+        intent.putExtra("Game_id", gameId);
+        startActivity(intent);
+    }
+
     //on back pressed update the database by simply calling the save method
     //---FIXED
     @Override
@@ -274,24 +286,20 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
                         public void onClick(DialogInterface arg0, int arg1) {
                             savePageBitmap(pagePreview);
                             saveToDatabase();
-                            pagePreview.setChangesMadeBool(false);
-                            Toast.makeText(getApplicationContext(), "Changes saved", Toast.LENGTH_SHORT).show();
-                            PageEditorActivity.super.onBackPressed();
+                            passValuesBack();
                         }
                     });
             //add the no functionality
             alertBox.setNegativeButton("No", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface arg0, int arg1) {
-                    //PageEditorActivity.super.onBackPressed();
-                    Intent intent = new Intent(PageEditorActivity.this, PreviewPagesActivity.class);
-                    intent.putExtra("Game_id", gameId);
-                    startActivity(intent);
+                    passValuesBack();
                 }
             }).create().show();
         }
-        Intent intent = new Intent(this, PreviewPagesActivity.class);
-        intent.putExtra("Game_id", gameId);
-        startActivity(intent);
+        else {
+            passValuesBack();
+        }
+
         //else super.onBackPressed();
 
     }
@@ -372,17 +380,16 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
                 clipboard.setName(clipboard.getName()+"_copy");
             }
             Shape toBeAdded;
-            /*if (count == 0) {
-                toBeAdded = pagePreview.makeShapeCopy(clipboard, clipboard.getName(), 0, 0);
-            }
-            else {*/
-                toBeAdded = pagePreview.makeShapeCopy(clipboard, clipboard.getName(), 0, 0);
-            //}
+            toBeAdded = pagePreview.makeShapeCopy(clipboard, clipboard.getName(), 0, 0);
 
             pagePreview.addShape(toBeAdded);
             pagePreview.selectShape(toBeAdded);
+            pagePreview.invalidate();
         }
-        pagePreview.invalidate();
+        else {
+            Toast.makeText(this, "Nothing to paste!", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public boolean repeatName(String name) {
