@@ -37,7 +37,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     private static DatabaseHelper single_instance = null;
     public SQLiteDatabase db;
     private static Context mContext;
-    private ArrayList<String> resourceNames = new ArrayList<String>();
+    private static ArrayList<String> resourceNames = new ArrayList<String>();
 /**********************************************/
 
     /**
