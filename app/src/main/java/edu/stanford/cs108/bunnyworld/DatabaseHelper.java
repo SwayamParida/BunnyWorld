@@ -541,7 +541,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         BitmapDrawable drawable = new BitmapDrawable(mContext.getResources(), getImage(res_id));
 
         ImageShape shape = new ImageShape(view, bounds, drawable, txtString, res_id, visible, moveable, name);
-        shape.setScript(new Script(script));
+        shape.setScript(Script.parseScript(script));
         cursor.close();
 
         return shape;
@@ -553,8 +553,8 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param view Pass in the view of the caller
      * @return Return an arraylist of all shapes within a page
      */
-    public ArrayList<ImageShape> getPageShapes(int parent_id, View view) {
-        ArrayList<ImageShape> pageShapes = new ArrayList<>();
+    public ArrayList<Shape> getPageShapes(int parent_id, View view) {
+        ArrayList<Shape> pageShapes = new ArrayList<>();
         String cmd = "SELECT * FROM " + SHAPES_TABLE + " WHERE parent_id = " + parent_id + ";";
         Cursor cursor = db.rawQuery(cmd, null);
         while (cursor.moveToNext()) {
