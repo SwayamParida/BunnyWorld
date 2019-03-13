@@ -48,6 +48,16 @@ public class DatabaseHelper implements BunnyWorldConstants {
         Cursor cursor = db.rawQuery("SELECT * FROM sqlite_master WHERE type ='table' AND name = 'games';", null);
         if (cursor.getCount() == 0) {
             initializeDB();
+        } else {
+            if (resourceNames.isEmpty()) {
+                String cmd = "SELECT * FROM resources WHERE resType = " + IMAGE + ";";
+                Cursor nameCursor = db.rawQuery(cmd, null);
+                while(nameCursor.moveToNext()){
+                    String name = nameCursor.getString(0);
+                    resourceNames.add(name);
+                }
+                nameCursor.close();
+            }
         }
         cursor.close();
     }
@@ -315,8 +325,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
 //        cursor.close();
 //        if(names.isEmpty()) return null;
 //        else return names;
-        addAudioResources();
-        addImageResources();
         return resourceNames;
     }
 
