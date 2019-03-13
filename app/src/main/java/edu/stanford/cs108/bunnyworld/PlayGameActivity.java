@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -17,8 +18,8 @@ import java.util.PriorityQueue;
 
 public class PlayGameActivity extends AppCompatActivity {
 
-    public static final Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
-    public static final Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
+    public static Map<String, BitmapDrawable> stringImgMap = new HashMap<>();
+    public static Map<BitmapDrawable, String> imgStringMap = new HashMap<>();
     private Spinner imgSpinner;
     private HorizontalScrollView imgScrollView;
     private CustomPageView pagePreview;

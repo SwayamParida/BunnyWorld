@@ -67,7 +67,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
         if (x1 == x2 && y1 == y2)
             selectShape(page.findLastShape(x1, y1));
-
         // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
         else if (selectedShape == null){

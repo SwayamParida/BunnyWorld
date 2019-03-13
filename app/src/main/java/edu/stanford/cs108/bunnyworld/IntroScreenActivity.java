@@ -80,8 +80,9 @@ public class IntroScreenActivity extends AppCompatActivity {
         mediaPlayer.stop();
         myVideoView.stopPlayback();
         //Intent intent = new Intent(this, SearchForImageActivity.class);
-        Intent intent = new Intent(this, PlayGameActivity.class);  // Game selector
-        intent.putExtra("gameId", 1);
+        Intent intent = new Intent(this, GameLoaderActivity.class);  // Game selector
+        //intent.putExtra("gameId", 1);
+        intent.putExtra("playing", true);
         startActivity(intent);
     }
 

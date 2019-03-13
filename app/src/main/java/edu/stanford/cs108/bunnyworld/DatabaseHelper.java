@@ -43,7 +43,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     /**
      * Private constructor. Sets up database if necessary
      */
-    private DatabaseHelper(Context context) {
+    public DatabaseHelper(Context context) {
         db = context.openOrCreateDatabase(DATABASE_NAME, Context.MODE_PRIVATE, null);
         Cursor cursor = db.rawQuery("SELECT * FROM sqlite_master WHERE type ='table' AND name = 'games';", null);
         if (cursor.getCount() == 0) {
@@ -74,7 +74,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      */
     public static DatabaseHelper getInstance(Context context) {
         mContext = context;
-        //context.deleteDatabase(DATABASE_NAME); //Erases database
+        //context.deleteDatabase(DATABASE_NAME);
         if (single_instance == null) {
             single_instance = new DatabaseHelper(context.getApplicationContext());
         }
@@ -170,7 +170,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * Creates empty games, pages, shapes TABLES. Populates resources TABLE with
      * images and audio resources in res library.
      */
-    private void initializeDB() {
+    public void initializeDB() {
         String cmd = "CREATE TABLE games (name Text, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create games table
         db.execSQL(cmd);
         cmd = "CREATE TABLE pages (name Text, parent_id INTEGER, rendering BLOB NOT NULL, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create pages table
@@ -191,6 +191,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
 
         //get the first 6 items into the resource folder
         int count = 1;
+        resourceNames = new ArrayList<String>();
         for (int curr : imgList) {
             String resourceName = mContext.getResources().getResourceEntryName(curr);
             if(count < 7){ resourceNames.add(resourceName); count += 1; }
@@ -314,6 +315,8 @@ public class DatabaseHelper implements BunnyWorldConstants {
 //        cursor.close();
 //        if(names.isEmpty()) return null;
 //        else return names;
+        addAudioResources();
+        addImageResources();
         return resourceNames;
     }
 

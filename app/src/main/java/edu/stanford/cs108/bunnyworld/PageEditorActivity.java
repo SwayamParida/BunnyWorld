@@ -70,7 +70,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         setContentView(R.layout.activity_edit_page);
 
         //initialize necessary UIs and helpers
-        dbase = DatabaseHelper.getInstance(this);
+        //dbase = DatabaseHelper.getInstance(this);
+        dbase = new DatabaseHelper(this);
         initComponents();
         populateSpinner();
         populateImgScrollView();
