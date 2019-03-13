@@ -41,6 +41,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
     public CustomPageView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        Log.d("width", Integer.toString(getWidth()));
         xOffset = 0;
         yOffset = 0;
     }
@@ -64,6 +65,8 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        Log.d("width start touch", Integer.toString(getWidth()));
+        Log.d("width start touch", Integer.toString(getHeight()));
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 x1 = event.getX();
@@ -105,6 +108,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else {
+            Log.d("width", Integer.toString(getWidth()));
             float newX = selectedShape.getX() + (x2 - x1);
             float newX1 = newX + selectedShape.getWidth();
             float newY = selectedShape.getY() + (y2 - y1);

@@ -3,12 +3,19 @@ package edu.stanford.cs108.bunnyworld;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+import android.util.Log;
+import android.view.Display;
 import android.view.View;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorHeight;
+import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorWidth;
 
 abstract class Shape {
     static int count = 0;
@@ -40,8 +47,12 @@ abstract class Shape {
         this.bounds = bounds;
         this.originalX = bounds.left;
         this.originalY = bounds.top;
-        this.viewHeight = view.getHeight();
-        this.viewWidth = view.getWidth();
+
+        this.viewWidth = (int) (emulatorWidth * .65);
+        this.viewHeight = (int) (emulatorHeight * .85);
+        /*viewHeight = 1285;
+       viewWidth = 1664;
+        }*/
         this.image = drawable;
         this.txtString = txtString;
         this.res_id = resourceId;

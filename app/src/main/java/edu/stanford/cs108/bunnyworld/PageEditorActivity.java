@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -22,12 +21,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
 
 public class PageEditorActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
@@ -266,10 +260,14 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         gameId = intent.getIntExtra("gameId", -1);
         //create a new page that has the properties of the previous page
         String pageName = intent.getStringExtra("pageName");
-        if(!intent.getBooleanExtra("containsItems", false)){
-            return new Page(pageName);
-        }
+        getSupportActionBar().setTitle("BunnyWorld Editor: "+pageName);
+
         Page newPage = new Page(pageName);
+        pagePreview.setPage(newPage);
+        if(!intent.getBooleanExtra("containsItems", false)){
+            return newPage;
+        }
+
         ArrayList<Integer> shapesId = intent.getIntegerArrayListExtra("ShapesArray");
         //instantiate the text-shapes ivar array
         ArrayList<Shape> shapes = new ArrayList<Shape>();
@@ -372,6 +370,12 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         pagePreview.setChangesMadeBool(false);
     }
 
+    public void passValuesBack() {
+        Intent intent = new Intent(PageEditorActivity.this, PreviewPagesActivity.class);
+        intent.putExtra("Game_id", gameId);
+        startActivity(intent);
+    }
+
     //on back pressed update the database by simply calling the save method
     //---FIXED
     @Override
@@ -384,24 +388,20 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
                         public void onClick(DialogInterface arg0, int arg1) {
                             savePageBitmap(pagePreview);
                             saveToDatabase();
-                            pagePreview.setChangesMadeBool(false);
-                            Toast.makeText(getApplicationContext(), "Changes saved", Toast.LENGTH_SHORT).show();
-                            PageEditorActivity.super.onBackPressed();
+                            passValuesBack();
                         }
                     });
             //add the no functionality
             alertBox.setNegativeButton("No", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface arg0, int arg1) {
-                    //PageEditorActivity.super.onBackPressed();
-                    Intent intent = new Intent(PageEditorActivity.this, PreviewPagesActivity.class);
-                    intent.putExtra("Game_id", gameId);
-                    startActivity(intent);
+                    passValuesBack();
                 }
             }).create().show();
         }
-        Intent intent = new Intent(this, PreviewPagesActivity.class);
-        intent.putExtra("Game_id", gameId);
-        startActivity(intent);
+        else {
+            passValuesBack();
+        }
+
         //else super.onBackPressed();
 
     }
@@ -482,17 +482,16 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
                 clipboard.setName(clipboard.getName()+"_copy");
             }
             Shape toBeAdded;
-            /*if (count == 0) {
-                toBeAdded = pagePreview.makeShapeCopy(clipboard, clipboard.getName(), 0, 0);
-            }
-            else {*/
-                toBeAdded = pagePreview.makeShapeCopy(clipboard, clipboard.getName(), 0, 0);
-            //}
+            toBeAdded = pagePreview.makeShapeCopy(clipboard, clipboard.getName(), 0, 0);
 
             pagePreview.addShape(toBeAdded);
             pagePreview.selectShape(toBeAdded);
+            pagePreview.invalidate();
         }
-        pagePreview.invalidate();
+        else {
+            Toast.makeText(this, "Nothing to paste!", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public boolean repeatName(String name) {
