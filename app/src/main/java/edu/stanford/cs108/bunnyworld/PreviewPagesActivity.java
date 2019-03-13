@@ -30,7 +30,6 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
     private String selectedPage;
     private TextView selectedView;
     private boolean selected;
-    private static final int PAGEVIEWWIDTH = 2560/5;
     private DatabaseHelper dbase;
 
     @Override
@@ -191,7 +190,6 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         scrollview.addView(mainVertical);
     }
 
-
     //sets the required properties of the layouts
     public void setProperties(LinearLayout lay, String orient, int width, int height){
         //set orientation
@@ -212,7 +210,6 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         //get all the children shapes and write them to the preview and process them there
         String cmd1 = "SELECT * FROM shapes WHERE parent_id = "+ pageId +";";
         Cursor cursor1 = dbase.db.rawQuery(cmd1, null);
-        cursor1.moveToFirst();
 
         //pass all the shapes to the activity editor and fill the screen
         Intent intent = new Intent(this, PageEditorActivity.class);

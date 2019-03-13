@@ -314,17 +314,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @return the arraylist of the resource names
      */
     public ArrayList<String> getResourceNames(){
-
-//        String cmd = "SELECT * FROM resources;";
-//        Cursor cursor = db.rawQuery(cmd, null);
-//        ArrayList<String> names = new ArrayList<String>();
-//        while(cursor.moveToNext()){
-//            String name = cursor.getString(0);
-//            names.add(name);
-//        }
-//        cursor.close();
-//        if(names.isEmpty()) return null;
-//        else return names;
         return resourceNames;
     }
 
@@ -640,8 +629,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
         ContentValues cv = new ContentValues();
         cv.put("rendering", bitmapdata);
         db.update(PAGES_TABLE, cv, "_id=?", new String[]{Integer.toString(page_id)});
-//        String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + bitmapdata.toString() + " WHERE _id = " + page_id + ";";
-//        db.execSQL(cmd);
     }
 
     /**
