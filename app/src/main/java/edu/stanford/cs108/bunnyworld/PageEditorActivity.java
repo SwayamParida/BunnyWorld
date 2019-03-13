@@ -368,24 +368,29 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
 
     public void paste(View view) {
         if (clipboard != null) {
-            int count = 0;
-            for (Shape shape : pagePreview.getPageShapes()) {
-                if (clipboard.getName().equals(shape.getName()) ||
-                        clipboard.getName().equals(shape.getName() + " (" + count + ")")) {
-                    count++;
-                }
+            while (repeatName(clipboard.getName())) {
+                clipboard.setName(clipboard.getName()+"_copy");
             }
             Shape toBeAdded;
             /*if (count == 0) {
                 toBeAdded = pagePreview.makeShapeCopy(clipboard, clipboard.getName(), 0, 0);
             }
             else {*/
-                toBeAdded = pagePreview.makeShapeCopy(clipboard, clipboard.getName() + " (" + (count + 1) + ")", 0, 0);
+                toBeAdded = pagePreview.makeShapeCopy(clipboard, clipboard.getName(), 0, 0);
             //}
 
             pagePreview.addShape(toBeAdded);
             pagePreview.selectShape(toBeAdded);
         }
         pagePreview.invalidate();
+    }
+
+    public boolean repeatName(String name) {
+        for (Shape shape : pagePreview.getPageShapes()) {
+            if (name.equals(shape.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
