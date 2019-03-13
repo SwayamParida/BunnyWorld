@@ -230,4 +230,15 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         intent.putExtra("containsItems", true);
         startActivity(intent);
     }
+
+    /**
+     * On Resume, the scrollview on the bottom is updated, just in case
+     * any values were added/removed.
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        scrollview.removeAllViews();
+        populateScrollView();
+    }
 }
