@@ -116,16 +116,15 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * Helper method that passes relevant data to PageView
      */
     private void initPageView() {
-        pagePreview.setPageId(dbase.getId(PAGES_TABLE, page.getName(), gameId));
         pagePreview.setPage(page);
+        pagePreview.setPageId(dbase.getId(PAGES_TABLE, page.getName(), gameId));
+
+        //update selected image on the preview
         String imgName = ((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0);
         Bitmap newBitmap = dbase.getImage(imgName);
         //use the database to get the object
         BitmapDrawable defaultImage = new BitmapDrawable(newBitmap);
         pagePreview.setSelectedImage(defaultImage);
-
-
-
         pagePreview.invalidate();
     }
 
@@ -286,21 +285,15 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //saves all the shapes from the array list populated here
         String pageName = page.getName();
 
-        String cmd = "SELECT * FROM pages WHERE name = '"+ pageName +"';";
-        Cursor cursor = dbase.db.rawQuery(cmd, null);
-        //delete old shapes and re-add new shapes
-        int pageId = -1;
-        if(cursor.getCount() != 0){
-            cursor.moveToFirst();
-            pageId = cursor.getInt(3);
+        //use the game id to access them
+        int pageId = dbase.getId(PAGES_TABLE, pageName, gameId);
+        if(pageId != -1){
             dbase.db.execSQL("DELETE FROM shapes WHERE parent_id = " + pageId + ";");
-        }
-
-        //else create the page and get the id for its children
-        if(pageId == -1) {
+        } else {
             boolean success = dbase.addPage(pageName, page.getPageRender(), gameId);
             if(success) pageId = dbase.getId(PAGES_TABLE, pageName, gameId);
         }
+
         for(Shape currShape: shapesList){
             //name, parent_id, res_id, x, y, width, height, txtString, scripts, visible, movable
             String name = currShape.getName();

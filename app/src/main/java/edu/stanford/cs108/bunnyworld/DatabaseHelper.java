@@ -96,8 +96,11 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param gameName string name of the game
      */
     public void addGameToTable(String gameName) {
-        String cmd = "INSERT INTO games VALUES ('" + gameName + "', NULL);";
-        db.execSQL(cmd);
+        ContentValues cv = new ContentValues();
+        cv.put("name", gameName);
+        db.insert(GAMES_TABLE, null, cv);
+//        String cmd = "INSERT INTO games VALUES ('" + gameName + "', NULL);";
+//        db.execSQL(cmd);
     }
 
     /**
@@ -169,6 +172,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         }
         cmd += ";";
         Cursor cursor = db.rawQuery(cmd, null);
+        if(cursor.getCount() == 0) return -1; //in the case where we create a new page
         cursor.moveToFirst();
         int colIndex = cursor.getColumnIndex("_id");
         int id = cursor.getInt(colIndex);
@@ -650,8 +654,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
         ContentValues cv = new ContentValues();
         cv.put("rendering", bitmapdata);
         db.update(PAGES_TABLE, cv, "_id=?", new String[]{Integer.toString(page_id)});
-//        String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + bitmapdata.toString() + " WHERE _id = " + page_id + ";";
-//        db.execSQL(cmd);
     }
 
     /**
@@ -709,7 +711,8 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @return
      */
     public int getLatestCount(String tableName, int id){
-        String cmd = "SELECT * FROM " + tableName + " WHERE _id = "+ id +";";
+        if(id == -1) return 0; //in the case where a new game is created or a new page is created
+        String cmd = "SELECT * FROM " + tableName + " WHERE parent_id = "+ id +";";
         Cursor cursor = db.rawQuery(cmd, null);
         int count = cursor.getCount();
         cursor.close();
