@@ -3,8 +3,11 @@ package edu.stanford.cs108.bunnyworld;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +19,12 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.HashMap;
 import android.graphics.Bitmap;
+import android.widget.Toast;
 
 
-public class PreviewPagesActivity extends AppCompatActivity {
+public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorldConstants {
 
     private int gameId;
-    private DatabaseHelper database;
     private static int count = 0;
     private ScrollView scrollview;
     private String selectedPage;
@@ -30,14 +33,6 @@ public class PreviewPagesActivity extends AppCompatActivity {
     private static final int PAGEVIEWWIDTH = 2560/5;
     private DatabaseHelper dbase;
 
-    //an array list of linear layouts to get the current ones that are not full
-    private ArrayList<LinearLayout> linearLayouts = new ArrayList();
-    //a map to keep track of which pages are in which layouts
-    private HashMap<String, LinearLayout> linearLayMap = new HashMap<String, LinearLayout>();
-    //each linear layout contains a max of 5 items
-    private static final int LAYOUT_SIZE = 5;
-    private HashMap<LinearLayout, Integer> linearLayoutSize = new HashMap<LinearLayout, Integer>();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,19 +40,23 @@ public class PreviewPagesActivity extends AppCompatActivity {
         dbase = DatabaseHelper.getInstance(this);
         Intent editorIntent = getIntent();
         gameId = editorIntent.getIntExtra("Game_id", -1);
-        database = DatabaseHelper.getInstance(this);
         scrollview = (ScrollView) findViewById(R.id.scrollview);
         populateScrollView();
+
+        Cursor cursor = dbase.db.rawQuery("SELECT * FROM resources;", null);
+        if(cursor.getCount() == 0) Log.d("Tag1", "Nothing in resources");
     }
 
     //creates a new page with the current selected game
     //doesn't explicitly handle scrollview because onCreate method will do that
     public void createNew(View view){
+        //int count = dbase.getLatestCount(gameId) + 1;
         String pageName = "page" + count;
         count++;
-        database.addPage(pageName, null, gameId);
+        //add to the database afterwards------------------------------------------------------------
         Intent newIntent = new Intent(this, PageEditorActivity.class);
         newIntent.putExtra("containsItems", false);
+        newIntent.putExtra("pageName", pageName);
         newIntent.putExtra("gameId", gameId);
         startActivity(newIntent);
         //update the scrollview so that changes persist when you return
@@ -68,17 +67,17 @@ public class PreviewPagesActivity extends AppCompatActivity {
     //opens a preexisting page
     //explicitly updates scrollview with the populate method
     public void deleteSelected(View view) {
-        if(selected && !selectedPage.isEmpty()){
+        if(selected){
             //get the autoincrement id and use that to delete the page shapes
             String cmd = "SELECT * FROM pages WHERE name = '" + selectedPage + "';";
-            Cursor cursor = database.db.rawQuery(cmd, null);
+            Cursor cursor = dbase.db.rawQuery(cmd, null);
             cursor.moveToFirst();
-            int pageId = cursor.getInt(2);
-            database.deletePage(pageId);
+            int pageId = cursor.getInt(3);
+            dbase.deletePage(pageId);
 
             //set booleans to false
             selected = false;
-            selectedPage = "";
+            selectedPage = null;
             //call populate layout again to repopulate layout after clearing scrollView
             scrollview.removeAllViews();
             populateScrollView();
@@ -87,40 +86,80 @@ public class PreviewPagesActivity extends AppCompatActivity {
 
     //fills the scroll view with the names of the pages
     //OVERWRITTEN TO INSERT THE NEW EDITS
+    //I NEED TO DECOMPOSE BUT I'LL DO IT LATER
     private void populateScrollView(){
         if(gameId == -1) return;
         String cmd = "SELECT * FROM pages WHERE parent_id = " + gameId + ";";
-        Cursor cursor = database.db.rawQuery(cmd, null);
+        Cursor cursor = dbase.db.rawQuery(cmd, null);
         LinearLayout mainVertical = new LinearLayout(this);
-        setProperties(mainVertical, "vertical", PAGEVIEWWIDTH*4, 0);
+        mainVertical.setOrientation(LinearLayout.VERTICAL);
+        mainVertical.setMinimumWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+
+        //an array list of linear layouts to get the current ones that are not full
+        ArrayList<LinearLayout> linearLayouts = new ArrayList();
+        HashMap<LinearLayout, Integer> linearLayoutSize = new HashMap<LinearLayout, Integer>();
 
         //loops through the cursor and populates the appropraite views
+        LinearLayout laySize; int size = 0; boolean addedNew = false;
         while(cursor.moveToNext()){
             String newPage = cursor.getString(0);
             if(newPage.isEmpty() || newPage == null) break;
+            if(!linearLayouts.isEmpty()){
+                //get old layout
+                laySize = linearLayouts.get(linearLayouts.size() - 1);
+                size = linearLayoutSize.get(laySize);
+                if(size > 4) {
+                    addedNew = true;
+                    laySize = new LinearLayout(this);
+                    laySize.setOrientation(LinearLayout.HORIZONTAL);
+                    laySize.setMinimumWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+                    laySize.setMinimumHeight(500);
+                    linearLayoutSize.put(laySize, 1);
+                    linearLayouts.add(laySize);
+                } else {
+                    addedNew = false;
+                    size = size + 1;
+                    linearLayoutSize.put(laySize, size);
+                }
+            } else {
+                addedNew = true;
+                //use the new horizontal layout
+                laySize = new LinearLayout(this);
+                laySize.setOrientation(LinearLayout.HORIZONTAL);
+                laySize.setMinimumWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+                laySize.setMinimumHeight(500);
+                linearLayoutSize.put(laySize, 1);
+                linearLayouts.add(laySize);
+            }
+
+            //create a vertical layout
+            LinearLayout verticalLay = new LinearLayout(this);
+            verticalLay.setOrientation(LinearLayout.VERTICAL);
+            verticalLay.setMinimumHeight(500); verticalLay.setMinimumWidth(500);
+            //create text view
             TextView textView = new TextView(this);
             textView.setText(newPage);
             textView.setTextSize(24);
             textView.setGravity(Gravity.CENTER);
 
+            //create image view
             ImageView myImage = new ImageView(this);
-            myImage.setImageResource(R.drawable.carrot);
-
-//            myImage.setMinimumWidth(200);
-//            myImage.setMaxWidth(200);
-//
-//            myImage.setMaxHeight(200);
-//            myImage.setMinimumHeight(200);
-
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            //get the bitmap rendering of the page
+            int pageId = dbase.getId(PAGES_TABLE, newPage, gameId);
+            Bitmap imgBitmap = dbase.getPageRendering(pageId);
+            if(imgBitmap != null){
+                Bitmap newBitmap = Bitmap.createScaledBitmap(imgBitmap, 300,300, false);
+                myImage.setImageBitmap(newBitmap);
+            } else //use the placeholder icon
+                myImage.setImageResource(R.drawable.edit_icon);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT);
             params.gravity = Gravity.CENTER;
             myImage.setLayoutParams(params);
+//            myImage.getLayoutParams().height = 400;
+//            myImage.getLayoutParams().width = 400;
 
-            myImage.getLayoutParams().height = 500;
-            myImage.getLayoutParams().width = 500;
-
-
-
+            //set onclick listeners for the image and text
             textView.setOnClickListener(v->{
                 //set previous selected text to blue
                 if(selected){
@@ -131,7 +170,6 @@ public class PreviewPagesActivity extends AppCompatActivity {
                 selectedPage = textView.getText().toString();
                 textView.setTextColor(Color.BLUE);
             });
-
             myImage.setOnClickListener(v->{
                 //set previous selected text to blue
                 if(selected){
@@ -142,9 +180,13 @@ public class PreviewPagesActivity extends AppCompatActivity {
                 selectedPage = textView.getText().toString();
                 textView.setTextColor(Color.BLUE);
             });
-            mainVertical.addView(myImage);
-            mainVertical.addView(textView);
+            verticalLay.addView(myImage);
+            verticalLay.addView(textView);
 
+            //add a new vertical layout to this current horizontal layout
+            laySize.addView(verticalLay);
+
+            if(addedNew) mainVertical.addView(laySize);
         }
         scrollview.addView(mainVertical);
     }
@@ -156,7 +198,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
         if(orient.equals("vertical")) lay.setOrientation(LinearLayout.VERTICAL);
         else if(orient.equals("horizontal")) lay.setOrientation(LinearLayout.HORIZONTAL);
         //set the width
-        lay.setMinimumHeight(width);
+        lay.setMinimumWidth(width);
         //set the height
         if(height != 0) lay.setMinimumHeight(height);
     }
@@ -165,14 +207,12 @@ public class PreviewPagesActivity extends AppCompatActivity {
     public void openSelected(View view){
         //Get the list of shapes from the database
         if(selectedPage == null) return;
-        String cmd = "SELECT * FROM pages WHERE name = '"+ selectedPage +"';";
-        Cursor cursor = dbase.db.rawQuery(cmd,null);
-        cursor.moveToFirst();
-        int pageId = cursor.getInt(2);
+        int pageId = dbase.getId(PAGES_TABLE, selectedPage, gameId);
 
         //get all the children shapes and write them to the preview and process them there
         String cmd1 = "SELECT * FROM shapes WHERE parent_id = "+ pageId +";";
         Cursor cursor1 = dbase.db.rawQuery(cmd1, null);
+        cursor1.moveToFirst();
 
         //pass all the shapes to the activity editor and fill the screen
         Intent intent = new Intent(this, PageEditorActivity.class);
@@ -182,6 +222,7 @@ public class PreviewPagesActivity extends AppCompatActivity {
             int shapeId = cursor1.getInt(11);
             newArr.add(shapeId);
         }
+
         //pass the array into the intent and move it into the PageEditorActivity
         intent.putIntegerArrayListExtra("ShapesArray", newArr);
         intent.putExtra("pageName", selectedPage);

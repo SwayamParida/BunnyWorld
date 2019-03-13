@@ -2,11 +2,12 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
+import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
@@ -17,11 +18,13 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.PriorityQueue;
 
-public class CustomPageView extends View implements BunnyWorldConstants {
+public class CustomPageView extends View implements BunnyWorldConstants{
     private Page page;
-    private int selectedImageID;
-    private Bitmap selectedImage;
+    private DatabaseHelper dbase = DatabaseHelper.getInstance(getContext());
+    private BitmapDrawable selectedImage;
     private Shape selectedShape;
+    private Spinner imgSpinner;
+    private boolean changesMade = false;
     // Co-ordinates of user touches - populated in onTouchEvent()
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
@@ -36,9 +39,8 @@ public class CustomPageView extends View implements BunnyWorldConstants {
         yOffset = 0;
     }
 
-    public void setSelectedImageID(DatabaseHelper database, int selectedImageID) {
-        this.selectedImageID = selectedImageID;
-        selectedImage = database.getImage(selectedImageID);
+    public void setSelectedImage(BitmapDrawable selectedImage) {
+        this.selectedImage = selectedImage;
     }
     public Shape getSelectedShape() {
         return selectedShape;
@@ -53,8 +55,6 @@ public class CustomPageView extends View implements BunnyWorldConstants {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        DatabaseHelper database = DatabaseHelper.getInstance(getContext());
-
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 x1 = event.getX();
@@ -66,18 +66,25 @@ public class CustomPageView extends View implements BunnyWorldConstants {
 
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
         if (x1 == x2 && y1 == y2)
-            selectShape(database, page.findLastShape(x1, y1));
+            selectShape(page.findLastShape(x1, y1));
 
         // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
         else if (selectedShape == null){
+            Log.d("tag1","Drawing new shape");
             RectF boundingRect = createBounds(x1, y1, x2, y2);
             if(boundingRect.left < 0 || boundingRect.right > this.getWidth() ||
                     boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
-            Shape shape = new ImageShape(this, boundingRect, selectedImageID, new BitmapDrawable(database.getImage(selectedImageID)), null, true, true, null);
+            //get the resource Id of the image
+            String latestSelected = getLatestSelected();
+            int res_id = dbase.getId(RESOURCE_TABLE, latestSelected, -1);
+            Shape shape = new ImageShape(this, boundingRect, selectedImage, null,
+                    res_id, true, true, null);
             page.addShape(shape);
-            selectShape(database, shape);
-            updateInspector(database, shape);
+            selectShape(shape);
+            updateInspector(shape);
+            changesMade = true;
+            //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else {
@@ -91,12 +98,13 @@ public class CustomPageView extends View implements BunnyWorldConstants {
             //else update the picture to be dragged and update inspector
             RectF newBounds = new RectF(newX, newY, newX1, newY1);
             selectedShape.setBounds(newBounds);
-            Shape shape = new ImageShape(this, newBounds, selectedShape.getImageID(), selectedShape.getImage(),
-                    selectedShape.getText(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+            Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
+                    selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
             page.addShape(shape);
             page.deleteShape(selectedShape);
-            selectShape(database, shape);
-            updateInspector(database, shape);
+            selectShape(shape);
+            updateInspector(shape);
+            changesMade = true;
             invalidate();
         }
         invalidate();
@@ -105,21 +113,39 @@ public class CustomPageView extends View implements BunnyWorldConstants {
     }
 
     /**
+     *
+     * @return returns the current highlighted within the spinner
+     */
+    public String getLatestSelected(){
+        String name;
+        if(imgSpinner != null) name = imgSpinner.getSelectedItem().toString();
+        else {
+            imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
+            name = imgSpinner.getSelectedItem().toString();
+        }
+        return name;
+    }
+
+    /**
      * Helper method that handles all the steps associated with shape selection and deselection
      * @param toSelect When not-null, this Shape is selected. When null, the current selection is cleared.
      */
-    private void selectShape(DatabaseHelper database, Shape toSelect) {
+    private void selectShape(Shape toSelect) {
         if (selectedShape != null) {
             selectedShape.setSelected(false);
         }
         if (toSelect != null)
             toSelect.setSelected(true);
         selectedShape = toSelect;
-        updateInspector(database, selectedShape);
+        updateInspector(selectedShape);
         invalidate();
     }
 
-    private void updateInspector(DatabaseHelper database, Shape shape) {
+    /**
+     * Spinner is made ivar because we access it multiple times in this activity
+     * @param shape the shape to be updated
+     */
+    private void updateInspector(Shape shape) {
         EditText name = ((Activity) getContext()).findViewById(R.id.name);
         EditText text = ((Activity) getContext()).findViewById(R.id.shapeText);
         EditText rectX = ((Activity) getContext()).findViewById(R.id.rectX);
@@ -128,8 +154,7 @@ public class CustomPageView extends View implements BunnyWorldConstants {
         EditText height = ((Activity) getContext()).findViewById(R.id.height);
         CheckBox visible = ((Activity) getContext()).findViewById(R.id.visible);
         CheckBox movable = ((Activity) getContext()).findViewById(R.id.movable);
-        Spinner imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
-
+        imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
 
         if (name != null) {
             if (selectedShape != null) {
@@ -141,8 +166,7 @@ public class CustomPageView extends View implements BunnyWorldConstants {
                 height.setText(String.format(Locale.US, "%f", shape.getBounds().bottom - shape.getBounds().top));
                 visible.setChecked(shape.isVisible());
                 movable.setChecked(shape.isMovable());
-                PageEditorActivity.updateSpinner(imgSpinner, database.getImgResMap().get(selectedImage));
-//                updateScriptSpinners(shape.getScript());
+                PageEditorActivity.updateSpinner(imgSpinner, shape.getName());
             } else {
                 name.setText("");
                 text.setText("");
@@ -152,15 +176,9 @@ public class CustomPageView extends View implements BunnyWorldConstants {
                 height.setText("");
                 visible.setChecked(false);
                 movable.setChecked(false);
-                updateScriptSpinners(null);
             }
         }
     }
-
-    private void updateScriptSpinners(Script script) {
-        // TODO: Implement
-    }
-
     /**
      * Helper method that creates a RectF object, enforcing that left <= right and top <= bottom.
      * @param x1 One of the horizontal components
@@ -255,4 +273,11 @@ public class CustomPageView extends View implements BunnyWorldConstants {
         this.invalidate();
         return true;
     }
+
+    //saves page to database
+    public ArrayList<Shape> getPageShapes(){ return page.getListOfShapes(); }
+
+    //getters and setters for changes made boolean
+    public boolean getChangesMadeBool(){return changesMade;}
+    public void setChangesMadeBool(boolean bool){changesMade = bool;}
 }
