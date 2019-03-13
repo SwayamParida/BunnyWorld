@@ -35,6 +35,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     private HorizontalScrollView imgScrollView;
     private Spinner imgSpinner, verbSpinner, modifierSpinner, eventSpinner, actionSpinner;
     private ArrayList<String> resources;
+    private ArrayAdapter<String> imgSpinnerAdapter;
+    private LinearLayout horizontalLayout;
 
     //array list of text shapes that is retrieved from EditPagesActivity
     private DatabaseHelper dbase;
@@ -92,6 +94,18 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     /**
+     * On Resume, the scrollview on the bottom is updated, just in case
+     * any values were added/removed.
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        resources = dbase.getResourceNames();
+        imgSpinnerAdapter.notifyDataSetChanged();
+        populateImgScrollView();
+    }
+
+    /**
      * Helper method that initializes the relevant views defined in the editor_activity.xml
      * to be referred to later in the code.
      */
@@ -132,7 +146,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //get the arraylist of resources and
         resources = dbase.getResourceNames();
         // Create an array adapter using the items in imageNames
-        ArrayAdapter<String> imgSpinnerAdapter = new ArrayAdapter<String>(
+        imgSpinnerAdapter = new ArrayAdapter<String>(
                 this,
                 android.R.layout.simple_spinner_item,
                 resources
@@ -146,8 +160,9 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * Populates a HorizontalScrollView with all the preset images available for the user to create a shape out of
      */
     private void populateImgScrollView() {
-        LinearLayout horizontalLayout = new LinearLayout(this);
-        //get the corresponding images from the map
+        horizontalLayout = new LinearLayout(this);
+        //get the corresponding images from the list
+        imgScrollView.removeAllViews();
         for (String imgName : resources) {
             ImageView imageView = new ImageView(this);
             //get the image from the database and create new drawable
@@ -378,5 +393,10 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //Bitmap renderToSave = getBitmapFromView(view);
         Bitmap renderToSave = getScreenView(view);
         page.setPageRender(renderToSave);
+    }
+
+    public void addImgRes(View view) {
+        Intent intent = new Intent(this, SearchForImageActivity.class);
+        startActivity(intent);
     }
 }
