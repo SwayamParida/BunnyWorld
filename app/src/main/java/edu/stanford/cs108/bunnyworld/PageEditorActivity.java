@@ -34,8 +34,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     private HorizontalScrollView imgScrollView;
     private Spinner imgSpinner, verbSpinner, modifierSpinner, eventSpinner, actionSpinner;
     private LinearLayout actions, triggers;
-    private ArrayAdapter<String> imgSpinnerAdapter;
-    private LinearLayout horizontalLayout;
+    private List<Action> unsavedActions;
 
     //array list of text shapes that is retrieved from EditPagesActivity
     private DatabaseHelper dbase;
@@ -64,17 +63,24 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         Shape selectedShape = pagePreview.getSelectedShape();
         if (selectedShape != null) {
             page.deleteShape(selectedShape);
-            page.addShape(updatedShape());
+            page.addShape(updateShape());
             pagePreview.invalidate();
         }
     }
     public void addTriggerRow(View view) {
-        addScriptRow(triggers, this::addTriggerRow, Arrays.asList(TRIGGER_EVENTS), this::deleteTriggerRow);
+        addScriptRow(triggers, this::addTriggerRow, this::deleteTriggerRow, Arrays.asList(TRIGGER_EVENTS), false);
+        repopulateActionSpinners();
     }
     public void addActionRow(View view) {
-        addScriptRow(actions, this::addActionRow, Arrays.asList(ACTION_VERBS), this::deleteActionRow);
+        Action action = getAction((LinearLayout) view.getParent());
+        unsavedActions.add(action);
+        repopulateActionSpinners();
+        addScriptRow(actions, this::addActionRow, this::deleteActionRow, Arrays.asList(ACTION_VERBS), true);
     }
     public void deleteActionRow(View view) {
+        Action action = getAction((LinearLayout) view.getParent());
+        unsavedActions.remove(action);
+        repopulateActionSpinners();
         deleteScriptRow(view);
     }
     public void deleteTriggerRow(View view) {
@@ -88,16 +94,15 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
 
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
+        page = extractIntentData(getIntent());
+        unsavedActions = new ArrayList<>();
+
         initComponents();
         populateSpinner(imgSpinner, dbase.getResourceNames());
         populateSpinner(verbSpinner, Arrays.asList(ACTION_VERBS));
         populateSpinner(eventSpinner, Arrays.asList(TRIGGER_EVENTS));
-        initRightSpinner(verbSpinner, modifierSpinner, Arrays.asList(ACTION_VERBS));
+        initModifierSpinner(verbSpinner, modifierSpinner);
         populateImgScrollView();
-
-        //access the intents and use that to fill the page
-        Intent intent = getIntent();
-        page = extractIntentData(intent);
         initPageView();
     }
 
@@ -108,7 +113,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     @Override
     public void onResume() {
         super.onResume();
-        imgSpinnerAdapter.notifyDataSetChanged();
+        ((ArrayAdapter) imgSpinner.getAdapter()).notifyDataSetChanged();
         populateImgScrollView();
     }
 
@@ -140,7 +145,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      */
     private void initPageView() {
         pagePreview.setPage(page);
-        String imgName = ((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0);
+        String imgName = (String)((ArrayAdapter)imgSpinner.getAdapter()).getItem(0);
         Bitmap newBitmap = dbase.getImage(imgName);
         //use the database to get the object
         BitmapDrawable defaultImage = new BitmapDrawable(newBitmap);
@@ -153,7 +158,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * Populates a HorizontalScrollView with all the preset images available for the user to create a shape out of
      */
     private void populateImgScrollView() {
-        horizontalLayout = new LinearLayout(this);
+        LinearLayout horizontalLayout = new LinearLayout(this);
         //get the corresponding images from the list
         imgScrollView.removeAllViews();
         for (String imgName : dbase.getResourceNames()) {
@@ -171,18 +176,27 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         }
         imgScrollView.addView(horizontalLayout);
     }
-    private void initRightSpinner(Spinner leftSpinner, Spinner rightSpinner, List<String> leftSpinnerValues) {
-        leftSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+    private void repopulateActionSpinners() {
+        for (int triggerRowIndex = 0; triggerRowIndex < triggers.getChildCount(); ++triggerRowIndex) {
+            LinearLayout triggerRow = (LinearLayout) triggers.getChildAt(triggerRowIndex);
+            Spinner actionSpinner = (Spinner) triggerRow.getChildAt(ACTION_SPINNER);
+            populateActionSpinner(actionSpinner);
+        }
+    }
+    private void populateActionSpinner(Spinner actionSpinner) {
+        List<String> actionStrings = new ArrayList<>();
+        unsavedActions.forEach(action -> actionStrings.add(action.toString()));
+        populateSpinner(actionSpinner, actionStrings);
+    }
+    private void initModifierSpinner(Spinner verbSpinner, Spinner modifierSpinner) {
+        verbSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                populateSpinner(rightSpinner, getRightValues(leftSpinnerValues.get(position)));
+                populateSpinner(modifierSpinner, getModifierValues(ACTION_VERBS[position]));
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) { }
         });
-    }
-    private List<String> getRightValues(String leftValue) {
-        return getModifierValues(leftValue);
     }
     private List<String> getModifierValues(String verb) {
         switch (verb) {
@@ -196,7 +210,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         }
         return new ArrayList<>();
     }
-    private void addScriptRow(LinearLayout parentView, View.OnClickListener addRowListener, List<String> leftSpinnerValues, View.OnClickListener deleteRowListener) {
+    private void addScriptRow(LinearLayout parentView, View.OnClickListener addRowListener, View.OnClickListener deleteRowListener, List<String> leftSpinnerValues, boolean verbRow) {
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         LinearLayout.LayoutParams spinnerParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 3);
         LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
@@ -209,7 +223,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         populateSpinner(leftSpinner, leftSpinnerValues);
         leftSpinner.setLayoutParams(spinnerParams);
         Spinner rightSpinner = new Spinner(this);
-        initRightSpinner(leftSpinner, rightSpinner, leftSpinnerValues);
+        if (verbRow) initModifierSpinner(leftSpinner, rightSpinner);
         rightSpinner.setLayoutParams(spinnerParams);
 
         Button addScriptRow = new Button(this);
@@ -234,14 +248,20 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         if (parentView.getChildCount() > 1)
             parentView.removeView(scriptRow);
     }
+    private Action getAction(LinearLayout actionRow) {
+        Spinner verbSpinner = (Spinner) actionRow.getChildAt(VERB_SPINNER);
+        Spinner modifierSpinner = (Spinner) actionRow.getChildAt(MODIFIER_SPINNER);
+        String verb = (String) verbSpinner.getSelectedItem();
+        String modifier = (String) modifierSpinner.getSelectedItem();
+        return Action.parseAction(Action.createActionString(verb, modifier));
+    }
     //writes the text-shapes into the ivar arrayList of text shapes above
     private Page extractIntentData(Intent intent){
         gameId = intent.getIntExtra("gameId", -1);
         //create a new page that has the properties of the previous page
         String pageName = intent.getStringExtra("pageName");
         if(!intent.getBooleanExtra("containsItems", false)){
-            Page newPage = new Page(pageName);
-            return newPage;
+            return new Page(pageName);
         }
         Page newPage = new Page(pageName);
         ArrayList<Integer> shapesId = intent.getIntegerArrayListExtra("ShapesArray");
@@ -262,14 +282,14 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * Based on the image and text attributes, determines which subclass of Shape needs to be instantiated.
      * @return new Shape using the updated attributes
      */
-    private Shape updatedShape() {
+    private Shape updateShape() {
         String name = nameEditText.getText().toString();
         String text = textEditText.getText().toString();
         boolean visible = visibleCheckBox.isChecked();
         boolean movable = movableCheckBox.isChecked();
 
         String imageName = imgSpinner.getSelectedItem().toString();
-        BitmapDrawable image = new BitmapDrawable(dbase.getImage(imageName));
+        Bitmap image = dbase.getImage(imageName);
 
         float x = Float.parseFloat(xEditText.getText().toString());
         float y = Float.parseFloat(yEditText.getText().toString());
@@ -277,20 +297,46 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         float height = Float.parseFloat(hEditText.getText().toString());
         RectF boundingRect = new RectF(x, y, x + width, y + height);
 
+        Script script = createScript();
+        Log.d("PageEditorActivity", script.toString());
+
         Shape shape;
         // When only image is provided
         if (image != null && text.isEmpty()) {
             //get the image id and pass it in
             int imgId = dbase.getId(RESOURCE_TABLE, imageName, NO_PARENT);
-            shape = new ImageShape(pagePreview, boundingRect, image, text, imgId, visible, movable, name);
+            shape = new ImageShape(pagePreview, boundingRect, new BitmapDrawable(image), text, imgId, visible, movable, name);
+            shape.setScript(script);
             // When text is provided, it takes precedence over any other object
-        } else if (!text.isEmpty())
-            shape = new TextShape(pagePreview, boundingRect, image, text, -1, visible, movable, name);
-        // When neither image nor text is provided
-        else
+        } else if (!text.isEmpty()) {
+            shape = new TextShape(pagePreview, boundingRect, new BitmapDrawable(image), text, -1, visible, movable, name);
+            shape.setScript(script);
+            // When neither image nor text is provided
+        } else {
             shape = new RectangleShape(pagePreview, boundingRect, -1, visible, movable, name);
+            shape.setScript(script);
+        }
 
         return shape;
+    }
+    private Script createScript() {
+        Script script = new Script();
+        for (int triggerRowIndex = 0; triggerRowIndex < actions.getChildCount(); ++triggerRowIndex) {
+            LinearLayout triggerRow = (LinearLayout) actions.getChildAt(triggerRowIndex);
+            Spinner eventSpinner = (Spinner) triggerRow.getChildAt(EVENT_SPINNER);
+            Spinner actionSpinner = (Spinner) triggerRow.getChildAt(ACTION_SPINNER);
+
+            String event = (String) eventSpinner.getSelectedItem();
+            String actionString = (String) actionSpinner.getSelectedItem();
+            Action action = Action.parseAction(actionString);
+
+            switch (event) {
+                case "onClick": script.addOnClickAction(action); break;
+                case "onDrop": script.addOnDropAction(action); break;
+                case "onEnter": script.addOnEnterAction(action); break;
+            }
+        }
+        return script;
     }
 
     //save button method

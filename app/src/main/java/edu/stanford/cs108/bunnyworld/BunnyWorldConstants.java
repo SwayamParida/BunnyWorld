@@ -42,4 +42,9 @@ public interface BunnyWorldConstants {
     String EVENT_ACTION_DELIMITER = ": { ";
     String TRIGGER_DELIMITER = "}\n";
     String regex = "trigger: { (verb modifier; )*}\n";
+
+    int EVENT_SPINNER = 0;
+    int ACTION_SPINNER = 1;
+    int VERB_SPINNER = 0;
+    int MODIFIER_SPINNER = 1;
 }
