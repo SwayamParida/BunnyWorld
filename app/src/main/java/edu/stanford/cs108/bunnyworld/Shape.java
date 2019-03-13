@@ -17,11 +17,11 @@ abstract class Shape {
     static List shapesList = new ArrayList<Shape>();
 
     //ivars for all shapes
+    protected int res_id;
     protected String txtString;
     protected RectF bounds;
     protected boolean selected;
     protected String name;
-    protected int imageID;
     protected BitmapDrawable image;
     protected boolean visible, movable;
     protected int viewWidth, viewHeight;
@@ -33,7 +33,7 @@ abstract class Shape {
     private static final Paint.Style PAINT_STYLE = Paint.Style.STROKE;
     private static final float STROKE_WIDTH = 15.0f;
 
-    Shape(View view, RectF bounds, int imageID, BitmapDrawable drawable, String txtString,
+    Shape(View view, RectF bounds, BitmapDrawable drawable, String txtString, int resourceId,
           boolean visible, boolean movable, String name){
         if(name == null || name.equals("")){
             this.name = "shape" + count++;
@@ -45,9 +45,9 @@ abstract class Shape {
         this.originalY = bounds.top;
         this.viewHeight = view.getHeight();
         this.viewWidth = view.getWidth();
-        this.imageID = imageID;
         this.image = drawable;
         this.txtString = txtString;
+        this.res_id = resourceId;
 
         outlinePaint.setStyle(PAINT_STYLE);
         outlinePaint.setColor(PAINT_COLOR);
@@ -121,10 +121,6 @@ abstract class Shape {
         this.image = file;
     }
 
-    public int getImageID() {
-        return imageID;
-    }
-
     //returns the text string
     public String getText(){
         return txtString;
@@ -164,5 +160,14 @@ abstract class Shape {
     @Override
     public String toString() {
         return name;
+    }
+
+    //setters and getters for the resource id just in case
+    public int getResId(){
+        return res_id;
+    }
+
+    public void setResId(int resource_id){
+        res_id = resource_id;
     }
 }
