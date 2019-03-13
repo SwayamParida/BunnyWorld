@@ -2,6 +2,7 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -57,8 +58,10 @@ public class Page {
     }
 
     public void draw(Canvas canvas) {
-        for (Shape shape : listOfShapes)
+        for (Shape shape : listOfShapes) {
+            Log.d("list", shape.toString());
             shape.draw(canvas);
+        }
     }
     public Shape findLastShape(float x, float y) {
         Shape lastFound = null;

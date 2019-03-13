@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -118,7 +119,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     private void initPageView() {
         pagePreview.setPage(page);
         pagePreview.setPageId(dbase.getId(PAGES_TABLE, page.getName(), gameId));
-
         //update selected image on the preview
         String imgName = ((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0);
         Bitmap newBitmap = dbase.getImage(imgName);
@@ -184,10 +184,17 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         ArrayList<Shape> shapes = new ArrayList<Shape>();
         //populate the shapes list
         for(int id: shapesId){
-            ImageShape newShape = dbase.getShape(id, pagePreview);
+            ImageShape readShape = dbase.getShape(id, pagePreview);
+            ImageShape newShape = new ImageShape(pagePreview, readShape.getBounds(),
+                    readShape.getImage(), readShape.getText(), readShape.getResId(), readShape.isVisible(),
+                    readShape.isMovable(), readShape.getName());
+            Log.d("Image", readShape.getImage().toString());
+            Log.d("ResId", Integer.toString(readShape.getResId()));
+            Log.d("bounds", readShape.getBounds().toString());
             shapes.add(newShape);
         }
         newPage.setListOfShapes(shapes);
+        Log.d("list", newPage.getListOfShapes().toString());
         return newPage;
     }
 
@@ -273,10 +280,18 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             //add the no functionality
             alertBox.setNegativeButton("No", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface arg0, int arg1) {
-                    PageEditorActivity.super.onBackPressed();
+                    //PageEditorActivity.super.onBackPressed();
+                    Intent intent = new Intent(PageEditorActivity.this, PreviewPagesActivity.class);
+                    intent.putExtra("Game_id", gameId);
+                    startActivity(intent);
                 }
             }).create().show();
-        }else super.onBackPressed();
+        }
+        Intent intent = new Intent(this, PreviewPagesActivity.class);
+        intent.putExtra("Game_id", gameId);
+        startActivity(intent);
+        //else super.onBackPressed();
+
     }
 
     //method that saves to the database

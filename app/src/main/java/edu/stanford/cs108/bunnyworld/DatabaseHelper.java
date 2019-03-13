@@ -321,7 +321,10 @@ public class DatabaseHelper implements BunnyWorldConstants {
         resourceNames.clear();
         String cmd = "SELECT * FROM resources WHERE resType = " + IMAGE + ";";
         Cursor nameCursor = db.rawQuery(cmd, null);
-        while(nameCursor.moveToNext()){
+        int counter = 0;
+        while(nameCursor.moveToNext() && counter < 7){
+            Log.d("counter", Integer.toString(counter));
+            counter++;
             String name = nameCursor.getString(0);
             resourceNames.add(name);
         }

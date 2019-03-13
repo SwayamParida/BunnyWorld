@@ -52,7 +52,8 @@ abstract class Shape {
     }
 
     //general draw method
-    public void draw(Canvas canvas) { if (selected) canvas.drawRect(bounds, outlinePaint); }
+    public void draw(Canvas canvas) {
+        if (selected) canvas.drawRect(bounds, outlinePaint); }
 
     //specific draw for other canvases
     abstract void draw(Canvas canvas, float xPos, float yPos);

@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 
 public class ImageShape extends Shape {
@@ -32,7 +33,9 @@ public class ImageShape extends Shape {
         float height = canvas.getHeight();
         float newX = scaledCoord.left*width;
         float newY = scaledCoord.top*height;
-        if(drawOriginalDim) canvas.drawBitmap(image.getBitmap(), xPos, yPos, null);
+        if(drawOriginalDim) {
+            canvas.drawBitmap(image.getBitmap(), xPos, yPos, null);
+        }
         else {
             float newWidth = scaledCoord.width()*width;
             float newHeight = scaledCoord.height()*height;
@@ -49,8 +52,12 @@ public class ImageShape extends Shape {
         float height = canvas.getHeight();
         float newX = scaledCoord.left*width;
         float newY = scaledCoord.top*height;
-        if(drawOriginalDim) canvas.drawBitmap(image.getBitmap(), newX, newY, null);
+        if(drawOriginalDim) {
+            Log.d("drawing", "drawing original shape " + name);
+            canvas.drawBitmap(image.getBitmap(), newX, newY, null);
+        }
         else {
+            Log.d("drawing", "drawing scaled shape " + name);
             float newWidth = scaledCoord.width()*width;
             float newHeight = scaledCoord.height()*height;
             RectF newBounds = new RectF(newX, newY, newX+newWidth, newY+newHeight);

@@ -122,7 +122,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             selectShape(shape);
             updateInspector(shape);
             changesMade = true;
-            invalidate();
         }
         invalidate();
 
@@ -155,7 +154,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             toSelect.setSelected(true);
         selectedShape = toSelect;
         updateInspector(selectedShape);
-        invalidate();
+        //invalidate();
     }
 
     /**
