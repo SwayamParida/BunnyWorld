@@ -57,7 +57,10 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         cursor.moveToLast();
         String name = cursor.getString(0);
         String[] myList = name.split(" ");
-        int count = Integer.parseInt(myList[1]);
+        int count = 0;
+        if (myList.length > 1) {
+            count = Integer.parseInt(myList[1]);
+        }
         return count;
     }
 
