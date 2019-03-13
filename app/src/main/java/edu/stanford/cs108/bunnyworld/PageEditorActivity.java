@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -21,6 +22,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PageEditorActivity extends AppCompatActivity implements BunnyWorldConstants {
@@ -90,12 +92,13 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_page);
 
+        initComponents();
+
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
         page = extractIntentData(getIntent());
         unsavedActions = new ArrayList<>();
 
-        initComponents();
         populateSpinner(imgSpinner, dbase.getResourceNames());
         populateSpinner(verbSpinner, Arrays.asList(ACTION_VERBS));
         populateSpinner(eventSpinner, Arrays.asList(TRIGGER_EVENTS));
