@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 public class Page {
 
-    private static int count = 0;
     private boolean isStarterPage = false;
     private ArrayList<Shape> listOfShapes = new ArrayList<>();
     private String name;

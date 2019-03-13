@@ -18,6 +18,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
 import android.graphics.Bitmap;
 import android.widget.Toast;
 
@@ -25,12 +27,10 @@ import android.widget.Toast;
 public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorldConstants {
 
     private int gameId;
-    private static int count = 0;
     private ScrollView scrollview;
     private String selectedPage;
     private TextView selectedView;
     private boolean selected;
-    private static final int PAGEVIEWWIDTH = 2560/5;
     private DatabaseHelper dbase;
 
     @Override
@@ -42,18 +42,30 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         gameId = editorIntent.getIntExtra("Game_id", -1);
         scrollview = (ScrollView) findViewById(R.id.scrollview);
         populateScrollView();
+    }
 
-        Cursor cursor = dbase.db.rawQuery("SELECT * FROM resources;", null);
-        if(cursor.getCount() == 0) Log.d("Tag1", "Nothing in resources");
+    /**
+     * gets the last member of the page and use parsing to get the count
+     */
+    public int getShapesCount(){
+        int id = dbase.getLatestCount(PAGES_TABLE, gameId);
+        if(id == 0) return id;
+
+        //else parse the string to get the actual count
+        String cmd = "SELECT * FROM pages WHERE parent_id =" + gameId +";";
+        Cursor cursor = dbase.db.rawQuery(cmd, null);
+        cursor.moveToLast();
+        String name = cursor.getString(0);
+        String[] myList = name.split(" ");
+        int count = Integer.parseInt(myList[1]);
+        return count;
     }
 
     //creates a new page with the current selected game
     //doesn't explicitly handle scrollview because onCreate method will do that
     public void createNew(View view){
-        //int count = dbase.getLatestCount(gameId) + 1;
-        String pageName = "page" + count;
-        count++;
-        //add to the database afterwards------------------------------------------------------------
+        int count = getShapesCount() + 1;
+        String pageName = "Page " + count;
         Intent newIntent = new Intent(this, PageEditorActivity.class);
         newIntent.putExtra("containsItems", false);
         newIntent.putExtra("pageName", pageName);
@@ -69,10 +81,8 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
     public void deleteSelected(View view) {
         if(selected){
             //get the autoincrement id and use that to delete the page shapes
-            String cmd = "SELECT * FROM pages WHERE name = '" + selectedPage + "';";
-            Cursor cursor = dbase.db.rawQuery(cmd, null);
-            cursor.moveToFirst();
-            int pageId = cursor.getInt(3);
+            //get the id instead
+            int pageId = dbase.getId(PAGES_TABLE, selectedPage, gameId);
             dbase.deletePage(pageId);
 
             //set booleans to false
@@ -191,7 +201,6 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         scrollview.addView(mainVertical);
     }
 
-
     //sets the required properties of the layouts
     public void setProperties(LinearLayout lay, String orient, int width, int height){
         //set orientation
@@ -212,7 +221,6 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         //get all the children shapes and write them to the preview and process them there
         String cmd1 = "SELECT * FROM shapes WHERE parent_id = "+ pageId +";";
         Cursor cursor1 = dbase.db.rawQuery(cmd1, null);
-        cursor1.moveToFirst();
 
         //pass all the shapes to the activity editor and fill the screen
         Intent intent = new Intent(this, PageEditorActivity.class);

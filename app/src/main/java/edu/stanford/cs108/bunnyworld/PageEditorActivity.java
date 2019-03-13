@@ -4,28 +4,33 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 public class PageEditorActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
@@ -33,7 +38,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     private EditText nameEditText, textEditText, xEditText, yEditText, wEditText, hEditText;
     private CheckBox visibleCheckBox, movableCheckBox;
     private HorizontalScrollView imgScrollView;
-    private Spinner imgSpinner, verbSpinner, modifierSpinner, eventSpinner, actionSpinner;
+    private Spinner imgSpinner;
     private ArrayList<String> resources;
     private ArrayAdapter<String> imgSpinnerAdapter;
     private LinearLayout horizontalLayout;
@@ -50,7 +55,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imgName));
     }
     /**
-     * Event handler for when the "Save" button is clicked.
+     * Event handler for when the "Update" button is clicked.
      */
     public void saveChanges(View view) {
         Shape selectedShape = pagePreview.getSelectedShape();
@@ -61,15 +66,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         }
     }
 
-    public void addActionRow(View view) {
-        LinearLayout actionRow = new LinearLayout(this);
-        Spinner verbSpinner = new Spinner(this);
-        Spinner modifierSpinner = new Spinner(this);
-        Spinner eventSpinner = new Spinner(this);
-        Spinner actionSpinner = new Spinner(this);
-
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,20 +73,14 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
 
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
-        //dbase = new DatabaseHelper(this);
         initComponents();
-        populateImgSpinner();
-        populateVerbSpinner();
-        populateEventSpinner();
-        initModifierSpinner();
+        populateSpinner();
         populateImgScrollView();
 
         //access the intents and use that to fill the page
         Intent intent = getIntent();
         page = extractIntentData(intent);
         initPageView();
-        //after loading page draw contents
-        pagePreview.invalidate();
     }
 
     /**
@@ -119,10 +109,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         visibleCheckBox = findViewById(R.id.visible);
         movableCheckBox = findViewById(R.id.movable);
         imgSpinner = findViewById(R.id.imgSpinner);
-        verbSpinner = findViewById(R.id.verb1);
-        modifierSpinner = findViewById(R.id.modifier1);
-        eventSpinner = findViewById(R.id.event1);
-        actionSpinner = findViewById(R.id.action1);
         imgScrollView = findViewById(R.id.presetImages);
         pagePreview = findViewById(R.id.pagePreview);
     }
@@ -131,19 +117,23 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      */
     private void initPageView() {
         pagePreview.setPage(page);
+        pagePreview.setPageId(dbase.getId(PAGES_TABLE, page.getName(), gameId));
+
+        //update selected image on the preview
         String imgName = ((ArrayAdapter<String>)imgSpinner.getAdapter()).getItem(0);
         Bitmap newBitmap = dbase.getImage(imgName);
         //use the database to get the object
         BitmapDrawable defaultImage = new BitmapDrawable(newBitmap);
         pagePreview.setSelectedImage(defaultImage);
+        pagePreview.invalidate();
     }
 
     /**
      * Populates the spinner with the list of image choices.
      * Reference: https://www.tutorialspoint.com/android/android_spinner_control.htm
      */
-    private void populateImgSpinner() {
-        //get the arraylist of resources and
+    private void populateSpinner() {
+        //get the array list of resources and
         resources = dbase.getResourceNames();
         // Create an array adapter using the items in imageNames
         imgSpinnerAdapter = new ArrayAdapter<String>(
@@ -178,72 +168,18 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         }
         imgScrollView.addView(horizontalLayout);
     }
-    private void initModifierSpinner() {
-        verbSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                switch (Script.ACTION_VERBS[position]) {
-                    case "goto":
-                        List<String> pageNames = dbase.getGamePageNames(page.getGameID());
-                        populateModifierSpinner(pageNames);
-                        break;
-                    case "play":
-                        List<String> audioNames = dbase.getResourceNames();
-                        populateModifierSpinner(audioNames);
-                        break;
-                    case "hide": case "show":
-                        List<Shape> allShapes = dbase.getPageShapes(page.getPageID(), pagePreview);
-                        List<String> shapeNames = new ArrayList<>();
-                        allShapes.forEach(shape -> shapeNames.add(shape.getName()));
-                        populateModifierSpinner(shapeNames);
-                        break;
-                }
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) { }
-        });
-    }
-    private void populateVerbSpinner() {
-        ArrayAdapter<String> verbSpinnerAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                Arrays.asList(Script.ACTION_VERBS)
-        );
-        verbSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-        verbSpinner.setAdapter(verbSpinnerAdapter);
-    }
-    private void populateEventSpinner() {
-        ArrayAdapter<String> eventSpinnerAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                Arrays.asList(Script.TRIGGER_EVENTS)
-        );
-        eventSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-        eventSpinner.setAdapter(eventSpinnerAdapter);
-    }
-    private void populateModifierSpinner(List<String> list) {
-        ArrayAdapter<String> modSpinnerAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                list
-        );
-        modSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-        modifierSpinner.setAdapter(modSpinnerAdapter);
-    }
     //writes the text-shapes into the ivar arrayList of text shapes above
     private Page extractIntentData(Intent intent){
         gameId = intent.getIntExtra("gameId", -1);
         //create a new page that has the properties of the previous page
         String pageName = intent.getStringExtra("pageName");
-        getSupportActionBar().setTitle("BunnyWorld Editor, " + pageName);
         if(!intent.getBooleanExtra("containsItems", false)){
             Page newPage = new Page(pageName);
             return newPage;
         }
         Page newPage = new Page(pageName);
         ArrayList<Integer> shapesId = intent.getIntegerArrayListExtra("ShapesArray");
-
         //instantiate the text-shapes ivar array
         ArrayList<Shape> shapes = new ArrayList<Shape>();
         //populate the shapes list
@@ -327,6 +263,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
                     .setMessage("Would you like to save changes?")
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface arg0, int arg1) {
+                            savePageBitmap(pagePreview);
                             saveToDatabase();
                             pagePreview.setChangesMadeBool(false);
                             Toast.makeText(getApplicationContext(), "Changes saved", Toast.LENGTH_SHORT).show();
@@ -348,21 +285,15 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //saves all the shapes from the array list populated here
         String pageName = page.getName();
 
-        String cmd = "SELECT * FROM pages WHERE name = '"+ pageName +"';";
-        Cursor cursor = dbase.db.rawQuery(cmd, null);
-        //delete old shapes and re-add new shapes
-        int pageId = -1;
-        if(cursor.getCount() != 0){
-            cursor.moveToFirst();
-            pageId = cursor.getInt(3);
+        //use the game id to access them
+        int pageId = dbase.getId(PAGES_TABLE, pageName, gameId);
+        if(pageId != -1){
             dbase.db.execSQL("DELETE FROM shapes WHERE parent_id = " + pageId + ";");
-        }
-
-        //else create the page and get the id for its children
-        if(pageId == -1) {
+        } else {
             boolean success = dbase.addPage(pageName, page.getPageRender(), gameId);
             if(success) pageId = dbase.getId(PAGES_TABLE, pageName, gameId);
         }
+
         for(Shape currShape: shapesList){
             //name, parent_id, res_id, x, y, width, height, txtString, scripts, visible, movable
             String name = currShape.getName();
