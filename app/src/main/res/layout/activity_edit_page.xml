@@ -216,15 +216,16 @@
         </GridLayout>
     </android.support.v4.widget.NestedScrollView>
 
+
     <Button
         android:id="@+id/addImgResBtn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/savePage"
-        app:layout_constraintStart_toStartOf="@id/save"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:onClick="addImgRes"
         android:text="Add Image Resource"
-        android:onClick="addImgRes"/>
+        app:layout_constraintBottom_toTopOf="@id/savePage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/save" />
 
     <Button
         android:id="@+id/save"
@@ -253,7 +254,7 @@
         app:layout_constraintStart_toStartOf="@id/vMargin"
         app:layout_constraintEnd_toStartOf="@id/redo"
         app:layout_constraintTop_toBottomOf="@id/save"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/copy"
         android:onClick="undoChange"
         android:text="Undo Change" />
     <Button
@@ -263,8 +264,44 @@
         app:layout_constraintStart_toEndOf="@id/undo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/savePage"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cut"
         android:onClick="redoAction"
         android:text="Redo Change"/>
+
+    <Button
+        android:id="@+id/copy"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="Copy"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/undo"
+        app:layout_constraintEnd_toStartOf="@id/cut"
+        app:layout_constraintStart_toStartOf="@id/vMargin"
+        android:onClick="copy"
+        />
+
+    <Button
+        android:id="@+id/cut"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="Cut"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/redo"
+        app:layout_constraintEnd_toStartOf="@id/paste"
+        app:layout_constraintStart_toEndOf="@id/copy"
+        android:onClick="cut"
+        />
+
+    <Button
+        android:id="@+id/paste"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="Paste"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/redo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/cut"
+        android:onClick="paste"
+        />
 
 </android.support.constraint.ConstraintLayout>

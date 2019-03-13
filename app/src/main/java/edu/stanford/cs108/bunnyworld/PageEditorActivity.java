@@ -42,6 +42,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     //array list of text shapes that is retrieved from EditPagesActivity
     private DatabaseHelper dbase;
     private int gameId;
+    public Shape clipboard;
 
     /**
      * Helper method that updates the Spinner to reflect the image clicked by the user
@@ -148,6 +149,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      */
     private void initPageView() {
         pagePreview.setPage(page);
+        pagePreview.invalidate();
         pagePreview.setPageId(dbase.getId(PAGES_TABLE, page.getName(), gameId));
         //update selected image on the preview
         String imgName = (String)((ArrayAdapter)imgSpinner.getAdapter()).getItem(0);
@@ -455,5 +457,50 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     public void addImgRes(View view) {
         Intent intent = new Intent(this, SearchForImageActivity.class);
         startActivity(intent);
+    }
+
+    public void copy(View view) {
+        Shape selectedShape = pagePreview.getSelectedShape();
+        if (selectedShape != null) {
+            clipboard = pagePreview.makeShapeCopy(selectedShape);
+        }
+        pagePreview.invalidate();
+    }
+
+    public void cut(View view) {
+        Shape selectedShape = pagePreview.getSelectedShape();
+        if (selectedShape != null) {
+            clipboard = pagePreview.makeShapeCopy(selectedShape);
+        }
+        pagePreview.deleteShape(selectedShape);
+        pagePreview.invalidate();
+    }
+
+    public void paste(View view) {
+        if (clipboard != null) {
+            while (repeatName(clipboard.getName())) {
+                clipboard.setName(clipboard.getName()+"_copy");
+            }
+            Shape toBeAdded;
+            /*if (count == 0) {
+                toBeAdded = pagePreview.makeShapeCopy(clipboard, clipboard.getName(), 0, 0);
+            }
+            else {*/
+                toBeAdded = pagePreview.makeShapeCopy(clipboard, clipboard.getName(), 0, 0);
+            //}
+
+            pagePreview.addShape(toBeAdded);
+            pagePreview.selectShape(toBeAdded);
+        }
+        pagePreview.invalidate();
+    }
+
+    public boolean repeatName(String name) {
+        for (Shape shape : pagePreview.getPageShapes()) {
+            if (name.equals(shape.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

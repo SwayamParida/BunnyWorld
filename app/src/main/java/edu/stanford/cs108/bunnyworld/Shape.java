@@ -168,4 +168,5 @@ abstract class Shape {
     public void setResId(int resource_id){
         res_id = resource_id;
     }
+
 }
