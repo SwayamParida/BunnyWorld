@@ -43,10 +43,12 @@
         android:id="@+id/attributes"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/hMargin"
+        app:layout_constraintBottom_toTopOf="@id/addImgResBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@id/pagePreview"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
 
         <GridLayout
             android:layout_width="match_parent"
@@ -55,135 +57,163 @@
 
             <TextView
                 android:labelFor="@id/name"
-                android:text="Name"/>
+                android:text="Name" />
+
             <EditText
                 android:id="@+id/name"
                 android:layout_width="match_parent"
-                android:inputType="text"/>
+                android:inputType="text" />
 
             <TextView
                 android:labelFor="@id/rectX"
-                android:text="x"/>
+                android:text="x" />
+
             <EditText
                 android:id="@+id/rectX"
                 android:layout_width="match_parent"
-                android:inputType="numberDecimal"/>
+                android:inputType="numberDecimal" />
 
             <TextView
                 android:labelFor="@id/rectY"
-                android:text="y"/>
+                android:text="y" />
+
             <EditText
                 android:id="@+id/rectY"
                 android:layout_width="match_parent"
-                android:inputType="numberDecimal"/>
+                android:inputType="numberDecimal" />
 
             <TextView
                 android:labelFor="@id/width"
-                android:text="Width"/>
+                android:text="Width" />
+
             <EditText
                 android:id="@+id/width"
                 android:layout_width="match_parent"
-                android:inputType="numberDecimal"/>
+                android:inputType="numberDecimal" />
 
             <TextView
                 android:labelFor="@id/height"
-                android:text="Height"/>
+                android:text="Height" />
+
             <EditText
                 android:id="@+id/height"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="numberDecimal"/>
+                android:inputType="numberDecimal" />
 
             <TextView
                 android:labelFor="@id/shapeText"
-                android:text="Text"/>
+                android:text="Text" />
+
             <EditText
                 android:id="@+id/shapeText"
                 android:layout_width="match_parent"
-                android:inputType="text"/>
+                android:inputType="text" />
 
             <TextView
                 android:labelFor="@id/imgSpinner"
-                android:text="Image"/>
+                android:text="Image" />
+
             <Spinner
                 android:id="@+id/imgSpinner"
-                android:layout_width="match_parent"/>
+                android:layout_width="match_parent" />
 
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_columnSpan="2">
+                android:layout_columnSpan="2"
+                android:orientation="horizontal">
+
                 <CheckBox
                     android:id="@+id/visible"
-                    android:layout_height="wrap_content"
                     android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:checked="true"
-                    android:text="Visible"/>
+                    android:text="Visible" />
+
                 <CheckBox
                     android:id="@+id/movable"
-                    android:layout_height="wrap_content"
                     android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:checked="true"
-                    android:text="Movable"/>
+                    android:text="Movable" />
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/actionRow1"
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_columnSpan="2">
+                android:layout_columnSpan="2"
+                android:orientation="horizontal">
+
                 <Spinner
                     android:id="@+id/verb1"
-                    android:layout_height="wrap_content"
                     android:layout_width="0dp"
-                    android:layout_weight="2"/>
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2" />
+
                 <Spinner
                     android:id="@+id/modifier1"
-                    android:layout_height="wrap_content"
                     android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="2" />
+
                 <Button
                     android:id="@+id/addActionRow1"
-                    android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
-                    android:text="+"/>
+                    android:layout_height="wrap_content"
+                    android:text="+" />
+
                 <Button
                     android:id="@+id/deleteActionRow1"
-                    android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
-                    android:text="-"/>
+                    android:layout_height="wrap_content"
+                    android:text="-" />
             </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/triggerRow1"
-                android:orientation="horizontal"
+                android:layout_width="match_parent"
                 android:layout_columnSpan="2"
-                android:layout_width="match_parent">
+                android:orientation="horizontal">
+
                 <Spinner
                     android:id="@+id/event1"
-                    android:layout_height="wrap_content"
                     android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="3" />
+
                 <Spinner
                     android:id="@+id/action1"
-                    android:layout_height="wrap_content"
                     android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="3" />
+
                 <Button
                     android:id="@+id/addTriggerRow1"
-                    android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:onClick="addActionRow"
-                    android:text="+"/>
+                    android:text="+" />
+
                 <Button
                     android:id="@+id/deleteTriggerRow1"
-                    android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
-                    android:text="-"/>
+                    android:layout_height="wrap_content"
+                    android:text="-" />
             </LinearLayout>
         </GridLayout>
     </android.support.v4.widget.NestedScrollView>
+
+    <Button
+        android:id="@+id/addImgResBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/savePage"
+        app:layout_constraintStart_toStartOf="@id/save"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="Add Image Resource"
+        android:onClick="addImgRes"/>
 
     <Button
         android:id="@+id/save"
@@ -225,4 +255,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:onClick="redoAction"
         android:text="Redo Change"/>
+
 </android.support.constraint.ConstraintLayout>
