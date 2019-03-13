@@ -49,7 +49,7 @@ public class Page {
 
     //method that adds in a list of shapes --- a setter
     public void setListOfShapes(ArrayList<Shape> arrList){
-        listOfShapes = arrList;
+        listOfShapes = new ArrayList<Shape>(arrList);
     }
 
     //gets the list of shapes
