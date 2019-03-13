@@ -71,10 +71,8 @@ public class Page {
     }
 
     //a constructor that sets the name
-    public Page(String name, int count){
-        if(name != null) this.name = name;
-        else
-            this.name = "Page"+count;
+    public Page(String name){
+        this.name = name;
     }
 
     public void setPageRender(Bitmap pageRender) {
