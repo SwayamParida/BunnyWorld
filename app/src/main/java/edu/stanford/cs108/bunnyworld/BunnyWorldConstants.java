@@ -27,7 +27,7 @@ public interface BunnyWorldConstants {
 
     String[] IMAGE_NAMES = { "carrot", "carrot2", "death", "duck", "fire", "mystic" };
     Integer[] imgResources = { R.drawable.carrot, R.drawable.carrot2, R.drawable.death,
-            R.drawable.duck, R.drawable.fire, R.drawable.mystic };
+            R.drawable.duck, R.drawable.mystic, R.drawable.firefirefire };
     List<Integer> imgList = Arrays.asList(imgResources);
     String[] AUDIO_NAMES = { "carrotcarrotcarrot", "evillaugh", "fire", "hooray", "intro_music",
             "munch", "munching", "woof" };
