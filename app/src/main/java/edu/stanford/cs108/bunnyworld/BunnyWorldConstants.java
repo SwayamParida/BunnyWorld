@@ -26,7 +26,7 @@ public interface BunnyWorldConstants {
     String DATABASE_NAME = "BunnyWorldDB";
 
     Integer[] imgResources = { R.drawable.carrot, R.drawable.carrot2, R.drawable.death,
-            R.drawable.duck, R.drawable.fire, R.drawable.mystic };
+            R.drawable.duck, R.drawable.mystic, R.drawable.firefirefire };
     List<Integer> imgList = Arrays.asList(imgResources);
     Integer[] audioResources = { R.raw.carrotcarrotcarrot, R.raw.evillaugh, R.raw.fire, R.raw.hooray,
             R.raw.munch, R.raw.munching, R.raw.woof };
