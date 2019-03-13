@@ -33,14 +33,6 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
     private static final int PAGEVIEWWIDTH = 2560/5;
     private DatabaseHelper dbase;
 
-    //an array list of linear layouts to get the current ones that are not full
-    private ArrayList<LinearLayout> linearLayouts = new ArrayList();
-    //a map to keep track of which pages are in which layouts
-    private HashMap<String, LinearLayout> linearLayMap = new HashMap<String, LinearLayout>();
-    //each linear layout contains a max of 5 items
-    private static final int LAYOUT_SIZE = 5;
-    private HashMap<LinearLayout, Integer> linearLayoutSize = new HashMap<LinearLayout, Integer>();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,8 +50,9 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
     //creates a new page with the current selected game
     //doesn't explicitly handle scrollview because onCreate method will do that
     public void createNew(View view){
-        int count = dbase.getLatestCount(gameId) + 1;
+        //int count = dbase.getLatestCount(gameId) + 1;
         String pageName = "page" + count;
+        count++;
         //add to the database afterwards------------------------------------------------------------
         Intent newIntent = new Intent(this, PageEditorActivity.class);
         newIntent.putExtra("containsItems", false);
@@ -79,7 +72,7 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
             String cmd = "SELECT * FROM pages WHERE name = '" + selectedPage + "';";
             Cursor cursor = dbase.db.rawQuery(cmd, null);
             cursor.moveToFirst();
-            int pageId = cursor.getInt(2);
+            int pageId = cursor.getInt(3);
             dbase.deletePage(pageId);
 
             //set booleans to false
@@ -93,44 +86,80 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
 
     //fills the scroll view with the names of the pages
     //OVERWRITTEN TO INSERT THE NEW EDITS
+    //I NEED TO DECOMPOSE BUT I'LL DO IT LATER
     private void populateScrollView(){
         if(gameId == -1) return;
         String cmd = "SELECT * FROM pages WHERE parent_id = " + gameId + ";";
         Cursor cursor = dbase.db.rawQuery(cmd, null);
         LinearLayout mainVertical = new LinearLayout(this);
         mainVertical.setOrientation(LinearLayout.VERTICAL);
-        //setProperties(mainVertical, "vertical", PAGEVIEWWIDTH*4, 0);
+        mainVertical.setMinimumWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+
+        //an array list of linear layouts to get the current ones that are not full
+        ArrayList<LinearLayout> linearLayouts = new ArrayList();
+        HashMap<LinearLayout, Integer> linearLayoutSize = new HashMap<LinearLayout, Integer>();
 
         //loops through the cursor and populates the appropraite views
+        LinearLayout laySize; int size = 0; boolean addedNew = false;
         while(cursor.moveToNext()){
             String newPage = cursor.getString(0);
             if(newPage.isEmpty() || newPage == null) break;
+            if(!linearLayouts.isEmpty()){
+                //get old layout
+                laySize = linearLayouts.get(linearLayouts.size() - 1);
+                size = linearLayoutSize.get(laySize);
+                if(size > 4) {
+                    addedNew = true;
+                    laySize = new LinearLayout(this);
+                    laySize.setOrientation(LinearLayout.HORIZONTAL);
+                    laySize.setMinimumWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+                    laySize.setMinimumHeight(500);
+                    linearLayoutSize.put(laySize, 1);
+                    linearLayouts.add(laySize);
+                } else {
+                    addedNew = false;
+                    size = size + 1;
+                    linearLayoutSize.put(laySize, size);
+                }
+            } else {
+                addedNew = true;
+                //use the new horizontal layout
+                laySize = new LinearLayout(this);
+                laySize.setOrientation(LinearLayout.HORIZONTAL);
+                laySize.setMinimumWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+                laySize.setMinimumHeight(500);
+                linearLayoutSize.put(laySize, 1);
+                linearLayouts.add(laySize);
+            }
+
+            //create a vertical layout
+            LinearLayout verticalLay = new LinearLayout(this);
+            verticalLay.setOrientation(LinearLayout.VERTICAL);
+            verticalLay.setMinimumHeight(500); verticalLay.setMinimumWidth(500);
+            //create text view
             TextView textView = new TextView(this);
             textView.setText(newPage);
             textView.setTextSize(24);
             textView.setGravity(Gravity.CENTER);
 
+            //create image view
             ImageView myImage = new ImageView(this);
             //get the bitmap rendering of the page
             int pageId = dbase.getId(PAGES_TABLE, newPage, gameId);
             Bitmap imgBitmap = dbase.getPageRendering(pageId);
-            BitmapDrawable newDrawable = null;
             if(imgBitmap != null){
                 Bitmap newBitmap = Bitmap.createScaledBitmap(imgBitmap, 300,300, false);
                 myImage.setImageBitmap(newBitmap);
-            } else
+            } else //use the placeholder icon
                 myImage.setImageResource(R.drawable.edit_icon);
-
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.MATCH_PARENT);
             params.gravity = Gravity.CENTER;
             myImage.setLayoutParams(params);
+//            myImage.getLayoutParams().height = 400;
+//            myImage.getLayoutParams().width = 400;
 
-            myImage.getLayoutParams().height = 500;
-            myImage.getLayoutParams().width = 500;
-
-
-
+            //set onclick listeners for the image and text
             textView.setOnClickListener(v->{
                 //set previous selected text to blue
                 if(selected){
@@ -141,7 +170,6 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
                 selectedPage = textView.getText().toString();
                 textView.setTextColor(Color.BLUE);
             });
-
             myImage.setOnClickListener(v->{
                 //set previous selected text to blue
                 if(selected){
@@ -152,8 +180,13 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
                 selectedPage = textView.getText().toString();
                 textView.setTextColor(Color.BLUE);
             });
-            mainVertical.addView(myImage);
-            mainVertical.addView(textView);
+            verticalLay.addView(myImage);
+            verticalLay.addView(textView);
+
+            //add a new vertical layout to this current horizontal layout
+            laySize.addView(verticalLay);
+
+            if(addedNew) mainVertical.addView(laySize);
         }
         scrollview.addView(mainVertical);
     }

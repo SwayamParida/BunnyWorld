@@ -303,6 +303,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @return the arraylist of the resource names
      */
     public ArrayList<String> getResourceNames(){
+
 //        String cmd = "SELECT * FROM resources;";
 //        Cursor cursor = db.rawQuery(cmd, null);
 //        ArrayList<String> names = new ArrayList<String>();
@@ -625,8 +626,11 @@ public class DatabaseHelper implements BunnyWorldConstants {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         rendering.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] bitmapdata = stream.toByteArray();
-        String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + bitmapdata + " WHERE _id = " + page_id + ";";
-        db.execSQL(cmd);
+        ContentValues cv = new ContentValues();
+        cv.put("rendering", bitmapdata);
+        db.update(PAGES_TABLE, cv, "_id=?", new String[]{Integer.toString(page_id)});
+//        String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + bitmapdata.toString() + " WHERE _id = " + page_id + ";";
+//        db.execSQL(cmd);
     }
 
     /**
@@ -662,7 +666,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
             if(cursor1.getCount() != 0){
                 cursor1.moveToFirst();
                 while(cursor1.moveToNext()){
-                    int pageId = cursor1.getInt(2);
+                    int pageId = cursor1.getInt(3);
                     //delete all shapes that have the page Id
                     String cmd2 = "DELETE FROM shapes WHERE parent_id = " + pageId + ";";
                     db.execSQL(cmd2);

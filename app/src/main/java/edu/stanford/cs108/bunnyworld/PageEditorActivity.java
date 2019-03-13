@@ -274,7 +274,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         int pageId = -1;
         if(cursor.getCount() != 0){
             cursor.moveToFirst();
-            pageId = cursor.getInt(2);
+            pageId = cursor.getInt(3);
             dbase.db.execSQL("DELETE FROM shapes WHERE parent_id = " + pageId + ";");
         }
 
@@ -295,12 +295,9 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             dbase.addShape(name, pageId, resId, currShape.getX(), currShape.getY(), currShape.getWidth(),
                     currShape.getHeight(), txtString, script, currShape.isMovable(), currShape.isVisible());
         }
-    }
 
-    //adds the newly created page to the database
-    public void addToDatabase(){
-        int getLatestCount = dbase.getLatestCount(gameId);
-        dbase.addPage(page.getName(), page.getPageRender(), gameId);
+        //use the page Id to update the thumbnail
+        dbase.changePageThumbnail(pageId, page.getPageRender());
     }
 
     //get the bitmap of the visible view
