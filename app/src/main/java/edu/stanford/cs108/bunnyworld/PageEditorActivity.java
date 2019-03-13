@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
@@ -21,11 +22,9 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 public class PageEditorActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
@@ -34,7 +33,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     private CheckBox visibleCheckBox, movableCheckBox;
     private HorizontalScrollView imgScrollView;
     private Spinner imgSpinner, verbSpinner, modifierSpinner, eventSpinner, actionSpinner;
-    private ArrayList<String> resources;
+    private LinearLayout actions, triggers;
 
     //array list of text shapes that is retrieved from EditPagesActivity
     private DatabaseHelper dbase;
@@ -47,6 +46,15 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         ArrayAdapter<String> imgSpinnerAdapter = (ArrayAdapter<String>) imgSpinner.getAdapter();
         imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imgName));
     }
+    public static void populateSpinner(Spinner spinner, List<String> list) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                spinner.getContext(),
+                android.R.layout.simple_spinner_item,
+                list
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+        spinner.setAdapter(adapter);
+    }
     /**
      * Event handler for when the "Save" button is clicked.
      */
@@ -58,15 +66,19 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             pagePreview.invalidate();
         }
     }
-
-    public void addActionRow(View view) {
-        LinearLayout actionRow = new LinearLayout(this);
-        Spinner verbSpinner = new Spinner(this);
-        Spinner modifierSpinner = new Spinner(this);
-        Spinner eventSpinner = new Spinner(this);
-        Spinner actionSpinner = new Spinner(this);
-
+    public void addTriggerRow(View view) {
+        addScriptRow(triggers, this::addTriggerRow, Arrays.asList(TRIGGER_EVENTS), this::deleteTriggerRow);
     }
+    public void addActionRow(View view) {
+        addScriptRow(actions, this::addActionRow, Arrays.asList(ACTION_VERBS), this::deleteActionRow);
+    }
+    public void deleteActionRow(View view) {
+        deleteScriptRow(view);
+    }
+    public void deleteTriggerRow(View view) {
+        deleteScriptRow(view);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,21 +86,18 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         setContentView(R.layout.activity_edit_page);
 
         //initialize necessary UIs and helpers
-        //dbase = DatabaseHelper.getInstance(this);
-        dbase = new DatabaseHelper(this);
+        dbase = DatabaseHelper.getInstance(this);
         initComponents();
-        populateImgSpinner();
-        populateVerbSpinner();
-        populateEventSpinner();
-        initModifierSpinner();
+        populateSpinner(imgSpinner, dbase.getResourceNames());
+        populateSpinner(verbSpinner, Arrays.asList(ACTION_VERBS));
+        populateSpinner(eventSpinner, Arrays.asList(TRIGGER_EVENTS));
+        initRightSpinner(verbSpinner, modifierSpinner, Arrays.asList(ACTION_VERBS));
         populateImgScrollView();
 
         //access the intents and use that to fill the page
         Intent intent = getIntent();
         page = extractIntentData(intent);
         initPageView();
-        //after loading page draw contents
-        pagePreview.invalidate();
     }
 
     /**
@@ -109,6 +118,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         modifierSpinner = findViewById(R.id.modifier1);
         eventSpinner = findViewById(R.id.event1);
         actionSpinner = findViewById(R.id.action1);
+        actions = findViewById(R.id.actions);
+        triggers = findViewById(R.id.triggers);
         imgScrollView = findViewById(R.id.presetImages);
         pagePreview = findViewById(R.id.pagePreview);
     }
@@ -122,33 +133,17 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //use the database to get the object
         BitmapDrawable defaultImage = new BitmapDrawable(newBitmap);
         pagePreview.setSelectedImage(defaultImage);
+        //after loading page draw contents
+        pagePreview.invalidate();
     }
 
-    /**
-     * Populates the spinner with the list of image choices.
-     * Reference: https://www.tutorialspoint.com/android/android_spinner_control.htm
-     */
-    private void populateImgSpinner() {
-        //get the arraylist of resources and
-        resources = dbase.getResourceNames();
-        // Create an array adapter using the items in imageNames
-        ArrayAdapter<String> imgSpinnerAdapter = new ArrayAdapter<String>(
-                this,
-                android.R.layout.simple_spinner_item,
-                resources
-        );
-        // Set spinner dropdown layout
-        imgSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-        // Set adapter to spinner
-        imgSpinner.setAdapter(imgSpinnerAdapter);
-    }
     /**
      * Populates a HorizontalScrollView with all the preset images available for the user to create a shape out of
      */
     private void populateImgScrollView() {
         LinearLayout horizontalLayout = new LinearLayout(this);
         //get the corresponding images from the map
-        for (String imgName : resources) {
+        for (String imgName : dbase.getResourceNames()) {
             ImageView imageView = new ImageView(this);
             //get the image from the database and create new drawable
             Bitmap imgBitmap = dbase.getImage(imgName);
@@ -163,58 +158,68 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         }
         imgScrollView.addView(horizontalLayout);
     }
-    private void initModifierSpinner() {
-        verbSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+    private void initRightSpinner(Spinner leftSpinner, Spinner rightSpinner, List<String> leftSpinnerValues) {
+        leftSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                switch (Script.ACTION_VERBS[position]) {
-                    case "goto":
-                        List<String> pageNames = dbase.getGamePageNames(page.getGameID());
-                        populateModifierSpinner(pageNames);
-                        break;
-                    case "play":
-                        List<String> audioNames = dbase.getResourceNames();
-                        populateModifierSpinner(audioNames);
-                        break;
-                    case "hide": case "show":
-                        List<Shape> allShapes = dbase.getPageShapes(page.getPageID(), pagePreview);
-                        List<String> shapeNames = new ArrayList<>();
-                        allShapes.forEach(shape -> shapeNames.add(shape.getName()));
-                        populateModifierSpinner(shapeNames);
-                        break;
-                }
+                populateSpinner(rightSpinner, getRightValues(leftSpinnerValues.get(position)));
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) { }
         });
     }
-    private void populateVerbSpinner() {
-        ArrayAdapter<String> verbSpinnerAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                Arrays.asList(Script.ACTION_VERBS)
-        );
-        verbSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-        verbSpinner.setAdapter(verbSpinnerAdapter);
+    private List<String> getRightValues(String leftValue) {
+        return getModifierValues(leftValue);
     }
-    private void populateEventSpinner() {
-        ArrayAdapter<String> eventSpinnerAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                Arrays.asList(Script.TRIGGER_EVENTS)
-        );
-        eventSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-        eventSpinner.setAdapter(eventSpinnerAdapter);
+    private List<String> getModifierValues(String verb) {
+        switch (verb) {
+            case "goto": return dbase.getGamePageNames(page.getGameID());
+            case "play": return Arrays.asList(AUDIO_NAMES);
+            case "hide": case "show":
+                List<Shape> allShapes = dbase.getPageShapes(page.getPageID(), pagePreview);
+                List<String> shapeNames = new ArrayList<>();
+                allShapes.forEach(shape -> shapeNames.add(shape.getName()));
+                return shapeNames;
+        }
+        return new ArrayList<>();
     }
-    private void populateModifierSpinner(List<String> list) {
-        ArrayAdapter<String> modSpinnerAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                list
-        );
-        modSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-        modifierSpinner.setAdapter(modSpinnerAdapter);
+    private void addScriptRow(LinearLayout parentView, View.OnClickListener addRowListener, List<String> leftSpinnerValues, View.OnClickListener deleteRowListener) {
+        LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams spinnerParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 3);
+        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+
+        LinearLayout scriptRow = new LinearLayout(this);
+        scriptRow.setOrientation(LinearLayout.HORIZONTAL);
+        scriptRow.setLayoutParams(rowParams);
+
+        Spinner leftSpinner = new Spinner(this);
+        populateSpinner(leftSpinner, leftSpinnerValues);
+        leftSpinner.setLayoutParams(spinnerParams);
+        Spinner rightSpinner = new Spinner(this);
+        initRightSpinner(leftSpinner, rightSpinner, leftSpinnerValues);
+        rightSpinner.setLayoutParams(spinnerParams);
+
+        Button addScriptRow = new Button(this);
+        addScriptRow.setLayoutParams(buttonParams);
+        addScriptRow.setText("+");
+        addScriptRow.setOnClickListener(addRowListener);
+        Button deleteScriptRow = new Button(this);
+        deleteScriptRow.setLayoutParams(buttonParams);
+        deleteScriptRow.setText("-");
+        deleteScriptRow.setOnClickListener(deleteRowListener);
+
+        scriptRow.addView(leftSpinner);
+        scriptRow.addView(rightSpinner);
+        scriptRow.addView(addScriptRow);
+        scriptRow.addView(deleteScriptRow);
+
+        parentView.addView(scriptRow);
+    }
+    private void deleteScriptRow(View view) {
+        LinearLayout scriptRow = (LinearLayout) view.getParent();
+        LinearLayout parentView = (LinearLayout) scriptRow.getParent();
+        if (parentView.getChildCount() > 1)
+            parentView.removeView(scriptRow);
     }
     //writes the text-shapes into the ivar arrayList of text shapes above
     private Page extractIntentData(Intent intent){

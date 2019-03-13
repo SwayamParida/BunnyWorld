@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.65"/>
+        app:layout_constraintGuide_percent="0.75"/>
 
     <edu.stanford.cs108.bunnyworld.CustomPageView
         android:id="@+id/pagePreview"
@@ -130,57 +130,77 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/actionRow1"
-                android:orientation="horizontal"
+                android:id="@+id/actions"
+                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_columnSpan="2">
-                <Spinner
-                    android:id="@+id/verb1"
+                <LinearLayout
+                    android:id="@+id/actionRow1"
+                    android:orientation="horizontal"
                     android:layout_height="wrap_content"
-                    android:layout_width="0dp"
-                    android:layout_weight="2"/>
-                <Spinner
-                    android:id="@+id/modifier1"
-                    android:layout_height="wrap_content"
-                    android:layout_width="0dp"
-                    android:layout_weight="2" />
-                <Button
-                    android:id="@+id/addActionRow1"
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    android:text="+"/>
-                <Button
-                    android:id="@+id/deleteActionRow1"
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    android:text="-"/>
+                    android:layout_width="match_parent">
+                    <Spinner
+                        android:id="@+id/verb1"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"/>
+                    <Spinner
+                        android:id="@+id/modifier1"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="3" />
+                    <Button
+                        android:id="@+id/addActionRow1"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:onClick="addActionRow"
+                        android:text="+"/>
+                    <Button
+                        android:id="@+id/deleteActionRow1"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:onClick="deleteActionRow"
+                        android:text="-"/>
+                </LinearLayout>
             </LinearLayout>
+
             <LinearLayout
-                android:id="@+id/triggerRow1"
-                android:orientation="horizontal"
-                android:layout_columnSpan="2"
-                android:layout_width="match_parent">
-                <Spinner
-                    android:id="@+id/event1"
+                android:id="@+id/triggers"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_columnSpan="2">
+                <LinearLayout
+                    android:id="@+id/triggerRow1"
+                    android:orientation="horizontal"
                     android:layout_height="wrap_content"
-                    android:layout_width="0dp"
-                    android:layout_weight="3" />
-                <Spinner
-                    android:id="@+id/action1"
-                    android:layout_height="wrap_content"
-                    android:layout_width="0dp"
-                    android:layout_weight="3" />
-                <Button
-                    android:id="@+id/addTriggerRow1"
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    android:onClick="addActionRow"
-                    android:text="+"/>
-                <Button
-                    android:id="@+id/deleteTriggerRow1"
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    android:text="-"/>
+                    android:layout_width="match_parent">
+                    <Spinner
+                        android:id="@+id/event1"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="3" />
+                    <Spinner
+                        android:id="@+id/action1"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="3" />
+                    <Button
+                        android:id="@+id/addTriggerRow1"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:onClick="addTriggerRow"
+                        android:text="+"/>
+                    <Button
+                        android:id="@+id/deleteTriggerRow1"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:onClick="deleteTriggerRow"
+                        android:text="-"/>
+                </LinearLayout>
             </LinearLayout>
         </GridLayout>
     </android.support.v4.widget.NestedScrollView>
