@@ -134,19 +134,19 @@ public class CustomPageView extends View implements BunnyWorldConstants{
      */
     public String getLatestSelected(){
         String name;
-        if(imgSpinner != null) name = imgSpinner.getSelectedItem().toString();
-        else {
+        if (imgSpinner == null) {
             imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
-            name = imgSpinner.getSelectedItem().toString();
         }
-        return name;
+        if (imgSpinner.getSelectedItem() != null)
+            return imgSpinner.getSelectedItem().toString();
+        return "";
     }
 
     /**
      * Helper method that handles all the steps associated with shape selection and deselection
      * @param toSelect When not-null, this Shape is selected. When null, the current selection is cleared.
      */
-    private void selectShape(Shape toSelect) {
+    public void selectShape(Shape toSelect) {
         if (selectedShape != null) {
             selectedShape.setSelected(false);
         }
@@ -155,6 +155,18 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         selectedShape = toSelect;
         updateInspector(selectedShape);
         //invalidate();
+    }
+
+    public Shape makeShapeCopy(Shape shape) {
+        return new ImageShape(this, shape.getBounds(), shape.getImage(), shape.getText(),
+                shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+    }
+
+    // Overloading
+    public Shape makeShapeCopy(Shape shape, String shapeName, float x, float y) {
+        RectF newBounds = new RectF(x, y, shape.getWidth(), shape.getHeight());
+        return new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
+                shape.getResId(), shape.isVisible(), shape.isMovable(), shapeName);
     }
 
     /**
@@ -300,4 +312,12 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
     //getters and setters for the pageId
     public void setPageId(int pageId){this.pageId = pageId;}
+    public void addShape(Shape shape) {
+        changesMade = true;
+        page.addShape(shape);
+    }
+    public void deleteShape(Shape shape) {
+        changesMade = true;
+        page.deleteShape(shape);
+    }
 }
