@@ -2,7 +2,6 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -25,6 +24,10 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 public class PageEditorActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
@@ -57,7 +60,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         spinner.setAdapter(adapter);
     }
     /**
-     * Event handler for when the "Save" button is clicked.
+     * Event handler for when the "Update" button is clicked.
      */
     public void saveChanges(View view) {
         Shape selectedShape = pagePreview.getSelectedShape();
@@ -145,12 +148,13 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      */
     private void initPageView() {
         pagePreview.setPage(page);
+        pagePreview.setPageId(dbase.getId(PAGES_TABLE, page.getName(), gameId));
+        //update selected image on the preview
         String imgName = (String)((ArrayAdapter)imgSpinner.getAdapter()).getItem(0);
         Bitmap newBitmap = dbase.getImage(imgName);
         //use the database to get the object
         BitmapDrawable defaultImage = new BitmapDrawable(newBitmap);
         pagePreview.setSelectedImage(defaultImage);
-        //after loading page draw contents
         pagePreview.invalidate();
     }
 
@@ -265,12 +269,14 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         }
         Page newPage = new Page(pageName);
         ArrayList<Integer> shapesId = intent.getIntegerArrayListExtra("ShapesArray");
-
         //instantiate the text-shapes ivar array
         ArrayList<Shape> shapes = new ArrayList<Shape>();
         //populate the shapes list
         for(int id: shapesId){
-            ImageShape newShape = dbase.getShape(id, pagePreview);
+            ImageShape readShape = dbase.getShape(id, pagePreview);
+            ImageShape newShape = new ImageShape(pagePreview, readShape.getBounds(),
+                    readShape.getImage(), readShape.getText(), readShape.getResId(), readShape.isVisible(),
+                    readShape.isMovable(), readShape.getName());
             shapes.add(newShape);
         }
         newPage.setListOfShapes(shapes);
@@ -298,7 +304,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         RectF boundingRect = new RectF(x, y, x + width, y + height);
 
         Script script = createScript();
-        Log.d("PageEditorActivity", script.toString());
 
         Shape shape;
         // When only image is provided
@@ -375,6 +380,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
                     .setMessage("Would you like to save changes?")
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface arg0, int arg1) {
+                            savePageBitmap(pagePreview);
                             saveToDatabase();
                             pagePreview.setChangesMadeBool(false);
                             Toast.makeText(getApplicationContext(), "Changes saved", Toast.LENGTH_SHORT).show();
@@ -384,10 +390,18 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             //add the no functionality
             alertBox.setNegativeButton("No", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface arg0, int arg1) {
-                    PageEditorActivity.super.onBackPressed();
+                    //PageEditorActivity.super.onBackPressed();
+                    Intent intent = new Intent(PageEditorActivity.this, PreviewPagesActivity.class);
+                    intent.putExtra("Game_id", gameId);
+                    startActivity(intent);
                 }
             }).create().show();
-        }else super.onBackPressed();
+        }
+        Intent intent = new Intent(this, PreviewPagesActivity.class);
+        intent.putExtra("Game_id", gameId);
+        startActivity(intent);
+        //else super.onBackPressed();
+
     }
 
     //method that saves to the database
@@ -396,21 +410,15 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //saves all the shapes from the array list populated here
         String pageName = page.getName();
 
-        String cmd = "SELECT * FROM pages WHERE name = '"+ pageName +"';";
-        Cursor cursor = dbase.db.rawQuery(cmd, null);
-        //delete old shapes and re-add new shapes
-        int pageId = -1;
-        if(cursor.getCount() != 0){
-            cursor.moveToFirst();
-            pageId = cursor.getInt(3);
+        //use the game id to access them
+        int pageId = dbase.getId(PAGES_TABLE, pageName, gameId);
+        if(pageId != -1){
             dbase.db.execSQL("DELETE FROM shapes WHERE parent_id = " + pageId + ";");
-        }
-
-        //else create the page and get the id for its children
-        if(pageId == -1) {
+        } else {
             boolean success = dbase.addPage(pageName, page.getPageRender(), gameId);
             if(success) pageId = dbase.getId(PAGES_TABLE, pageName, gameId);
         }
+
         for(Shape currShape: shapesList){
             //name, parent_id, res_id, x, y, width, height, txtString, scripts, visible, movable
             String name = currShape.getName();

@@ -96,8 +96,11 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param gameName string name of the game
      */
     public void addGameToTable(String gameName) {
-        String cmd = "INSERT INTO games VALUES ('" + gameName + "', NULL);";
-        db.execSQL(cmd);
+        ContentValues cv = new ContentValues();
+        cv.put("name", gameName);
+        db.insert(GAMES_TABLE, null, cv);
+//        String cmd = "INSERT INTO games VALUES ('" + gameName + "', NULL);";
+//        db.execSQL(cmd);
     }
 
     /**
@@ -143,7 +146,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @return returns true if there exists at least one game. False otherwise.
      */
     public boolean gameExists() {
-        Cursor cursor = db.rawQuery("SELECT * FROM games", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM games;", null);
         if ((cursor != null) && (cursor.getCount() != 0)) {
             cursor.close();
             return true;
@@ -169,6 +172,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         }
         cmd += ";";
         Cursor cursor = db.rawQuery(cmd, null);
+        if(cursor.getCount() == 0) return -1; //in the case where we create a new page
         cursor.moveToFirst();
         int colIndex = cursor.getColumnIndex("_id");
         int id = cursor.getInt(colIndex);
@@ -314,26 +318,30 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @return the arraylist of the resource names
      */
     public ArrayList<String> getResourceNames(){
-
-//        String cmd = "SELECT * FROM resources;";
-//        Cursor cursor = db.rawQuery(cmd, null);
-//        ArrayList<String> names = new ArrayList<String>();
-//        while(cursor.moveToNext()){
-//            String name = cursor.getString(0);
-//            names.add(name);
-//        }
-//        cursor.close();
-//        if(names.isEmpty()) return null;
-//        else return names;
         resourceNames.clear();
         String cmd = "SELECT * FROM resources WHERE resType = " + IMAGE + ";";
         Cursor nameCursor = db.rawQuery(cmd, null);
-        while(nameCursor.moveToNext()){
+        int counter = 0;
+        while(nameCursor.moveToNext() && counter < 7){
+            Log.d("counter", Integer.toString(counter));
+            counter++;
             String name = nameCursor.getString(0);
             resourceNames.add(name);
         }
         nameCursor.close();
         return resourceNames;
+    }
+
+    /**
+     * @param id id of the resource
+     * returns the resource name of that resource ID
+     */
+    public String getResourceName(int id){
+        String cmd = "SELECT * FROM "+ RESOURCE_TABLE +" WHERE _id = "+ id +";";
+        Cursor cursor = db.rawQuery(cmd, null);
+        cursor.moveToFirst();
+        String name = cursor.getString(0);
+        return name;
     }
 
     /**
@@ -557,7 +565,8 @@ public class DatabaseHelper implements BunnyWorldConstants {
         boolean visible = cursor.getInt(10) > 0;
 
         RectF bounds = new RectF(x, y, x + width, y + height);
-        BitmapDrawable drawable = new BitmapDrawable(mContext.getResources(), getImage(res_id));
+        Bitmap newBitmap = getImage(res_id);
+        BitmapDrawable drawable = new BitmapDrawable(newBitmap);
 
         ImageShape shape = new ImageShape(view, bounds, drawable, txtString, res_id, visible, moveable, name);
         shape.setScript(Script.parseScript(script));
@@ -648,8 +657,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
         ContentValues cv = new ContentValues();
         cv.put("rendering", bitmapdata);
         db.update(PAGES_TABLE, cv, "_id=?", new String[]{Integer.toString(page_id)});
-//        String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + bitmapdata.toString() + " WHERE _id = " + page_id + ";";
-//        db.execSQL(cmd);
     }
 
     /**
@@ -702,11 +709,13 @@ public class DatabaseHelper implements BunnyWorldConstants {
 
     /**
      * returns the most recent count number for the pages in that game
-     * @param gameId id of the game
+     * @param id id of the game
+     * @param tableName name of the table
      * @return
      */
-    public int getLatestCount(int gameId){
-        String cmd = "SELECT * FROM games WHERE _id = "+ gameId +";";
+    public int getLatestCount(String tableName, int id){
+        if(id == -1) return 0; //in the case where a new game is created or a new page is created
+        String cmd = "SELECT * FROM " + tableName + " WHERE parent_id = "+ id +";";
         Cursor cursor = db.rawQuery(cmd, null);
         int count = cursor.getCount();
         cursor.close();

@@ -2,12 +2,12 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.Log;
 
 import java.util.ArrayList;
 
 public class Page {
 
-    private static int count = 0;
     private boolean isStarterPage = false;
     private ArrayList<Shape> listOfShapes = new ArrayList<>();
     private String name;
@@ -49,7 +49,7 @@ public class Page {
 
     //method that adds in a list of shapes --- a setter
     public void setListOfShapes(ArrayList<Shape> arrList){
-        listOfShapes = arrList;
+        listOfShapes = new ArrayList<Shape>(arrList);
     }
 
     //gets the list of shapes
@@ -58,8 +58,10 @@ public class Page {
     }
 
     public void draw(Canvas canvas) {
-        for (Shape shape : listOfShapes)
+        for (Shape shape : listOfShapes) {
+            Log.d("list", shape.toString());
             shape.draw(canvas);
+        }
     }
     public Shape findLastShape(float x, float y) {
         Shape lastFound = null;

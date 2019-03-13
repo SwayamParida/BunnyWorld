@@ -13,9 +13,6 @@ import java.util.List;
 abstract class Shape {
     static int count = 0;
 
-    //an Array List for editing the shapes
-    static List shapesList = new ArrayList<Shape>();
-
     //ivars for all shapes
     protected int res_id;
     protected String txtString;
@@ -55,7 +52,8 @@ abstract class Shape {
     }
 
     //general draw method
-    public void draw(Canvas canvas) { if (selected) canvas.drawRect(bounds, outlinePaint); }
+    public void draw(Canvas canvas) {
+        if (selected) canvas.drawRect(bounds, outlinePaint); }
 
     //specific draw for other canvases
     abstract void draw(Canvas canvas, float xPos, float yPos);
