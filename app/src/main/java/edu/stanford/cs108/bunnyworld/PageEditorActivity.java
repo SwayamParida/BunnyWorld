@@ -23,7 +23,9 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PageEditorActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
@@ -33,7 +35,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     private HorizontalScrollView imgScrollView;
     private Spinner imgSpinner, verbSpinner, modifierSpinner, eventSpinner, actionSpinner;
     private LinearLayout actions, triggers;
-    private List<Action> unsavedActions;
+    private Set<Action> unsavedActions;
 
     //array list of text shapes that is retrieved from EditPagesActivity
     private DatabaseHelper dbase;
@@ -43,9 +45,9 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     /**
      * Helper method that updates the Spinner to reflect the image clicked by the user
      */
-    public static void updateSpinner(Spinner imgSpinner, String imgName) {
-        ArrayAdapter<String> imgSpinnerAdapter = (ArrayAdapter<String>) imgSpinner.getAdapter();
-        imgSpinner.setSelection(imgSpinnerAdapter.getPosition(imgName));
+    public static void updateSpinner(Spinner spinner, String name) {
+        ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinner.getAdapter();
+        spinner.setSelection(adapter.getPosition(name));
     }
     public static void populateSpinner(Spinner spinner, List<String> list) {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -61,21 +63,23 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      */
     public void saveChanges(View view) {
         Shape selectedShape = pagePreview.getSelectedShape();
-        if (selectedShape != null) {
+        if (selectedShape != null)
             page.deleteShape(selectedShape);
-            page.addShape(updateShape());
-            pagePreview.setPage(page);
-            pagePreview.invalidate();
-        }
+        page.addShape(updateShape());
+        pagePreview.setPage(page);
+        pagePreview.invalidate();
     }
     public void addTriggerRow(View view) {
         addScriptRow(triggers, this::addTriggerRow, this::deleteTriggerRow, Arrays.asList(TRIGGER_EVENTS), false);
         repopulateActionSpinners();
     }
     public void addActionRow(View view) {
-        Action action = getAction((LinearLayout) view.getParent());
-        unsavedActions.add(action);
-        repopulateActionSpinners();
+        // Check necessary for when row is added programmatically from CustomPageView
+        if (view != null) {
+            Action action = getAction((LinearLayout) view.getParent());
+            unsavedActions.add(action);
+            repopulateActionSpinners();
+        }
         addScriptRow(actions, this::addActionRow, this::deleteActionRow, Arrays.asList(ACTION_VERBS), true);
     }
     public void deleteActionRow(View view) {
@@ -98,7 +102,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
         page = extractIntentData(getIntent());
-        unsavedActions = new ArrayList<>();
+        unsavedActions = new HashSet<>();
 
         populateSpinner(imgSpinner, dbase.getResourceNames());
         populateSpinner(verbSpinner, Arrays.asList(ACTION_VERBS));
@@ -117,7 +121,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         super.onResume();
         ((ArrayAdapter) imgSpinner.getAdapter()).notifyDataSetChanged();
         populateImgScrollView();
-
     }
 
     /**
@@ -203,6 +206,16 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             @Override
             public void onNothingSelected(AdapterView<?> parent) { }
         });
+        modifierSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Action action = getAction((LinearLayout) modifierSpinner.getParent());
+                unsavedActions.add(action);
+                repopulateActionSpinners();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) { }
+        });
     }
     private List<String> getModifierValues(String verb) {
         switch (verb) {
@@ -266,7 +279,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         gameId = intent.getIntExtra("gameId", -1);
         //create a new page that has the properties of the previous page
         String pageName = intent.getStringExtra("pageName");
-        getSupportActionBar().setTitle("BunnyWorld Editor: "+pageName);
+        getSupportActionBar().setTitle("BunnyWorld Editor: "+ pageName);
 
         Page newPage = new Page(pageName);
         pagePreview.setPage(newPage);
@@ -311,7 +324,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         float height = Float.parseFloat(hEditText.getText().toString());
         RectF boundingRect = new RectF(x, y, x + width, y + height);
 
-        //Script script = createScript();
+        Script script = createScript();
 
         Shape shape;
         // When only image is provided
@@ -319,15 +332,15 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             //get the image id and pass it in
             int imgId = dbase.getId(RESOURCE_TABLE, imageName, NO_PARENT);
             shape = new ImageShape(pagePreview, boundingRect, new BitmapDrawable(image), text, imgId, visible, movable, name);
-            //shape.setScript(script);
+            shape.setScript(script);
             // When text is provided, it takes precedence over any other object
         } else if (!text.isEmpty()) {
             shape = new TextShape(pagePreview, boundingRect, new BitmapDrawable(image), text, -1, visible, movable, name);
-            //shape.setScript(script);
+            shape.setScript(script);
             // When neither image nor text is provided
         } else {
             shape = new RectangleShape(pagePreview, boundingRect, -1, visible, movable, name);
-            //shape.setScript(script);
+            shape.setScript(script);
         }
 
         //Save copy of page
@@ -336,8 +349,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
     private Script createScript() {
         Script script = new Script();
-        for (int triggerRowIndex = 0; triggerRowIndex < actions.getChildCount(); ++triggerRowIndex) {
-            LinearLayout triggerRow = (LinearLayout) actions.getChildAt(triggerRowIndex);
+        for (int triggerRowIndex = 0; triggerRowIndex < triggers.getChildCount(); ++triggerRowIndex) {
+            LinearLayout triggerRow = (LinearLayout) triggers.getChildAt(triggerRowIndex);
             Spinner eventSpinner = (Spinner) triggerRow.getChildAt(EVENT_SPINNER);
             Spinner actionSpinner = (Spinner) triggerRow.getChildAt(ACTION_SPINNER);
 
@@ -386,27 +399,25 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         startActivity(intent);
     }
 
-    //on back pressed update the database by simply calling the save method
-    //---FIXED
     @Override
     public void onBackPressed(){
         if(pagePreview.getChangesMadeBool()){
-            AlertDialog.Builder alertBox = new AlertDialog.Builder(this)
-                    .setTitle("Page Edit Changes")
-                    .setMessage("Would you like to save changes?")
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface arg0, int arg1) {
-                            savePageBitmap(pagePreview);
-                            saveToDatabase();
-                            pagePreview.setChangesMadeBool(false);
+            AlertDialog.Builder alertBox = new AlertDialog.Builder(this);
+            alertBox.setTitle("Page Edit Changes");
+            alertBox.setMessage("Would you like to save changes?");
+            alertBox.setPositiveButton(android.R.string.yes, (arg0, arg1) -> {
+                savePageBitmap(pagePreview);
+                saveToDatabase();
+                pagePreview.setChangesMadeBool(false);
                             PageEditorActivity.super.onBackPressed();
-                        }
-                    });
+            });
             //add the no functionality
-            alertBox.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface arg0, int arg1) {PageEditorActivity.super.onBackPressed(); }
-            }).create().show();
-        } else super.onBackPressed();
+            alertBox.setNegativeButton(android.R.string.no, (arg0, arg1) -> PageEditorActivity.super.onBackPressed());
+            alertBox.create().show();
+        }
+        else {
+            super.onBackPressed();
+        }
     }
 
     //method that saves to the database

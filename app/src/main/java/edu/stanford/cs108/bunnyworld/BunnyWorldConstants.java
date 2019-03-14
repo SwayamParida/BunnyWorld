@@ -38,13 +38,15 @@ public interface BunnyWorldConstants {
     String[] ACTION_VERBS = { "goto", "play", "hide", "show" };
     String[] TRIGGER_EVENTS = { "onClick", "onDrop", "onEnter" };
     String VERB_MODIFIER_DELIMITER = " ";
-    String ACTION_DELIMITER = "; ";
-    String EVENT_ACTION_DELIMITER = ": { ";
-    String TRIGGER_DELIMITER = "}\n";
+    String ACTION_DELIMITER = ";";
+    String EVENT_ACTION_DELIMITER = ": |";
+    String TRIGGER_DELIMITER = "|\n";
     String regex = "trigger: { (verb modifier; )*}\n";
 
     int EVENT_SPINNER = 0;
     int ACTION_SPINNER = 1;
     int VERB_SPINNER = 0;
     int MODIFIER_SPINNER = 1;
+    int ADD_ROW_BUTTON = 2;
+    int DELETE_ROW_BUTTON = 3;
 }

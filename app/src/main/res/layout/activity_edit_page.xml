@@ -140,6 +140,11 @@
                     android:text="Movable" />
             </LinearLayout>
 
+            <TextView
+                android:layout_columnSpan="2"
+                android:layout_width="match_parent"
+                android:text="Actions"/>
+
             <LinearLayout
                 android:id="@+id/actions"
                 android:orientation="vertical"
@@ -176,6 +181,11 @@
                         android:text="-"/>
                 </LinearLayout>
             </LinearLayout>
+
+            <TextView
+                android:layout_columnSpan="2"
+                android:layout_width="match_parent"
+                android:text="Triggers"/>
 
             <LinearLayout
                 android:id="@+id/triggers"

@@ -1,13 +1,35 @@
 package edu.stanford.cs108.bunnyworld;
 
-import android.media.MediaPlayer;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Script implements BunnyWorldConstants {
     private boolean onClick, onEnter, onDrop;
     private List<Action> onClickActions, onEnterActions, onDropActions;
+
+    public Script() {
+        onClickActions = new ArrayList<>();
+        onDropActions = new ArrayList<>();
+        onEnterActions = new ArrayList<>();
+    }
+
+    public List<Action> getOnClickActions() {
+        return onClickActions;
+    }
+    public List<Action> getOnDropActions() {
+        return onDropActions;
+    }
+    public List<Action> getOnEnterActions() {
+        return onEnterActions;
+    }
+    public List<Action> getActions() {
+        List<Action> actions = new ArrayList<>();
+        actions.addAll(onClickActions);
+        actions.addAll(onDropActions);
+        actions.addAll(onEnterActions);
+        return actions;
+    }
 
     public void addOnClickAction(Action onClickAction) {
         onClick = true;
@@ -21,16 +43,43 @@ public class Script implements BunnyWorldConstants {
         onEnter = true;
         onEnterActions.add(onEnterAction);
     }
-    public List<Action> getActions() {
-        List<Action> actions = new ArrayList<>();
-        actions.addAll(onClickActions);
-        actions.addAll(onDropActions);
-        actions.addAll(onEnterActions);
-        return actions;
+    public void addOnClickAction(List<Action> onClickAction) {
+        onClick = true;
+        onClickActions.addAll(onClickAction);
+    }
+    public void addOnDropAction(List<Action> onDropAction) {
+        onDrop = true;
+        onDropActions.addAll(onDropAction);
+    }
+    public void addOnEnterAction(List<Action> onEnterAction) {
+        onEnter = true;
+        onEnterActions.addAll(onEnterAction);
     }
 
     public static Script parseScript(String scriptString) {
-        return null; //TODO: Figure out how to use RegEx to parse String
+        Script script = new Script();
+
+        Scanner triggerScanner = new Scanner(scriptString);
+        triggerScanner.useDelimiter(TRIGGER_DELIMITER);
+
+        List<String> triggers = new ArrayList<>();
+        while (triggerScanner.hasNext())
+            triggers.add(triggerScanner.next());
+        triggerScanner.close();
+
+        for (String trigger : triggers) {
+            Scanner eventScanner = new Scanner(trigger);
+            eventScanner.useDelimiter(EVENT_ACTION_DELIMITER);
+            String event = triggerScanner.next();
+            List<Action> actions = Action.parseActionList(triggerScanner.next());
+            switch (event) {
+                case "onClick": script.addOnClickAction(actions); break;
+                case "onDrop": script.addOnDropAction(actions); break;
+                case "onEnter": script.addOnEnterAction(actions); break;
+            }
+        }
+
+        return script;
     }
 
     @Override
