@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -240,5 +241,13 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         intent.putExtra("gameId", gameId);
         intent.putExtra("containsItems", true);
         startActivity(intent);
+    }
+
+    //on resume method
+    @Override
+    public void onResume(){
+        super.onResume();
+        scrollview.removeAllViews();
+        populateScrollView();
     }
 }

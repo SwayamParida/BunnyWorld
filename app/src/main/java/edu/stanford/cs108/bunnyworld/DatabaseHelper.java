@@ -571,6 +571,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         ImageShape shape = new ImageShape(view, bounds, drawable, txtString, res_id, visible, moveable, name);
         shape.setScript(Script.parseScript(script));
         cursor.close();
+
         return shape;
     }
 
@@ -741,12 +742,12 @@ public class DatabaseHelper implements BunnyWorldConstants {
     /**
      *It only works for pages and shapes
      * @param tableName the name of the table of that object
-     * @param itemId  of the object itself
+     * @param name name of the object itself
      * @return the id of it's parent if it has one else it returns -1
      */
-    public int getParentId(String tableName, int itemId){
+    public int getParentId(String tableName, String name){
         if(tableName.equals(GAMES_TABLE) || tableName.equals(RESOURCE_TABLE)) return -1;
-        String cmd = "SELECT * FROM "+ tableName + " WHERE _id = "+ itemId +";";
+        String cmd = "SELECT * FROM "+ tableName + " WHERE name = '"+ name +"';";
         Cursor cursor = db.rawQuery(cmd, null);
         int id = cursor.getInt(1);
         cursor.close();
