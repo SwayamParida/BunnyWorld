@@ -115,5 +115,11 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
 //            dbHelper = DatabaseHelper.getInstance(this);
 //        }
     }
+
+    @Override
+    public void onBackPressed(){
+        Intent intent = new Intent(this, IntroScreenActivity.class);
+        startActivity(intent);
+    }
 }
 
