@@ -146,7 +146,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      */
     private void initPageView() {
         pagePreview.setPage(page);
-        pagePreview.invalidate();
         pagePreview.setPageId(dbase.getId(PAGES_TABLE, page.getName(), gameId));
         //update selected image on the preview
         String imgName = (String)((ArrayAdapter)imgSpinner.getAdapter()).getItem(0);

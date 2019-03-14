@@ -68,7 +68,7 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
     //doesn't explicitly handle scrollview because onCreate method will do that
     public void createNew(View view){
         int count = getShapesCount() + 1;
-        String pageName = "page" + count;
+        String pageName = "Page " + count;
         Intent newIntent = new Intent(this, PageEditorActivity.class);
         newIntent.putExtra("containsItems", false);
         newIntent.putExtra("pageName", pageName);
