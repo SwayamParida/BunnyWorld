@@ -139,7 +139,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         eventSpinner = findViewById(R.id.event1);
         actionSpinner = findViewById(R.id.action1);
         actions = findViewById(R.id.actions);
-        //triggers = findViewById(R.id.triggers);
+        triggers = findViewById(R.id.triggers);
         imgScrollView = findViewById(R.id.presetImages);
         pagePreview = findViewById(R.id.pagePreview);
     }
@@ -392,14 +392,15 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
                         public void onClick(DialogInterface arg0, int arg1) {
                             savePageBitmap(pagePreview);
                             saveToDatabase();
-                            passValuesBack();
+                            pagePreview.setChangesMadeBool(false);
+                            PageEditorActivity.super.onBackPressed();
                         }
                     });
             //add the no functionality
             alertBox.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface arg0, int arg1) {passValuesBack(); }
+                public void onClick(DialogInterface arg0, int arg1) {PageEditorActivity.super.onBackPressed(); }
             }).create().show();
-        } else passValuesBack();;
+        } else super.onBackPressed();
     }
 
     //method that saves to the database
