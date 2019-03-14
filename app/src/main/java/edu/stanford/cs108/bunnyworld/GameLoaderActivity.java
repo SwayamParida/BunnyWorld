@@ -109,11 +109,11 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
                 cursor, fromArray, toArray, 0);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-        int count = cursor.getCount();
-        if(count == 0){
-            dbHelper.refreshDatabase(this);
-            dbHelper = DatabaseHelper.getInstance(this);
-        }
+//        int count = cursor.getCount();
+//        if(count == 0){
+//            dbHelper.refreshDatabase(this);
+//            dbHelper = DatabaseHelper.getInstance(this);
+//        }
     }
 }
 

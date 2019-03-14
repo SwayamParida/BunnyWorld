@@ -43,11 +43,21 @@ public class DatabaseHelper implements BunnyWorldConstants {
     /**
      * Private constructor. Sets up database if necessary
      */
-    private DatabaseHelper(Context context) {
+    public DatabaseHelper(Context context) {
         db = context.openOrCreateDatabase(DATABASE_NAME, Context.MODE_PRIVATE, null);
         Cursor cursor = db.rawQuery("SELECT * FROM sqlite_master WHERE type ='table' AND name = 'games';", null);
         if (cursor.getCount() == 0) {
             initializeDB();
+        } else {
+            if (resourceNames.isEmpty()) {
+                String cmd = "SELECT * FROM resources WHERE resType = " + IMAGE + ";";
+                Cursor nameCursor = db.rawQuery(cmd, null);
+                while(nameCursor.moveToNext()){
+                    String name = nameCursor.getString(0);
+                    resourceNames.add(name);
+                }
+                nameCursor.close();
+            }
         }
         cursor.close();
     }
@@ -74,7 +84,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      */
     public static DatabaseHelper getInstance(Context context) {
         mContext = context;
-        //context.deleteDatabase(DATABASE_NAME); //Erases database
+        //context.deleteDatabase(DATABASE_NAME);
         if (single_instance == null) {
             single_instance = new DatabaseHelper(context.getApplicationContext());
         }
@@ -86,8 +96,11 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param gameName string name of the game
      */
     public void addGameToTable(String gameName) {
-        String cmd = "INSERT INTO games VALUES ('" + gameName + "', NULL);";
-        db.execSQL(cmd);
+        ContentValues cv = new ContentValues();
+        cv.put("name", gameName);
+        db.insert(GAMES_TABLE, null, cv);
+//        String cmd = "INSERT INTO games VALUES ('" + gameName + "', NULL);";
+//        db.execSQL(cmd);
     }
 
     /**
@@ -133,7 +146,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @return returns true if there exists at least one game. False otherwise.
      */
     public boolean gameExists() {
-        Cursor cursor = db.rawQuery("SELECT * FROM games", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM games;", null);
         if ((cursor != null) && (cursor.getCount() != 0)) {
             cursor.close();
             return true;
@@ -159,6 +172,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
         }
         cmd += ";";
         Cursor cursor = db.rawQuery(cmd, null);
+        if(cursor.getCount() == 0) return -1; //in the case where we create a new page
         cursor.moveToFirst();
         int colIndex = cursor.getColumnIndex("_id");
         int id = cursor.getInt(colIndex);
@@ -170,7 +184,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * Creates empty games, pages, shapes TABLES. Populates resources TABLE with
      * images and audio resources in res library.
      */
-    private void initializeDB() {
+    public void initializeDB() {
         String cmd = "CREATE TABLE games (name Text, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create games table
         db.execSQL(cmd);
         cmd = "CREATE TABLE pages (name Text, parent_id INTEGER, rendering BLOB NOT NULL, _id INTEGER PRIMARY KEY AUTOINCREMENT);"; //Create pages table
@@ -191,6 +205,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
 
         //get the first 6 items into the resource folder
         int count = 1;
+        resourceNames = new ArrayList<String>();
         for (int curr : imgList) {
             String resourceName = mContext.getResources().getResourceEntryName(curr);
             if(count < 7){ resourceNames.add(resourceName); count += 1; }
@@ -303,18 +318,30 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @return the arraylist of the resource names
      */
     public ArrayList<String> getResourceNames(){
-
-//        String cmd = "SELECT * FROM resources;";
-//        Cursor cursor = db.rawQuery(cmd, null);
-//        ArrayList<String> names = new ArrayList<String>();
-//        while(cursor.moveToNext()){
-//            String name = cursor.getString(0);
-//            names.add(name);
-//        }
-//        cursor.close();
-//        if(names.isEmpty()) return null;
-//        else return names;
+        resourceNames.clear();
+        String cmd = "SELECT * FROM resources WHERE resType = " + IMAGE + ";";
+        Cursor nameCursor = db.rawQuery(cmd, null);
+        int counter = 0;
+        while(nameCursor.moveToNext() && counter < 7){
+            Log.d("counter", Integer.toString(counter));
+            counter++;
+            String name = nameCursor.getString(0);
+            resourceNames.add(name);
+        }
+        nameCursor.close();
         return resourceNames;
+    }
+
+    /**
+     * @param id id of the resource
+     * returns the resource name of that resource ID
+     */
+    public String getResourceName(int id){
+        String cmd = "SELECT * FROM "+ RESOURCE_TABLE +" WHERE _id = "+ id +";";
+        Cursor cursor = db.rawQuery(cmd, null);
+        cursor.moveToFirst();
+        String name = cursor.getString(0);
+        return name;
     }
 
     /**
@@ -538,10 +565,11 @@ public class DatabaseHelper implements BunnyWorldConstants {
         boolean visible = cursor.getInt(10) > 0;
 
         RectF bounds = new RectF(x, y, x + width, y + height);
-        BitmapDrawable drawable = new BitmapDrawable(mContext.getResources(), getImage(res_id));
+        Bitmap newBitmap = getImage(res_id);
+        BitmapDrawable drawable = new BitmapDrawable(newBitmap);
 
         ImageShape shape = new ImageShape(view, bounds, drawable, txtString, res_id, visible, moveable, name);
-        shape.setScript(new Script(script));
+        shape.setScript(Script.parseScript(script));
         cursor.close();
 
         return shape;
@@ -553,8 +581,8 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param view Pass in the view of the caller
      * @return Return an arraylist of all shapes within a page
      */
-    public ArrayList<ImageShape> getPageShapes(int parent_id, View view) {
-        ArrayList<ImageShape> pageShapes = new ArrayList<>();
+    public ArrayList<Shape> getPageShapes(int parent_id, View view) {
+        ArrayList<Shape> pageShapes = new ArrayList<>();
         String cmd = "SELECT * FROM " + SHAPES_TABLE + " WHERE parent_id = " + parent_id + ";";
         Cursor cursor = db.rawQuery(cmd, null);
         while (cursor.moveToNext()) {
@@ -629,8 +657,6 @@ public class DatabaseHelper implements BunnyWorldConstants {
         ContentValues cv = new ContentValues();
         cv.put("rendering", bitmapdata);
         db.update(PAGES_TABLE, cv, "_id=?", new String[]{Integer.toString(page_id)});
-//        String cmd = "UPDATE " + PAGES_TABLE + " SET rendering = " + bitmapdata.toString() + " WHERE _id = " + page_id + ";";
-//        db.execSQL(cmd);
     }
 
     /**
@@ -683,11 +709,13 @@ public class DatabaseHelper implements BunnyWorldConstants {
 
     /**
      * returns the most recent count number for the pages in that game
-     * @param gameId id of the game
+     * @param id id of the game
+     * @param tableName name of the table
      * @return
      */
-    public int getLatestCount(int gameId){
-        String cmd = "SELECT * FROM games WHERE _id = "+ gameId +";";
+    public int getLatestCount(String tableName, int id){
+        if(id == -1) return 0; //in the case where a new game is created or a new page is created
+        String cmd = "SELECT * FROM " + tableName + " WHERE parent_id = "+ id +";";
         Cursor cursor = db.rawQuery(cmd, null);
         int count = cursor.getCount();
         cursor.close();

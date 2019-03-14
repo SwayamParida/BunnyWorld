@@ -1,11 +1,15 @@
 package edu.stanford.cs108.bunnyworld;
 
 import android.content.Intent;
+import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.support.annotation.Dimension;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.VideoView;
 
@@ -18,12 +22,19 @@ public class IntroScreenActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
     private VideoView myVideoView;
     private Thread myThread;
+    public static int emulatorWidth, emulatorHeight;
 
     //Ike was here
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro_screen);
+
+        Display screensize = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        screensize.getSize(size);
+        emulatorWidth = size.x;
+        emulatorHeight = size.y;
     }
 
     protected void onResume() {
@@ -80,7 +91,9 @@ public class IntroScreenActivity extends AppCompatActivity {
         mediaPlayer.stop();
         myVideoView.stopPlayback();
         //Intent intent = new Intent(this, SearchForImageActivity.class);
-        Intent intent = new Intent(this, PlayGameActivity.class);  // Game selector
+        Intent intent = new Intent(this, GameLoaderActivity.class);  // Game selector
+        //intent.putExtra("gameId", 1);
+        intent.putExtra("playing", true);
         startActivity(intent);
     }
 
