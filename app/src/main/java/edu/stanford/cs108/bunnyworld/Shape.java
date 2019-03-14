@@ -180,4 +180,9 @@ abstract class Shape {
         res_id = resource_id;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        Shape cmpObj = (Shape)(obj);
+        return (cmpObj.getResId() == this.res_id && cmpObj.getName().equals(this.name));
+    }
 }

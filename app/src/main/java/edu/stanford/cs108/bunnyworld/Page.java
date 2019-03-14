@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class Page {
 
     private boolean isStarterPage = false;
-    private ArrayList<Shape> listOfShapes = new ArrayList<>();
+    private ArrayList<Shape> listOfShapes;
     private String name;
     private int pageID, gameID;
     private String backGroundImageName;
@@ -24,7 +24,7 @@ public class Page {
     }
 
     public void addShape(Shape shp){
-        if(shp != null) listOfShapes.add(shp);
+        if (shp != null) this.listOfShapes.add(shp);
     }
 
     public void deleteShape(Shape shp){
@@ -57,8 +57,7 @@ public class Page {
         return listOfShapes;
     }
 
-    public void draw(Canvas canvas) {
-        for (Shape shape : listOfShapes) {
+    public void draw(Canvas canvas) { for (Shape shape : this.listOfShapes) {
             Log.d("list", shape.toString());
             shape.draw(canvas);
         }
@@ -75,6 +74,7 @@ public class Page {
     //a constructor that sets the name
     public Page(String name){
         this.name = name;
+        this.listOfShapes = new ArrayList<>();
     }
 
     public void setPageRender(Bitmap pageRender) {
