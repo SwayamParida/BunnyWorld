@@ -508,4 +508,14 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         }
         return false;
     }
+
+    public void deleteShape(View view) {
+        pagePreview.saveForUndo();
+        Shape selectedShape = pagePreview.getSelectedShape();
+        if (selectedShape != null) {
+            pagePreview.deleteShape(selectedShape);
+        }
+        pagePreview.invalidate();
+    }
+
 }
