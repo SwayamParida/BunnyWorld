@@ -8,12 +8,12 @@ import java.util.ArrayList;
 
 public class Page {
 
-    private boolean isStarterPage = false;
-    private ArrayList<Shape> listOfShapes = new ArrayList<>();
-    private String name;
-    private int pageID, gameID;
-    private String backGroundImageName;
-    private Bitmap pageRender;
+    public boolean isStarterPage = false;
+    public ArrayList<Shape> listOfShapes = new ArrayList<>();
+    public String name;
+    public int pageID, gameID;
+    public String backGroundImageName;
+    public Bitmap pageRender;
 
     public boolean getIsStarterPage(){
         return this.isStarterPage;
@@ -46,6 +46,7 @@ public class Page {
     public int getGameID() {
         return gameID;
     }
+
 
     //method that adds in a list of shapes --- a setter
     public void setListOfShapes(ArrayList<Shape> arrList){

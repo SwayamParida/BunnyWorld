@@ -17,6 +17,7 @@ import android.widget.Spinner;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.PriorityQueue;
+import java.util.Stack;
 
 import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
 
@@ -37,14 +38,43 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     private int shapeCount = getLatestCount();
 
     //implementation helpers for undo and redo
-    private ArrayList<Shape> undoList = new ArrayList<Shape>();
-    private PriorityQueue<Shape> redoList = new PriorityQueue<Shape>();
+//    private ArrayList<Shape> undoList = new ArrayList<Shape>();
+//    private PriorityQueue<Shape> redoList = new PriorityQueue<Shape>();
+
+
+    private Stack<Page> stackOfPages;
+
+
+    public void saveForUndo(){
+
+        if(this.page == null) return;
+
+        Page pageClone = new Page("jhbg");
+        pageClone.isStarterPage = this.page.isStarterPage;
+
+        ArrayList<Shape> clonedList = (ArrayList<Shape>) this.page.listOfShapes.clone();
+
+        pageClone.listOfShapes = clonedList;
+        pageClone.name = this.page.name;
+        pageClone.pageID = this.page.pageID;
+        pageClone.gameID = this.page.gameID;
+        pageClone.backGroundImageName = this.page.backGroundImageName;
+        pageClone.pageRender = this.page.pageRender;
+
+        stackOfPages.push(pageClone);
+        Log.d("tag2","stackOfPagesContains " +stackOfPages.size() + " elements");
+
+
+    }
+
 
     public CustomPageView(Context context, AttributeSet attrs) {
         super(context, attrs);
         Log.d("width", Integer.toString(getWidth()));
         xOffset = 0;
         yOffset = 0;
+        stackOfPages = new Stack<Page>();
+
     }
 
     public void setSelectedImage(BitmapDrawable selectedImage) {
@@ -90,6 +120,9 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
         else if (selectedShape == null){
+            saveForUndo();
+            Log.d("tag2","Saved for undo in selectedShape == null");
+
             Log.d("tag1","Drawing new shape");
             RectF boundingRect = createBounds(x1, y1, x2, y2);
             if(boundingRect.left < 0 || boundingRect.right > this.getWidth() ||
@@ -109,10 +142,18 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             selectShape(shape);
             updateInspector(shape);
             changesMade = true;
+
+
+
+
+            invalidate();
+
             //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else {
+            saveForUndo();
+            Log.d("tag2","Saved for undo where user drags image");
             Log.d("width", Integer.toString(getWidth()));
             float newX = selectedShape.getX() + (x2 - x1);
             float newX1 = newX + selectedShape.getWidth();
@@ -130,8 +171,21 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             page.deleteShape(selectedShape);
             selectShape(shape);
             updateInspector(shape);
+
+
+
             changesMade = true;
+
+
+
+
+            invalidate();
+
         }
+
+
+
+
         invalidate();
 
         return true;
@@ -254,63 +308,29 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     //undoes an action performed by the user on the screen
     public boolean undoChange(){
         //accesses the array list of actions and simply deletes the last activity
-        int size = undoList.size();
-        Shape currentRemove = null;
-        if(size != 0 && size != 1) currentRemove = undoList.remove(size - 1);
-        if(currentRemove == null) return false;
 
-        //get shape name of last element and find old version in undoList
-        //add the removed shape to the queue in case they hit redo
-        String shapeName = currentRemove.getName();
-        Shape toAdd = undoList.get(size - 2);
-        redoList.add(currentRemove);
+        if(stackOfPages.size() != 0) {
+//            this.page.listOfShapes.clear();
+            Page lastStepPage = stackOfPages.pop();
+            Log.d("tag2","stackOfPagesContains " +stackOfPages.size() + " elements");
+            this.page = lastStepPage;
 
-        //add to the arrayList of the page and call invalidate on PagePreview
-        ArrayList<Shape> pageShape = page.getListOfShapes();
-        int pageSize = pageShape.size() - 1; //for loop might be slightly optimized
-        for(int i = pageSize; i > 0; i--){
-            String name = pageShape.get(i).getName();
-            if(name.equals(shapeName)) {
-                pageShape.remove(i);
-                pageShape.add(i, toAdd);
-                break;
-            }
+            invalidate();
+            return true;
         }
-        //update the page arrayList and call invalidate() to redraw shapes
-        page.setListOfShapes(pageShape);
-        this.invalidate();
-        return true;
+
+        return false;
+
+
+
     }
 
     //redo button
     public boolean redoAction(){
         //accesses the queue and simply adds that object to the arrayList
-        int size = redoList.size();
-        Shape currentToAdd = null;
-        if(size != 0) currentToAdd = redoList.poll();
-        if(currentToAdd == null) return false;
-
-        //get shape name of first element and find old version in pageShapes
-        //add the removed shape to the arrayList of the undoList in case they hit undo
-        String shapeName = currentToAdd.getName();
-        undoList.add(currentToAdd);
-
-        //add to the arrayList of the page and call invalidate on PagePreview
-        ArrayList<Shape> pageShape = page.getListOfShapes();
-        int pageSize = pageShape.size() - 1; //for loop might be slightly optimized
-        for(int i = pageSize; i > 0; i--){
-            String name = pageShape.get(i).getName();
-            if(name.equals(shapeName)) {
-                pageShape.remove(i);
-                pageShape.add(i, currentToAdd);
-                break;
-            }
-        }
-        //update the page arrayList and call invalidate() to redraw shapes
-        page.setListOfShapes(pageShape);
-        this.invalidate();
         return true;
     }
+
 
     //saves page to database
     public ArrayList<Shape> getPageShapes(){ return page.getListOfShapes(); }

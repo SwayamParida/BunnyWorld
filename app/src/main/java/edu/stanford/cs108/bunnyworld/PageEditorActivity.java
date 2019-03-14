@@ -64,6 +64,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         if (selectedShape != null) {
             page.deleteShape(selectedShape);
             page.addShape(updateShape());
+//            pagePreview.saveForUndo(); //delete?
             pagePreview.invalidate();
         }
     }
@@ -153,6 +154,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //use the database to get the object
         BitmapDrawable defaultImage = new BitmapDrawable(newBitmap);
         pagePreview.setSelectedImage(defaultImage);
+        pagePreview.saveForUndo();
+        Log.d("tag2","Saved for undo in init");
         pagePreview.invalidate();
     }
 
@@ -291,6 +294,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * @return new Shape using the updated attributes
      */
     private Shape updateShape() {
+        Log.d("tag2","Saved for undo in updateShape()");
+        pagePreview.saveForUndo();
         String name = nameEditText.getText().toString();
         String text = textEditText.getText().toString();
         boolean visible = visibleCheckBox.isChecked();
@@ -323,6 +328,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             shape = new RectangleShape(pagePreview, boundingRect, -1, visible, movable, name);
             shape.setScript(script);
         }
+
+        //Save copy of page
 
         return shape;
     }
@@ -360,7 +367,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     public void undoChange(View view){
         //accesses the array list of actions and simply deletes the last activity
         boolean undo = pagePreview.undoChange();
-        if(!undo) Toast.makeText(this, "Action undo successful", Toast.LENGTH_SHORT).show();
+        if(undo) Toast.makeText(this, "Action undo successful", Toast.LENGTH_SHORT).show();
         pagePreview.setChangesMadeBool(false);
     }
 
@@ -455,6 +462,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     public void copy(View view) {
+        pagePreview.saveForUndo();
         Shape selectedShape = pagePreview.getSelectedShape();
         if (selectedShape != null) {
             clipboard = pagePreview.makeShapeCopy(selectedShape);
@@ -463,6 +471,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     public void cut(View view) {
+        pagePreview.saveForUndo();
         Shape selectedShape = pagePreview.getSelectedShape();
         if (selectedShape != null) {
             clipboard = pagePreview.makeShapeCopy(selectedShape);
@@ -472,6 +481,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     public void paste(View view) {
+        pagePreview.saveForUndo();
         if (clipboard != null) {
             while (repeatName(clipboard.getName())) {
                 clipboard.setName(clipboard.getName()+"_copy");
