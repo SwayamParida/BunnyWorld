@@ -83,11 +83,12 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     public Shape getSelectedShape() {
         return selectedShape;
     }
+
     public void setPage(Page other) {
-        page = new Page(other.getName());
-        for (Shape shape : other.getListOfShapes()) {
-            page.addShape(shape);
-        }
+        page =  other; //new Page(other.getName());
+//        for (Shape shape : other.getListOfShapes()) {
+//            page.addShape(shape);
+//        }
     }
     @Override
     public void onDraw(Canvas canvas) {
