@@ -244,7 +244,6 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
     }
 
     //on resume method
-    //needs to override
     @Override
     public void onResume(){
         super.onResume();
