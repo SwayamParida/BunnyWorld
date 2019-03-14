@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -68,7 +69,7 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
     //doesn't explicitly handle scrollview because onCreate method will do that
     public void createNew(View view){
         int count = getShapesCount() + 1;
-        String pageName = "page" + count;
+        String pageName = "Page " + count;
         Intent newIntent = new Intent(this, PageEditorActivity.class);
         newIntent.putExtra("containsItems", false);
         newIntent.putExtra("pageName", pageName);
@@ -240,5 +241,13 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         intent.putExtra("gameId", gameId);
         intent.putExtra("containsItems", true);
         startActivity(intent);
+    }
+
+    //on resume method
+    @Override
+    public void onResume(){
+        super.onResume();
+        scrollview.removeAllViews();
+        populateScrollView();
     }
 }

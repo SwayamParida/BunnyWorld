@@ -20,8 +20,6 @@ public class TextShape extends Shape {
         super(view, bounds, image, txtString, resourceId, visible, movable, name);
         txtPaint.setColor(Color.BLACK);
         txtPaint.setTextSize(30f);
-        this.viewHeight = view.getHeight();
-        this.viewWidth = view.getWidth();
         textX = bounds.left/viewWidth;
         textY = bounds.top/viewHeight;
     }
