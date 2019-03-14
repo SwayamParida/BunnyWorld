@@ -23,19 +23,18 @@ import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
 
 public class CustomPageView extends View implements BunnyWorldConstants{
     private Page page;
-    private int pageId = -1;
+    private int pageId;
     private DatabaseHelper dbase = DatabaseHelper.getInstance(getContext());
     private BitmapDrawable selectedImage;
     private Shape selectedShape;
     private Spinner imgSpinner;
     private boolean changesMade = false;
     // Co-ordinates of user touches - populated in onTouchEvent()
-    private boolean shapeCountNotStarted = true;
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
 
     //get the current number of shapes in the folder
-    private int shapeCount = getLatestCount();
+    private int shapeCount = dbase.getLatestCount(SHAPES_TABLE, pageId);
 
     //implementation helpers for undo and redo
 //    private ArrayList<Shape> undoList = new ArrayList<Shape>();
@@ -130,11 +129,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             //get the resource Id of the image
             String latestSelected = getLatestSelected();
             int res_id = dbase.getId(RESOURCE_TABLE, latestSelected, -1);
-            if(shapeCountNotStarted && pageId != -1){
-                shapeCount = getLatestCount();
-                shapeCountNotStarted = false;
-                shapeCount++;
-            } else shapeCount += 1;
+            shapeCount += 1;
             String shapeName = "Shape "+ shapeCount;
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null,
                     res_id, true, true, shapeName);
@@ -348,22 +343,5 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     public void deleteShape(Shape shape) {
         changesMade = true;
         page.deleteShape(shape);
-    }
-
-    //gets the latest selected and parses the name correctly
-    public int getLatestCount(){
-        if(pageId == -1) return 0;
-
-        //else parse the string to get the actual count
-        String cmd = "SELECT * FROM shapes WHERE parent_id =" + pageId +";";
-        Cursor cursor = dbase.db.rawQuery(cmd, null);
-        cursor.moveToLast();
-        String name = cursor.getString(0);
-        String[] myList = name.split(" ");
-        int count = 0;
-        if (myList.length > 1) {
-            count = Integer.parseInt(myList[1]);
-        }
-        return count;
     }
 }

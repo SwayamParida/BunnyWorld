@@ -64,7 +64,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         if (selectedShape != null) {
             page.deleteShape(selectedShape);
             page.addShape(updateShape());
-//            pagePreview.saveForUndo(); //delete?
+            pagePreview.setPage(page);
             pagePreview.invalidate();
         }
     }
@@ -117,6 +117,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         super.onResume();
         ((ArrayAdapter) imgSpinner.getAdapter()).notifyDataSetChanged();
         populateImgScrollView();
+
     }
 
     /**
@@ -138,7 +139,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         eventSpinner = findViewById(R.id.event1);
         actionSpinner = findViewById(R.id.action1);
         actions = findViewById(R.id.actions);
-        triggers = findViewById(R.id.triggers);
+        //triggers = findViewById(R.id.triggers);
         imgScrollView = findViewById(R.id.presetImages);
         pagePreview = findViewById(R.id.pagePreview);
     }
@@ -310,7 +311,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         float height = Float.parseFloat(hEditText.getText().toString());
         RectF boundingRect = new RectF(x, y, x + width, y + height);
 
-        Script script = createScript();
+        //Script script = createScript();
 
         Shape shape;
         // When only image is provided
@@ -318,15 +319,15 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             //get the image id and pass it in
             int imgId = dbase.getId(RESOURCE_TABLE, imageName, NO_PARENT);
             shape = new ImageShape(pagePreview, boundingRect, new BitmapDrawable(image), text, imgId, visible, movable, name);
-            shape.setScript(script);
+            //shape.setScript(script);
             // When text is provided, it takes precedence over any other object
         } else if (!text.isEmpty()) {
             shape = new TextShape(pagePreview, boundingRect, new BitmapDrawable(image), text, -1, visible, movable, name);
-            shape.setScript(script);
+            //shape.setScript(script);
             // When neither image nor text is provided
         } else {
             shape = new RectangleShape(pagePreview, boundingRect, -1, visible, movable, name);
-            shape.setScript(script);
+            //shape.setScript(script);
         }
 
         //Save copy of page
@@ -397,15 +398,14 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
                         public void onClick(DialogInterface arg0, int arg1) {
                             savePageBitmap(pagePreview);
                             saveToDatabase();
-                            pagePreview.setChangesMadeBool(false);
-                            PageEditorActivity.super.onBackPressed();
+                            passValuesBack();
                         }
                     });
             //add the no functionality
             alertBox.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface arg0, int arg1) {PageEditorActivity.super.onBackPressed(); }
+                public void onClick(DialogInterface arg0, int arg1) {passValuesBack(); }
             }).create().show();
-        } else super.onBackPressed();
+        } else passValuesBack();;
     }
 
     //method that saves to the database
