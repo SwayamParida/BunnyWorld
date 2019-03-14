@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -249,5 +250,42 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         super.onResume();
         scrollview.removeAllViews();
         populateScrollView();
+    }
+
+
+    public void changePageName(View view){
+        if(selectedPage == null) return;
+        // GET NEW NAME FROM THE EDITTEXT
+        EditText etField   = (EditText)findViewById(R.id.editTextWithNewName);
+        String newName = etField.getText().toString();
+
+        if(newName.length() == 0){
+            //Display error toast
+            Toast toast = Toast.makeText(getApplicationContext(), "Can't have empty name", Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+            toast.show();
+            return;
+        }
+
+        DatabaseHelper dbhelp = DatabaseHelper.getInstance(this);
+        ArrayList<String> allPageNames = dbhelp.getGamePageNames(this.gameId);
+
+        if(allPageNames.contains(newName)){
+            Toast toast = Toast.makeText(getApplicationContext(), "Can't have same name", Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+            toast.show();
+            return;
+        }
+
+
+
+
+
+
+        int pageId = dbase.getId(PAGES_TABLE, selectedPage, gameId);
+        dbhelp.changeEntryName(PAGES_TABLE, pageId, newName);
+        selectedView.setText(newName);
+        selectedPage = newName;
+        return;
     }
 }
