@@ -241,10 +241,4 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         intent.putExtra("containsItems", true);
         startActivity(intent);
     }
-
-    @Override
-    public void onBackPressed(){
-        Intent intent = new Intent(this, GameLoaderActivity.class);
-        startActivity(intent);
-    }
 }
