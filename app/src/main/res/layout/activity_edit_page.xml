@@ -25,6 +25,7 @@
         android:id="@+id/pagePreview"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/white"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="@id/hMargin"
         app:layout_constraintStart_toStartOf="parent"

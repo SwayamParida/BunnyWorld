@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.PriorityQueue;
 import java.util.Stack;
 
 import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
@@ -92,8 +91,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d("width start touch", Integer.toString(getWidth()));
-        Log.d("width start touch", Integer.toString(getHeight()));
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 x1 = event.getX();
@@ -117,9 +114,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
         else if (selectedShape == null){
             saveForUndo();
-            Log.d("tag2","Saved for undo in selectedShape == null");
-
-            Log.d("tag1","Drawing new shape");
             RectF boundingRect = createBounds(x1, y1, x2, y2);
             if(boundingRect.left < 0 || boundingRect.right > this.getWidth() ||
                     boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
