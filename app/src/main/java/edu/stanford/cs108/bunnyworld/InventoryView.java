@@ -144,16 +144,23 @@ public class InventoryView extends View implements BunnyWorldConstants{
         selectShape(findLastShape(x1, y1));
         if (selectedShape != null && y2 < 0) {
             int num = -1;
+            Shape thumbnail = null;
             for (int i =0; i <thumbnails.size(); i++) {
                 if (thumbnails.get(i).getName().equals(selectedShape.getName())) {
                     num = i;
                     selectedShape = inventoryItems.get(i);
+                    thumbnail = thumbnails.get(i);
                 }
             }
-            float newX = selectedShape.getX() + (x2 - x1);
+
+            float newX = thumbnail.getX() + (x2 - x1);
             float newX1 = newX + selectedShape.getWidth();
             float newY = selectedShape.getY() + (y2 - y1);
             float newY1 = newY + selectedShape.getHeight();
+            /*float newX = selectedShape.getX() + (x2 - x1);
+            float newX1 = newX + selectedShape.getWidth();
+            float newY = selectedShape.getY() + (y2 - y1);
+            float newY1 = newY + selectedShape.getHeight();*/
             //check to see if the image is in the bounds of the preview else don't make changes
             //if (newY1 <= 0) {
                 if (newX < 0) {
