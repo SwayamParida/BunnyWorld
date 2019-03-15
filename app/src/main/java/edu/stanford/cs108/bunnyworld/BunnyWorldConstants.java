@@ -36,11 +36,11 @@ public interface BunnyWorldConstants {
     List<Integer> audioList = Arrays.asList(audioResources);
 
     String[] ACTION_VERBS = { "goto", "play", "hide", "show" };
-    String[] TRIGGER_EVENTS = { "onClick", "onDrop", "onEnter" };
+    String[] TRIGGER_EVENTS = { "onClick",  "onDrop", "onEnter" };
     String VERB_MODIFIER_DELIMITER = " ";
     String ACTION_DELIMITER = ";";
-    String EVENT_ACTION_DELIMITER = "\\s*: \\s*";
-    String TRIGGER_DELIMITER = "\\s*```\\s*";
+    String EVENT_ACTION_DELIMITER = ": ";
+    String TRIGGER_DELIMITER = "\n";
     String regex = "trigger: { (verb modifier; )*}\n";
 
     int LEFT_SPINNER = 0;

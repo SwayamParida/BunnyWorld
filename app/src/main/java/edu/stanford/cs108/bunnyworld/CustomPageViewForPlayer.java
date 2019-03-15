@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.MediaPlayer;
+import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -15,6 +17,9 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -23,10 +28,13 @@ import java.util.Locale;
 import java.util.PriorityQueue;
 import java.util.Stack;
 
+import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorHeight;
+import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorWidth;
 import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
+import static edu.stanford.cs108.bunnyworld.PlayGameActivity.inventory;
 
 public class CustomPageViewForPlayer extends View implements BunnyWorldConstants{
-    private Page page;
+    public static Page page;
     private int pageId = -1;
     private DatabaseHelper dbase = DatabaseHelper.getInstance(getContext());
     private BitmapDrawable selectedImage;
@@ -37,6 +45,13 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
     private boolean shapeCountNotStarted = true;
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
+    private boolean firstDraw = true;
+
+    public void setGameId(int gameId) {
+        this.gameId = gameId;
+    }
+
+    private int gameId;
 
     //get the current number of shapes in the folder
     private int shapeCount = getLatestCount();
@@ -69,7 +84,13 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
                 Log.d("list", shape.toString());
                 shape.draw(canvas);
             }
+            if (firstDraw) {
+                if (shape.getScript() != null && !shape.getScript().getOnEnterActions().isEmpty()) {
+                    checkForScripts(shape);
+                }
+            }
         }
+        firstDraw = false;
     }
 
     @Override
@@ -88,12 +109,10 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
         if (x1 == x2 && y1 == y2){
             selectShape(page.findLastShape(x1, y1));
-            //update the spinner
-            if(selectedShape != null){
-                int id = selectedShape.getResId();
-                String name = dbase.getResourceName(id);
-            }
+            checkForScripts(selectedShape);
         }
+
+
         // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
         else if (selectedShape == null){
@@ -129,20 +148,39 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
                 float newY = selectedShape.getY() + (y2 - y1);
                 float newY1 = newY + selectedShape.getHeight();
                 //check to see if the image is in the bounds of the preview else don't make changes
-                if (newX < 0 || newX1 > this.getWidth() || newY < 0 || newY1 > this.getHeight())
-                    return true;
+                if (newX < 0)  {
+                    newX1 += (Math.abs(newX));
+                    newX = 0;
+                }
+                if (newX1 >= emulatorWidth) {
+                    newX -= (Math.abs(newX1 - (emulatorWidth - 1)));
+                    newX1 = emulatorWidth - 1;
+                }
+                if (newY < 0) {
+                    newY1 += (Math.abs(newY));
+                    newY = 0;
+                }
+                if (newY1 >= emulatorHeight) {
+                    newY -= (Math.abs(newY1 - (emulatorHeight - 1)));
+                    newY1 = emulatorHeight - 1;
+                }
 
-                //else update the picture to be dragged and update inspector
                 RectF newBounds = new RectF(newX, newY, newX1, newY1);
                 selectedShape.setBounds(newBounds);
                 Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
                         selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
-                shape.setScript(new Script());
-                page.addShape(shape);
+
+                if (newY1 > .75 * emulatorHeight) { //put in inventory (bottom 25% of screen)
+                    inventory.addToInventory(shape);
+                    Log.d("adding to inventory", inventory.inventoryItems.toString());
+                }
+                else {
+                    page.addShape(shape);
+                    selectShape(shape);
+                }
                 page.deleteShape(selectedShape);
-                selectShape(shape);
-                changesMade = true;
                 invalidate();
+
             }
         }
         invalidate();
@@ -205,12 +243,13 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
 
     //getters and setters for the pageId
     public void setPageId(int pageId){this.pageId = pageId;}
-    public void addShape(Shape shape) {
-        changesMade = true;
+    public void addShape(Shape other) {
+        Shape shape = new ImageShape(this, other.getBounds(), other.getImage(), other.getText(),
+                other.getResId(), other.isVisible(), other.isMovable(), other.getName());
         page.addShape(shape);
+        invalidate();
     }
     public void deleteShape(Shape shape) {
-        changesMade = true;
         page.deleteShape(shape);
     }
 
@@ -230,4 +269,71 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
         }
         return count;
     }
+
+    private void goTo(String pageName) {
+        int goToPageId = dbase.getId(PAGES_TABLE, pageName, gameId);
+        Page nextPage = new Page(pageName, gameId);
+        ArrayList<Shape> pageShapes = dbase.getPageShapes(pageId, this);
+        nextPage.listOfShapes = (ArrayList<Shape>)pageShapes.clone();
+        nextPage.pageID = goToPageId;
+        invalidate();
+        for (Shape shape : page.listOfShapes) {
+            checkForScripts(shape);
+        }
+    }
+
+    private void play(String soundName) {
+        int soundId = dbase.getId(RESOURCE_TABLE, soundName, NO_PARENT);
+        File mediafile = dbase.getAudioFile(soundId);
+        MediaPlayer mp = new MediaPlayer();
+        try {
+            mp.setDataSource(mediafile.getAbsolutePath());
+            mp.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void hide(String shapeName) {
+        for (Shape curr: page.listOfShapes) {
+            if (curr.getName().equals(shapeName)) {
+                curr.setVisible(false);
+                break;
+            }
+        }
+        invalidate();
+    }
+
+    private void show(String shapeName) {
+        for (Shape curr: page.listOfShapes) {
+            if (curr.getName().equals(shapeName)) {
+                curr.setVisible(true);
+                break;
+            }
+        }
+        invalidate();
+    }
+
+    private void checkForScripts(Shape shape) {
+        Script scr = shape.getScript();
+        if (scr != null) {
+            for (Action action : scr.getOnClickActions()) {
+                switch (action.getVerb()) {
+                    case "goto":
+                        goTo(action.getModifier());
+                        break;
+                    case "play":
+                        play(action.getModifier());
+                        break;
+                    case "hide":
+                        hide(action.getModifier());
+                        break;
+                    case "show":
+                        show(action.getModifier());
+                        break;
+                }
+            }
+        }
+    }
+
 }

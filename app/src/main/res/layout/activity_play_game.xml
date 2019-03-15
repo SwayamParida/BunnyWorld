@@ -11,17 +11,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.9"/>
+        app:layout_constraintGuide_percent="0.75"/>
 
     <edu.stanford.cs108.bunnyworld.CustomPageViewForPlayer
         android:id="@+id/playerPageView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="@id/hMargin"
+        app:layout_constraintBottom_toTopOf="@id/hMargin"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <HorizontalScrollView
+    <edu.stanford.cs108.bunnyworld.InventoryView
         android:id="@+id/inventory"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -29,12 +30,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/playerPageView">
+        app:layout_constraintTop_toBottomOf="@id/hMargin" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" />
-    </HorizontalScrollView>
 
 </android.support.constraint.ConstraintLayout>

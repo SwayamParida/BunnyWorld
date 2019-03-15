@@ -43,8 +43,8 @@ public class RectangleShape extends Shape {
     //Editor activity calls this version of draw
     @Override
     public void draw(Canvas canvas) {
-        super.draw(canvas);
         canvas.drawRect(bounds, defaultPaint);
+        //super.draw(canvas);
     }
 
     //provide resize functionality
@@ -56,9 +56,5 @@ public class RectangleShape extends Shape {
         float newHeight = newBounds.height()/viewHeight;
         scaledCoord = new RectF(newX, newY, newX + newWidth, newY + newHeight);
     }
-
-    //set and get the paint object
-    public void setDefaultPaint(Paint newPaint){defaultPaint = newPaint;}
-    public Paint getDefaultPaint(){return defaultPaint;}
 }
 

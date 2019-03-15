@@ -23,6 +23,7 @@ public class IntroScreenActivity extends AppCompatActivity {
     private VideoView myVideoView;
     private Thread myThread;
     public static int emulatorWidth, emulatorHeight;
+    public static Shape clipboard;
 
     //Ike was here
     @Override

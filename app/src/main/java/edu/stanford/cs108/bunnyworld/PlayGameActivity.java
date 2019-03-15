@@ -1,5 +1,6 @@
 package edu.stanford.cs108.bunnyworld;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -12,13 +13,18 @@ import android.util.Log;
 import android.view.Display;
 import android.widget.ArrayAdapter;
 import android.widget.HorizontalScrollView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
+import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE;
+
 public class PlayGameActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
-    protected static CustomPageViewForPlayer playerPageView;
-    private HorizontalScrollView inventory;
+    public static CustomPageViewForPlayer playerPageView;
+    public static InventoryView inventory;
 
     //array list of text shapes that is retrieved from EditPagesActivity
     public DatabaseHelper dbase;
@@ -27,6 +33,8 @@ public class PlayGameActivity extends AppCompatActivity implements BunnyWorldCon
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_IMMERSIVE|
+                SYSTEM_UI_FLAG_FULLSCREEN|SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_game);
 
@@ -37,6 +45,10 @@ public class PlayGameActivity extends AppCompatActivity implements BunnyWorldCon
         Log.d("debug", "step 1 success");
         page = extractIntentData(getIntent());
         initPageView();
+    }
+
+    public void showToastMethod(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     private Page extractIntentData(Intent intent){
@@ -72,11 +84,16 @@ public class PlayGameActivity extends AppCompatActivity implements BunnyWorldCon
 
 
         for(int id: shapesId){
-            Shape readShape = dbase.getShape(id, playerPageView);
-            shapes.add(readShape);
+            ImageShape readShape = dbase.getShape(id, playerPageView);
+            ImageShape newShape = new ImageShape(playerPageView, readShape.getBounds(),
+                    readShape.getImage(), readShape.getText(), readShape.getResId(), readShape.isVisible(),
+                    readShape.isMovable(), readShape.getName());
+            Log.d("debug width", Float.toString(newShape.getWidth()));
+            Log.d("debug height", Float.toString(newShape.getHeight()));
+            newShape.setScript(readShape.getScript());
+            shapes.add(newShape);
         }
         newPage.setListOfShapes(shapes);
-
         Log.d("debug", shapes.toString());
         return newPage;
     }
@@ -88,10 +105,10 @@ public class PlayGameActivity extends AppCompatActivity implements BunnyWorldCon
     }
 
     private void initPageView() {
+        playerPageView.setGameId(gameId);
         playerPageView.setPage(page);
         playerPageView.setPageId(dbase.getId(PAGES_TABLE, page.getName(), gameId));
         Log.d("debug", Integer.toString(playerPageView.getWidth()));
-
         playerPageView.invalidate();
     }
 

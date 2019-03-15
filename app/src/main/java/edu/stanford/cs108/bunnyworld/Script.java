@@ -3,10 +3,10 @@ package edu.stanford.cs108.bunnyworld;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.StringTokenizer;
 
 public class Script implements BunnyWorldConstants {
     private boolean onClick, onEnter, onDrop;
+    private Shape onDropShape;
     private List<Action> onClickActions, onEnterActions, onDropActions;
 
     public Script() {
@@ -32,6 +32,13 @@ public class Script implements BunnyWorldConstants {
         return actions;
     }
 
+    public void addAction(String event, Action action) {
+        switch (event) {
+            case "onClick": addOnClickAction(action); break;
+            case "onDrop": addOnDropAction(action); break;
+            case "onEnter": addOnEnterAction(action); break;
+        }
+    }
     public void addOnClickAction(Action onClickAction) {
         onClick = true;
         onClickActions.add(onClickAction);
@@ -57,19 +64,29 @@ public class Script implements BunnyWorldConstants {
         onEnterActions.addAll(onEnterAction);
     }
 
+    public void setOnDropShape(Shape onDropShape) {
+        this.onDropShape = onDropShape;
+    }
+
     public static Script parseScript(String scriptString) {
-        if (scriptString.isEmpty()) return null;
         Script script = new Script();
+
+        if (scriptString == null || scriptString.isEmpty()) return script;
+
         ArrayList<String> triggers = new ArrayList<>();
-        StringTokenizer st = new StringTokenizer(scriptString, TRIGGER_DELIMITER);
-        while (st.hasMoreTokens()) {
-            String curr = st.nextToken();
-            if (!curr.isEmpty()) triggers.add(curr);
-        }
+        Scanner triggerScanner = new Scanner(scriptString);
+        triggerScanner.useDelimiter(TRIGGER_DELIMITER);
+        while (triggerScanner.hasNext())
+            triggers.add(triggerScanner.next());
+        triggerScanner.close();
+
         for (String trigger : triggers) {
-            StringTokenizer eventTokenizer = new StringTokenizer(trigger, EVENT_ACTION_DELIMITER);
-            String event = eventTokenizer.nextToken();
-            List<Action> actions = Action.parseActionList(eventTokenizer.nextToken());
+            trigger = trigger + EVENT_ACTION_DELIMITER;
+            Scanner eventScanner = new Scanner(trigger);
+            eventScanner.useDelimiter(EVENT_ACTION_DELIMITER);
+            String event = eventScanner.next();
+            List<Action> actions = Action.parseActionList(eventScanner.next());
+
             switch (event) {
                 case "onClick":
                     script.addOnClickAction(actions);
@@ -93,6 +110,7 @@ public class Script implements BunnyWorldConstants {
         add(onEnter, TRIGGER_EVENTS[2], onEnterActions, scriptBuilder);
         return scriptBuilder.toString();
     }
+
     private void add(boolean shouldAdd, String triggerLabel, List<Action> toAdd, StringBuilder stringBuilder) {
         if (!shouldAdd) return;
 

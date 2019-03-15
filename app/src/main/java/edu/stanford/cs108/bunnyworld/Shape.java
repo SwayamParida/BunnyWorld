@@ -54,8 +54,8 @@ abstract class Shape {
             this.viewHeight = (int) (emulatorHeight * .9);
         }
         else {
-            this.viewWidth = (int) (emulatorWidth * .65);
-            this.viewHeight = (int) (emulatorHeight * .85);
+            this.viewWidth = emulatorWidth;
+            this.viewHeight = (int) (emulatorHeight * .75);
         }
 
         /*viewHeight = 1285;
@@ -81,7 +81,7 @@ abstract class Shape {
     public void setScript(Script newScript){ this.script = newScript; }
 
     //returns the script for this object
-    public Script getScript(){ return script; }
+    public Script getScript(){ return (script != null) ? script : new Script(); }
 
     //bool indicating if the shape is visible
     public boolean isVisible(){
