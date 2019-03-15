@@ -279,7 +279,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
 //                    return null;
                 }
             }
-
         }
 
         String imageName = imgSpinner.getSelectedItem().toString();

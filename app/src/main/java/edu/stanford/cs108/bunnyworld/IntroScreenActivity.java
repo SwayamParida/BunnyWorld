@@ -71,6 +71,7 @@ public class IntroScreenActivity extends AppCompatActivity {
     public void openEditChooser(View view) {
         mediaPlayer.stop();
         myVideoView.stopPlayback();
+        mediaPlayer.release();
         Intent intent = new Intent(this, GameLoaderActivity.class);
         intent.putExtra("playing", false);
         startActivity(intent);
@@ -91,6 +92,7 @@ public class IntroScreenActivity extends AppCompatActivity {
 //        rnum = random.nextInt(images.size());
 //        imageView.setImageBitmap(images.get(rnum));
         mediaPlayer.stop();
+        mediaPlayer.release();
         myVideoView.stopPlayback();
         //Intent intent = new Intent(this, SearchForImageActivity.class);
         Intent intent = new Intent(this, GameLoaderActivity.class);  // Game selector
