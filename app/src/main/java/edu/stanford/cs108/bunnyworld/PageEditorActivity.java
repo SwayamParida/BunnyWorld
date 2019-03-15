@@ -297,11 +297,29 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         ArrayList<Shape> shapes = new ArrayList<Shape>();
         //populate the shapes list
         for(int id: shapesId){
-            ImageShape readShape = dbase.getShape(id, pagePreview);
-            ImageShape newShape = new ImageShape(pagePreview, readShape.getBounds(),
+            Shape readShape = dbase.getShape(id, pagePreview);
+//            ImageShape newShape = new ImageShape(pagePreview, readShape.getBounds(),
+//                    readShape.getImage(), readShape.getText(), readShape.getResId(), readShape.isVisible(),
+//                    readShape.isMovable(), readShape.getName());
+            Shape newShape;
+            //distinguish between different shapes and recreate them
+            if(readShape.getClass() == RectangleShape.class) //create a rectshape
+                newShape = new RectangleShape(pagePreview, readShape.getBounds(), readShape.getResId(),
+                    readShape.isVisible(), readShape.isMovable(), readShape.getName());
+            else if(readShape.getClass() == ImageShape.class)
+                newShape = new ImageShape(pagePreview, readShape.getBounds(),
                     readShape.getImage(), readShape.getText(), readShape.getResId(), readShape.isVisible(),
                     readShape.isMovable(), readShape.getName());
+            else
+                newShape = new TextShape(pagePreview, readShape.getBounds(),
+                        readShape.getImage(), readShape.getText(), readShape.getResId(), readShape.isVisible(),
+                        readShape.isMovable(), readShape.getName());
+
             shapes.add(newShape);
+            if(readShape.getClass() == RectangleShape.class)
+                Log.d("Tag rect", "rectangle just read");
+            if(readShape.getClass() == ImageShape.class)
+                Log.d("Tag image", "image shape just read");
         }
         newPage.setListOfShapes(shapes);
         return newPage;
@@ -452,6 +470,10 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             int resId = currShape.getResId();
             dbase.addShape(name, pageId, resId, currShape.getX(), currShape.getY(), currShape.getWidth(),
                     currShape.getHeight(), txtString, script, currShape.isMovable(), currShape.isVisible());
+            if(currShape.getClass() == RectangleShape.class)
+                Log.d("Tag rect", "rectangle just added");
+            if(currShape.getClass() == ImageShape.class)
+                Log.d("Tag image", "image shape just added");
         }
 
         //use the page Id to update the thumbnail

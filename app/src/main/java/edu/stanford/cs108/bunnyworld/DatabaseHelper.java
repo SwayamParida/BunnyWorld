@@ -277,6 +277,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @return Bitmap of image res_id in shapes
      */
     public Bitmap getImage(int res_id) {
+        if(res_id == -1) return null;
         String cmd = "SELECT * FROM resources WHERE _id =" + res_id + ";";
         Cursor cur = db.rawQuery(cmd, null);
 
@@ -549,7 +550,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param view The view in which you want the shape to appear
      * @return TextShape object
      */
-    public ImageShape getShape(int shape_id, View view) {
+    public Shape getShape(int shape_id, View view) {
         String getShapeRow = "SELECT * FROM " + SHAPES_TABLE + " WHERE _id = " + shape_id + ";";
         Cursor cursor = db.rawQuery(getShapeRow, null);
         cursor.moveToFirst();
@@ -566,10 +567,25 @@ public class DatabaseHelper implements BunnyWorldConstants {
         boolean visible = cursor.getInt(10) > 0;
 
         RectF bounds = new RectF(x, y, x + width, y + height);
-        Bitmap newBitmap = getImage(res_id);
-        BitmapDrawable drawable = new BitmapDrawable(newBitmap);
 
-        ImageShape shape = new ImageShape(view, bounds, drawable, txtString, res_id, visible, moveable, name);
+        //in the case where res_id == -1, it'll return null object for the bitmap
+        Bitmap newBitmap = null; BitmapDrawable drawable = null;
+        Log.d("Shape has res_id", Integer.toString(res_id));
+        if(res_id != -1){
+            newBitmap = getImage(res_id);
+            drawable = new BitmapDrawable(newBitmap);
+        }
+
+        //get the proper shape based on parameters that are present
+        Shape shape;
+        if(txtString.equals("") && res_id == -1) //create textshape
+            shape = new RectangleShape(view, bounds, -1, visible, moveable, name);
+        else if(!txtString.equals("")) //create image shape
+            shape = new TextShape(view, bounds, drawable, txtString, -1, visible, moveable, name);
+        else
+            shape = new ImageShape(view, bounds, drawable, txtString, res_id, visible, moveable, name);
+
+        //finally set the script of the shape and return that
         shape.setScript(Script.parseScript(script));
         cursor.close();
 

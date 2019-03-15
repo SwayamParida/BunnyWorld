@@ -72,15 +72,11 @@ public class PlayGameActivity extends AppCompatActivity implements BunnyWorldCon
 
 
         for(int id: shapesId){
-            ImageShape readShape = dbase.getShape(id, playerPageView);
-            ImageShape newShape = new ImageShape(playerPageView, readShape.getBounds(),
-                    readShape.getImage(), readShape.getText(), readShape.getResId(), readShape.isVisible(),
-                    readShape.isMovable(), readShape.getName());
-            Log.d("debug width", Float.toString(newShape.getWidth()));
-            Log.d("debug height", Float.toString(newShape.getHeight()));
-            shapes.add(newShape);
+            Shape readShape = dbase.getShape(id, playerPageView);
+            shapes.add(readShape);
         }
         newPage.setListOfShapes(shapes);
+
         Log.d("debug", shapes.toString());
         return newPage;
     }

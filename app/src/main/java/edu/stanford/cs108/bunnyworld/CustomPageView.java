@@ -14,6 +14,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.reflect.InvocationTargetException;
@@ -37,6 +38,9 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     private boolean shapeCountNotStarted = true;
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
+
+    //a private textView that prints out the text
+    private TextView spannableText;
 
     public boolean isRectModeEnabled() {
         return rectModeEnabled;
@@ -93,6 +97,18 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         xOffset = 0;
         yOffset = 0;
         stackOfPages = new Stack<Page>();
+        //creates a new textView with which to display text
+//        spannableText = new TextView(getContext());
+//        spannableText.setOnClickListener(new OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                //create an arraylist and pass that to the pageEditor
+////                String name = spannableText.getText().toString();
+////                float xPos = getX();
+////                float yPos = getY();
+////                String
+//            }
+//        });
     }
 
     public void setSelectedImage(BitmapDrawable selectedImage) {
@@ -109,6 +125,22 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         page.draw(canvas);
     }
 
+    //sets the selected shape and updates the appropraite booleans
+    public void setSelectedShape(){
+        selectShape(page.findLastShape(x1, y1));
+        //set the bools appropraitely
+        if(selectedShape != null && selectedShape.getClass() == RectangleShape.class){
+            rectModeEnabled = true;
+            textModeEnabled = false;
+        } else if(selectedShape != null && selectedShape.getClass() == TextShape.class){
+            rectModeEnabled = false;
+            textModeEnabled = true;
+        } else if(selectedShape != null){
+            rectModeEnabled = false;
+            textModeEnabled = false;
+        }
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch(event.getAction()) {
@@ -122,9 +154,9 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
         if (x1 == x2 && y1 == y2){
-            selectShape(page.findLastShape(x1, y1));
+            setSelectedShape();
             //update the spinner
-            if(selectedShape != null){
+            if(selectedShape != null && !rectModeEnabled && !textModeEnabled){
                 int id = selectedShape.getResId();
                 String name = dbase.getResourceName(id);
                 updateSpinner(imgSpinner, name);
@@ -145,11 +177,16 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             Shape shape = null;
             //Determine which shape we are supposed to draw based on the mode selected
             if (textModeEnabled) {
-                shape = new TextShape(this, boundingRect, selectedImage, null,
-                        res_id, true, true, shapeName);
+                EditText textEditText = ((PageEditorActivity) getContext()).findViewById(R.id.shapeText);
+                String text = textEditText.getText().toString();
+                if(text.isEmpty()) return true;
+                shape = new TextShape(this, boundingRect, selectedImage, text,
+                        -1, true, true, shapeName);
+                textModeEnabled = false;
             } else if (rectModeEnabled) {
-                shape = new RectangleShape(this, boundingRect, res_id, true,
+                shape = new RectangleShape(this, boundingRect, -1, true,
                          true, shapeName);
+                rectModeEnabled = false;
             } else {
                 shape = new ImageShape(this, boundingRect, selectedImage, null,
                         res_id, true, true, shapeName);
@@ -158,12 +195,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             selectShape(shape);
             updateInspector(shape);
             changesMade = true;
-
-
-
-
             invalidate();
-
             //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
@@ -181,8 +213,20 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             //else update the picture to be dragged and update inspector
             RectF newBounds = new RectF(newX, newY, newX1, newY1);
             selectedShape.setBounds(newBounds);
-            Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
-                    selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+            Shape shape = null;
+            //Determine which shape we are supposed to draw based on the mode selected
+            if (textModeEnabled) {
+                shape = new TextShape(this, newBounds, selectedImage, selectedShape.getText(),
+                        selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+                textModeEnabled = false;
+            } else if (rectModeEnabled) {
+                shape = new RectangleShape(this, newBounds, selectedShape.getResId(), selectedShape.isVisible(),
+                        selectedShape.isMovable(), selectedShape.getName());
+                rectModeEnabled = false;
+            } else {
+                shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(), selectedShape.getResId(),
+                        selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+            }
             page.addShape(shape);
             page.deleteShape(selectedShape);
             selectShape(shape);
@@ -263,7 +307,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
                 visible.setChecked(shape.isVisible());
                 movable.setChecked(shape.isMovable());
                 updateSpinner(imgSpinner, shape.getName());
-                updateScriptSpinners(selectedShape);
+                //updateScriptSpinners(selectedShape);
             } else {
                 name.setText("");
                 text.setText("");
