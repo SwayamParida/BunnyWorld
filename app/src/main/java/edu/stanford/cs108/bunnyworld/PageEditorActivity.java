@@ -384,6 +384,10 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     //save button method
     public void savePage(View view){
         //call the saveSelectedPage method
+
+        //Insert toast
+        Toast.makeText(this, "Page Saved", Toast.LENGTH_SHORT).show();
+
         savePageBitmap(pagePreview);
         saveToDatabase();
         pagePreview.setChangesMadeBool(false);
@@ -535,4 +539,13 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         pagePreview.invalidate();
     }
 
+    public void enableRectMode(View view) {
+        pagePreview.setRectModeEnabled(true);
+        pagePreview.setTextModeEnabled(false);
+    }
+
+    public void enableTextMode(View view) {
+        pagePreview.setRectModeEnabled(false);
+        pagePreview.setTextModeEnabled(true);
+    }
 }

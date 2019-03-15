@@ -58,17 +58,23 @@ public class Script implements BunnyWorldConstants {
     }
 
     public static Script parseScript(String scriptString) {
+        if (scriptString.isEmpty()) return null;
         Script script = new Script();
+
         ArrayList<String> triggers = new ArrayList<>();
-        StringTokenizer st = new StringTokenizer(scriptString, TRIGGER_DELIMITER);
-        while (st.hasMoreTokens()) {
-            String curr = st.nextToken();
-            if (!curr.isEmpty()) triggers.add(curr);
-        }
+        Scanner triggerScanner = new Scanner(scriptString);
+        triggerScanner.useDelimiter(TRIGGER_DELIMITER);
+        while (triggerScanner.hasNext())
+            triggers.add(triggerScanner.next());
+        triggerScanner.close();
+
         for (String trigger : triggers) {
-            StringTokenizer eventTokenizer = new StringTokenizer(trigger, EVENT_ACTION_DELIMITER);
-            String event = eventTokenizer.nextToken();
-            List<Action> actions = Action.parseActionList(eventTokenizer.nextToken());
+            trigger = trigger + EVENT_ACTION_DELIMITER;
+            Scanner eventScanner = new Scanner(trigger);
+            eventScanner.useDelimiter(EVENT_ACTION_DELIMITER);
+            String event = eventScanner.next();
+            List<Action> actions = Action.parseActionList(eventScanner.next());
+
             switch (event) {
                 case "onClick":
                     script.addOnClickAction(actions);
@@ -92,6 +98,7 @@ public class Script implements BunnyWorldConstants {
         add(onEnter, TRIGGER_EVENTS[2], onEnterActions, scriptBuilder);
         return scriptBuilder.toString();
     }
+
     private void add(boolean shouldAdd, String triggerLabel, List<Action> toAdd, StringBuilder stringBuilder) {
         if (!shouldAdd) return;
 
