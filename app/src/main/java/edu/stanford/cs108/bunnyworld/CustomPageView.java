@@ -18,7 +18,6 @@ import android.widget.TextView;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 
@@ -231,7 +230,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         EditText height = activity.findViewById(R.id.height);
         CheckBox visible = activity.findViewById(R.id.visible);
         CheckBox movable = activity.findViewById(R.id.movable);
-        TextView script = activity.findViewById(R.id.script);
+        TextView script = activity.findViewById(R.id.scriptz);
         imgSpinner = activity.findViewById(R.id.imgSpinner);
 
         if (selectedShape != null) {

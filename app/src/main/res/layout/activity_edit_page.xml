@@ -150,7 +150,7 @@
                 android:layout_columnSpan="2"
                 android:layout_width="match_parent">
                 <TextView
-                    android:id="@+id/script"
+                    android:id="@+id/scriptz"
                     android:layout_width="0dp"
                     android:layout_weight="6"
                     android:layout_height="wrap_content"

@@ -144,7 +144,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         modifierSpinner = findViewById(R.id.modifier1);
         eventSpinner = findViewById(R.id.event1);
         actionSpinner = findViewById(R.id.action1);
-        scriptTextView = findViewById(R.id.script);
+        scriptTextView = findViewById(R.id.scriptz);
         imgScrollView = findViewById(R.id.presetImages);
         pagePreview = findViewById(R.id.pagePreview);
     }
