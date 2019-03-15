@@ -45,12 +45,12 @@ public class PlayGameActivity extends AppCompatActivity implements BunnyWorldCon
         ArrayList<String> pageNames = dbase.getGamePageNames(gameId);
         if (pageNames.size() == 0) {
             Log.d("debug", "error: no pages read from game");
-            return new Page("New Page");
+            return new Page("New Page", gameId);
         }
         String pageName = pageNames.get(0);
         Log.d("debug pageName", pageName);
 
-        Page newPage = new Page(pageName);
+        Page newPage = new Page(pageName, gameId);
         int pageId = dbase.getId(PAGES_TABLE, pageName, gameId);
         Log.d("debug pageId", Integer.toString(pageId));
 
