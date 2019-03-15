@@ -38,6 +38,25 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
 
+    public boolean isRectModeEnabled() {
+        return rectModeEnabled;
+    }
+
+    public void setRectModeEnabled(boolean rectModeEnabled) {
+        this.rectModeEnabled = rectModeEnabled;
+    }
+
+    public boolean isTextModeEnabled() {
+        return textModeEnabled;
+    }
+
+    public void setTextModeEnabled(boolean textModeEnabled) {
+        this.textModeEnabled = textModeEnabled;
+    }
+
+    private boolean rectModeEnabled = false;
+    private boolean textModeEnabled = false;
+
     //get the current number of shapes in the folder
     private int shapeCount = getLatestCount();
 
@@ -123,8 +142,18 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             int res_id = dbase.getId(RESOURCE_TABLE, latestSelected, -1);
             shapeCount = getLatestCount()+1;
             String shapeName = "Shape "+ shapeCount;
-            Shape shape = new ImageShape(this, boundingRect, selectedImage, null,
-                    res_id, true, true, shapeName);
+            Shape shape = null;
+            //Determine which shape we are supposed to draw based on the mode selected
+            if (textModeEnabled) {
+                shape = new TextShape(this, boundingRect, selectedImage, null,
+                        res_id, true, true, shapeName);
+            } else if (rectModeEnabled) {
+                shape = new RectangleShape(this, boundingRect, res_id, true,
+                         true, shapeName);
+            } else {
+                shape = new ImageShape(this, boundingRect, selectedImage, null,
+                        res_id, true, true, shapeName);
+            }
             page.addShape(shape);
             selectShape(shape);
             updateInspector(shape);

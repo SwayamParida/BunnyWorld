@@ -535,4 +535,13 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         pagePreview.invalidate();
     }
 
+    public void enableRectMode(View view) {
+        pagePreview.setRectModeEnabled(true);
+        pagePreview.setTextModeEnabled(false);
+    }
+
+    public void enableTextMode(View view) {
+        pagePreview.setRectModeEnabled(false);
+        pagePreview.setTextModeEnabled(true);
+    }
 }
