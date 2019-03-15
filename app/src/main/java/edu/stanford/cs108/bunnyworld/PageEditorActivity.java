@@ -35,7 +35,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     private HorizontalScrollView imgScrollView;
     private Spinner imgSpinner, verbSpinner, modifierSpinner, eventSpinner, actionSpinner;
     private LinearLayout actions, triggers;
-    private Set<Action> unsavedActions;
     private boolean ignore = false;
 
     //array list of text shapes that is retrieved from EditPagesActivity
@@ -83,14 +82,12 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         // Check necessary for when row is added programmatically from CustomPageView
         if (view != null) {
             Action action = getAction((LinearLayout) view.getParent());
-            unsavedActions.add(action);
             repopulateActionSpinners();
         }
         addScriptRow(actions, this::addActionRow, this::deleteActionRow, Arrays.asList(ACTION_VERBS), true);
     }
     public void deleteActionRow(View view) {
         Action action = getAction((LinearLayout) view.getParent());
-        unsavedActions.remove(action);
         repopulateActionSpinners();
         deleteScriptRow(view);
     }
@@ -108,7 +105,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //initialize necessary UIs and helpers
         dbase = DatabaseHelper.getInstance(this);
         page = extractIntentData(getIntent());
-        unsavedActions = new HashSet<>();
 
         populateSpinner(imgSpinner, dbase.getResourceNames());
         populateSpinner(verbSpinner, Arrays.asList(ACTION_VERBS));
@@ -191,15 +187,16 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         imgScrollView.addView(horizontalLayout);
     }
     private void repopulateActionSpinners() {
+        List<Action> actions = getActions();
         for (int triggerRowIndex = 0; triggerRowIndex < triggers.getChildCount(); ++triggerRowIndex) {
             LinearLayout triggerRow = (LinearLayout) triggers.getChildAt(triggerRowIndex);
             Spinner actionSpinner = (Spinner) triggerRow.getChildAt(ACTION_SPINNER);
-            populateActionSpinner(actionSpinner);
+            populateActionSpinner(actionSpinner, actions);
         }
     }
-    private void populateActionSpinner(Spinner actionSpinner) {
+    private void populateActionSpinner(Spinner actionSpinner, List<Action> actions) {
         List<String> actionStrings = new ArrayList<>();
-        unsavedActions.forEach(action -> actionStrings.add(action.toString()));
+        actions.forEach(action -> actionStrings.add(action.toString()));
         populateSpinner(actionSpinner, actionStrings);
     }
     private void initModifierSpinner(Spinner verbSpinner, Spinner modifierSpinner) {
@@ -214,8 +211,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         modifierSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Action action = getAction((LinearLayout) modifierSpinner.getParent());
-                unsavedActions.add(action);
                 repopulateActionSpinners();
             }
             @Override
@@ -272,6 +267,14 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         if (parentView.getChildCount() > 1)
             parentView.removeView(scriptRow);
     }
+    private List<Action> getActions() {
+        List<Action> actionsList = new ArrayList<>();
+        for (int actionRowIndex = 0; actionRowIndex < actions.getChildCount(); ++actionRowIndex) {
+            LinearLayout actionRow = (LinearLayout) actions.getChildAt(actionRowIndex);
+            actionsList.add(getAction(actionRow));
+        }
+        return actionsList;
+    }
     private Action getAction(LinearLayout actionRow) {
         Spinner verbSpinner = (Spinner) actionRow.getChildAt(VERB_SPINNER);
         Spinner modifierSpinner = (Spinner) actionRow.getChildAt(MODIFIER_SPINNER);
@@ -297,11 +300,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         ArrayList<Shape> shapes = new ArrayList<Shape>();
         //populate the shapes list
         for(int id: shapesId){
-            ImageShape readShape = dbase.getShape(id, pagePreview);
-            ImageShape newShape = new ImageShape(pagePreview, readShape.getBounds(),
-                    readShape.getImage(), readShape.getText(), readShape.getResId(), readShape.isVisible(),
-                    readShape.isMovable(), readShape.getName());
-            shapes.add(newShape);
+            Shape readShape = dbase.getShape(id, pagePreview);
+            shapes.add(readShape);
         }
         newPage.setListOfShapes(shapes);
         return newPage;
@@ -313,7 +313,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * @return new Shape using the updated attributes
      */
     private Shape updateShape() {
-        Log.d("tag2","Saved for undo in updateShape()");
         if(!ignore) pagePreview.saveForUndo();
         String name = nameEditText.getText().toString();
         String text = textEditText.getText().toString();
@@ -324,20 +323,18 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         boolean visible = visibleCheckBox.isChecked();
         boolean movable = movableCheckBox.isChecked();
 
-        if(name.isEmpty() || xEdit.isEmpty() || yEdit.isEmpty() || wEdit.isEmpty() || hEdit.isEmpty())
-        {
+        if(name.isEmpty() || xEdit.isEmpty() || yEdit.isEmpty() || wEdit.isEmpty() || hEdit.isEmpty()) {
             Toast.makeText(this, "One or more EditText fields are empty", Toast.LENGTH_SHORT).show();
             return null;
         }
 
-
         String imageName = imgSpinner.getSelectedItem().toString();
         Bitmap image = dbase.getImage(imageName);
 
-        float x = Float.parseFloat(xEditText.getText().toString());
-        float y = Float.parseFloat(yEditText.getText().toString());
-        float width = Float.parseFloat(wEditText.getText().toString());
-        float height = Float.parseFloat(hEditText.getText().toString());
+        float x = Float.parseFloat(xEdit);
+        float y = Float.parseFloat(yEdit);
+        float width = Float.parseFloat(wEdit);
+        float height = Float.parseFloat(hEdit);
         RectF boundingRect = new RectF(x, y, x + width, y + height);
 
         Script script = createScript();

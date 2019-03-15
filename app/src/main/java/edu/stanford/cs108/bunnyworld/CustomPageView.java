@@ -2,7 +2,6 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.app.Activity;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -14,7 +13,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,7 +34,11 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     // Co-ordinates of user touches - populated in onTouchEvent()
     private boolean shapeCountNotStarted = true;
     private float x1, x2, y1, y2;
-    private float xOffset, yOffset;
+
+    //get the current number of shapes in the folder
+    private int shapeCount = getLatestCount();
+
+    private Stack<Page> stackOfPages;
 
     public boolean isRectModeEnabled() {
         return rectModeEnabled;
@@ -57,17 +59,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     private boolean rectModeEnabled = false;
     private boolean textModeEnabled = false;
 
-    //get the current number of shapes in the folder
-    private int shapeCount = getLatestCount();
-
-    //implementation helpers for undo and redo
-//    private ArrayList<Shape> undoList = new ArrayList<Shape>();
-//    private PriorityQueue<Shape> redoList = new PriorityQueue<Shape>();
-
-
-    private Stack<Page> stackOfPages;
-
-
     public void saveForUndo(){
         if(this.page == null) return;
 
@@ -86,13 +77,10 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         stackOfPages.push(pageClone);
     }
 
-
     public CustomPageView(Context context, AttributeSet attrs) {
         super(context, attrs);
         Log.d("width", Integer.toString(getWidth()));
-        xOffset = 0;
-        yOffset = 0;
-        stackOfPages = new Stack<Page>();
+        stackOfPages = new Stack<>();
     }
 
     public void setSelectedImage(BitmapDrawable selectedImage) {
@@ -142,7 +130,8 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             int res_id = dbase.getId(RESOURCE_TABLE, latestSelected, -1);
             shapeCount = getLatestCount()+1;
             String shapeName = "Shape "+ shapeCount;
-            Shape shape = null;
+
+            Shape shape;
             //Determine which shape we are supposed to draw based on the mode selected
             if (textModeEnabled) {
                 shape = new TextShape(this, boundingRect, selectedImage, null,
@@ -156,21 +145,12 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             }
             page.addShape(shape);
             selectShape(shape);
-            updateInspector(shape);
             changesMade = true;
-
-
-
-
             invalidate();
-
-            //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else {
             saveForUndo();
-            Log.d("tag2","Saved for undo where user drags image");
-            Log.d("width", Integer.toString(getWidth()));
             float newX = selectedShape.getX() + (x2 - x1);
             float newX1 = newX + selectedShape.getWidth();
             float newY = selectedShape.getY() + (y2 - y1);
@@ -186,7 +166,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             page.addShape(shape);
             page.deleteShape(selectedShape);
             selectShape(shape);
-            updateInspector(shape);
             changesMade = true;
             invalidate();
         }
@@ -286,8 +265,8 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         }
     }
     private void updateScriptSpinners(Shape shape) {
-        if (selectedShape != null) {
-            updateActionSpinners();
+        if (shape != null) {
+            updateActionSpinners(shape);
             updateTriggerSpinners(TRIGGER_EVENTS[0], shape.getScript().getOnClickActions());
             updateTriggerSpinners(TRIGGER_EVENTS[1], shape.getScript().getOnDropActions());
             updateTriggerSpinners(TRIGGER_EVENTS[2], shape.getScript().getOnEnterActions());
@@ -301,7 +280,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             } catch (Exception ignore) { }
         }
     }
-    private void updateActionSpinners() {
+    private void updateActionSpinners(Shape shape) {
         PageEditorActivity activity = (PageEditorActivity) getContext();
         LinearLayout actionRows = activity.findViewById(R.id.actions);
         try {
@@ -309,7 +288,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         } catch (Exception ignore) { }
 
         int numRows = 1;
-        for (Action action : selectedShape.getScript().getActions()) {
+        for (Action action : shape.getScript().getActions()) {
             LinearLayout actionRow = (LinearLayout) actionRows.getChildAt(numRows++);
             Spinner verbSpinner = (Spinner) actionRow.getChildAt(VERB_SPINNER);
             Spinner modifierSpinner = (Spinner) actionRow.getChildAt(MODIFIER_SPINNER);
