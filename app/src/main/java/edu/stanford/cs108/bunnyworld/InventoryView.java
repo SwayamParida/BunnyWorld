@@ -28,11 +28,13 @@ import java.util.Stack;
 import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorHeight;
 import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorWidth;
 import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
+import static edu.stanford.cs108.bunnyworld.PlayGameActivity.playerPageView;
 
 public class InventoryView extends View implements BunnyWorldConstants{
     private Shape selectedShape;
     private float x1, x2, y1, y2;
-    public int countX, countY = 0;
+    public int countX = 0;
+    public int countY = 0;
     public ArrayList<Shape> inventoryItems = new ArrayList<Shape>();
     public ArrayList<Shape> thumbnails = new ArrayList<Shape>();
 
@@ -43,20 +45,57 @@ public class InventoryView extends View implements BunnyWorldConstants{
 
     public void addToInventory(Shape shape) {
         inventoryItems.add(shape);
-        float newX = countX;
-        if (countX >= emulatorWidth) {
-            countX = 0;
-            countY += (float) ((emulatorHeight * .25) / 2);
-        }
-        float newX1 = countX + emulatorWidth / 10;
+        float newX = countX * (emulatorWidth / 10);
+        float newX1 = newX + emulatorWidth / 10;
         float newY = countY;
         float newY1 = newY + (float) (emulatorHeight * .25) / 2;
-        countX += emulatorWidth / 10;
+        if (countX == 9) {
+            if (countY == (int) ((emulatorHeight * .25) / 2)) {
+                //inventory full
+            }
+            else {
+                countX = 0;
+                countY = (int) ((emulatorHeight * .25) / 2);
+            }
+        }
+        else {
+            countX++;
+        }
         RectF newBounds = new RectF(newX, newY, newX1, newY1);
         Log.d("onDraw bounds", newBounds.toString());
         Shape thumbnail = new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
                 shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
         thumbnails.add(thumbnail);
+        invalidate();
+    }
+
+    public void reDrawInventory() {
+        countX = 0;
+        countY = 0;
+
+        ArrayList<Shape> resetThumbnails = new ArrayList<Shape>();
+        for (Shape shape : thumbnails) {
+            float newX = countX * (emulatorWidth / 10);
+            float newX1 = newX + emulatorWidth / 10;
+            float newY = countY;
+            float newY1 = newY + (float) (emulatorHeight * .25) / 2;
+            if (countX == 9) {
+                if (countY == (int) ((emulatorHeight * .25) / 2)) {
+                    //inventory full
+                } else {
+                    countX = 0;
+                    countY = (int) ((emulatorHeight * .25) / 2);
+                }
+            } else {
+                countX++;
+            }
+            RectF newBounds = new RectF(newX, newY, newX1, newY1);
+            Log.d("onDraw bounds", newBounds.toString());
+            Shape newThumbnail = new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
+                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+            resetThumbnails.add(newThumbnail);
+        }
+        thumbnails = resetThumbnails;
         invalidate();
     }
 
@@ -71,7 +110,6 @@ public class InventoryView extends View implements BunnyWorldConstants{
             Log.d("onDraw visible", Boolean.toString(thumbnail.isVisible()));
             Log.d("onDraw image", thumbnail.getImage().toString());
             Log.d("onDraw bounds", thumbnail.getBounds().toString());
-
             thumbnail.draw(canvas);
         }
     }
@@ -79,6 +117,10 @@ public class InventoryView extends View implements BunnyWorldConstants{
     public Shape findLastShape(float x, float y) {
         Shape lastFound = null;
         for (Shape shape : inventoryItems) {
+            if (shape.containsPoint(x, y))
+                lastFound = shape;
+        }
+        for (Shape shape : thumbnails) {
             if (shape.containsPoint(x, y))
                 lastFound = shape;
         }
@@ -99,55 +141,49 @@ public class InventoryView extends View implements BunnyWorldConstants{
                 y2 = event.getY();
         }
 
-        // When (x1,y1) = (x2,y2), it implies user simply tapped screen
-        if (x1 == x2 && y1 == y2){
-            selectShape(findLastShape(x1, y1));
-        }
-        // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
-        // When no shape is selected, a drag implies user intends to draw a new ImageShape
-        else if (selectedShape == null){
-        }
-        // When a shape is selected, a drag implies user intends to move the selected shape
-        else {
-            /*Log.d("width", Integer.toString(getWidth()));
+        selectShape(findLastShape(x1, y1));
+        if (selectedShape != null && y2 < 0) {
+            int num = -1;
+            for (int i =0; i <thumbnails.size(); i++) {
+                if (thumbnails.get(i).getName().equals(selectedShape.getName())) {
+                    num = i;
+                    selectedShape = inventoryItems.get(i);
+                }
+            }
             float newX = selectedShape.getX() + (x2 - x1);
             float newX1 = newX + selectedShape.getWidth();
             float newY = selectedShape.getY() + (y2 - y1);
             float newY1 = newY + selectedShape.getHeight();
             //check to see if the image is in the bounds of the preview else don't make changes
-            if (newX < 0)  {
-                newX1 += (Math.abs(newX));
-                newX = 0;
-            }
-            if (newX1 >= emulatorWidth) {
-                newX -= (Math.abs(newX1 - (emulatorWidth - 1)));
-                newX1 = emulatorWidth - 1;
-            }
-            if (newY < 0) {
-                newY1 += (Math.abs(newY));
-                newY = 0;
-            }
-            if (newY1 >= emulatorHeight) {
-                newY -= (Math.abs(newY1 - (emulatorHeight - 1)));
-                newY1 = emulatorHeight - 1;
-            }
-
-            if (newY1 > .7 * emulatorHeight) { //put in inventory (bottom 30% of screen)
-                newX = count;
-                newY = (float) .9 * emulatorHeight;
-                newX1 = newX + 100;
-                newY1 = newY + 100;
-                count += 100;
-            }
-
-            RectF newBounds = new RectF(newX, newY, newX1, newY1);
-            selectedShape.setBounds(newBounds);
-            Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
-                    selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
-            page.addShape(shape);
-            page.deleteShape(selectedShape);
-            selectShape(shape);
-            invalidate();*/
+            //if (newY1 <= 0) {
+                if (newX < 0) {
+                    newX1 += (Math.abs(newX));
+                    newX = 0;
+                }
+                if (newX1 >= emulatorWidth) {
+                    newX -= (Math.abs(newX1 - (emulatorWidth - 1)));
+                    newX1 = emulatorWidth - 1;
+                }
+                if (newY < 0) {
+                    newY1 += (Math.abs(newY));
+                    newY = 0;
+                }
+                if (newY1 >= emulatorHeight) {
+                    newY -= (Math.abs(newY1 - (emulatorHeight - 1)));
+                    newY1 = emulatorHeight - 1;
+                }
+                RectF newBounds = new RectF(newX, newY, newX1, newY1);
+                Log.d("moving out", newBounds.toString());
+                selectedShape.setBounds(newBounds);
+                Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
+                        selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+                playerPageView.addShape(shape);
+                thumbnails.remove(num);
+                if (num != -1) {
+                    inventoryItems.remove(selectedShape);
+                }
+                reDrawInventory();
+            //}
         }
         invalidate();
 

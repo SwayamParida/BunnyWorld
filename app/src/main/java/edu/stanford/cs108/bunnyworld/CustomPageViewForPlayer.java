@@ -29,7 +29,7 @@ import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
 import static edu.stanford.cs108.bunnyworld.PlayGameActivity.inventory;
 
 public class CustomPageViewForPlayer extends View implements BunnyWorldConstants{
-    private Page page;
+    public static Page page;
     private int pageId = -1;
     private DatabaseHelper dbase = DatabaseHelper.getInstance(getContext());
     private BitmapDrawable selectedImage;
@@ -227,12 +227,13 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
 
     //getters and setters for the pageId
     public void setPageId(int pageId){this.pageId = pageId;}
-    public void addShape(Shape shape) {
-        changesMade = true;
+    public void addShape(Shape other) {
+        Shape shape = new ImageShape(this, other.getBounds(), other.getImage(), other.getText(),
+                other.getResId(), other.isVisible(), other.isMovable(), other.getName());
         page.addShape(shape);
+        invalidate();
     }
     public void deleteShape(Shape shape) {
-        changesMade = true;
         page.deleteShape(shape);
     }
 

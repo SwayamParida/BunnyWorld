@@ -1,5 +1,6 @@
 package edu.stanford.cs108.bunnyworld;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.Display;
 import android.widget.ArrayAdapter;
 import android.widget.HorizontalScrollView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -21,7 +23,7 @@ import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE;
 
 public class PlayGameActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
-    private CustomPageViewForPlayer playerPageView;
+    public static CustomPageViewForPlayer playerPageView;
     public static InventoryView inventory;
 
     //array list of text shapes that is retrieved from EditPagesActivity
@@ -43,6 +45,10 @@ public class PlayGameActivity extends AppCompatActivity implements BunnyWorldCon
         Log.d("debug", "step 1 success");
         page = extractIntentData(getIntent());
         initPageView();
+    }
+
+    public void showToastMethod(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     private Page extractIntentData(Intent intent){
