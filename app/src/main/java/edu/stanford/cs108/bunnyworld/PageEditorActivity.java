@@ -265,7 +265,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
 
         if (name.isEmpty() || xEdit.isEmpty() || yEdit.isEmpty() || wEdit.isEmpty() || hEdit.isEmpty()) {
             Toast.makeText(this, "One or more EditText fields are empty", Toast.LENGTH_SHORT).show();
-            return null;
+            return pagePreview.getSelectedShape();
+//            return null;
         }
 
         if(name.length() > 0){
@@ -274,8 +275,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
                     Toast toast = Toast.makeText(getApplicationContext(), "Can't have name with spaces", Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
                     toast.show();
-                    return null;
-
+                    return pagePreview.getSelectedShape();
+//                    return null;
                 }
             }
 
