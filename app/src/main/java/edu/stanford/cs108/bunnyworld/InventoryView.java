@@ -32,23 +32,28 @@ import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
 public class InventoryView extends View implements BunnyWorldConstants{
     private Shape selectedShape;
     private float x1, x2, y1, y2;
-    public int count = 0;
+    public int countX, countY = 0;
     public ArrayList<Shape> inventoryItems = new ArrayList<Shape>();
     public ArrayList<Shape> thumbnails = new ArrayList<Shape>();
 
     public InventoryView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        count = 0;
+        countX = 0;
     }
 
     public void addToInventory(Shape shape) {
         inventoryItems.add(shape);
-        float newX = count;
-        float newY = (float) .76 * emulatorHeight;
-        float newX1 = newX + 200;
-        float newY1 = newY + 200;
-        count += 200;
+        float newX = countX;
+        if (countX >= emulatorWidth) {
+            countX = 0;
+            countY += (float) ((emulatorHeight * .25) / 2);
+        }
+        float newX1 = countX + emulatorWidth / 10;
+        float newY = countY;
+        float newY1 = newY + (float) (emulatorHeight * .25) / 2;
+        countX += emulatorWidth / 10;
         RectF newBounds = new RectF(newX, newY, newX1, newY1);
+        Log.d("onDraw bounds", newBounds.toString());
         Shape thumbnail = new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
                 shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
         thumbnails.add(thumbnail);
@@ -58,6 +63,15 @@ public class InventoryView extends View implements BunnyWorldConstants{
     @Override
     public void onDraw(Canvas canvas) {
         for (Shape thumbnail : thumbnails) {
+            Log.d("onDraw name", thumbnail.getName());
+            Log.d("onDraw toString", thumbnail.toString());
+            Log.d("onDraw height", Float.toString(thumbnail.getHeight()));
+            Log.d("onDraw width", Float.toString(thumbnail.getWidth()));
+            Log.d("onDraw movable", Boolean.toString(thumbnail.isMovable()));
+            Log.d("onDraw visible", Boolean.toString(thumbnail.isVisible()));
+            Log.d("onDraw image", thumbnail.getImage().toString());
+            Log.d("onDraw bounds", thumbnail.getBounds().toString());
+
             thumbnail.draw(canvas);
         }
     }
