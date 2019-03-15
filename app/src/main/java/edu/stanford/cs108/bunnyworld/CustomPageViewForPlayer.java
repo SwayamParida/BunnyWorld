@@ -86,7 +86,7 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
             }
             if (firstDraw) {
                 if (shape.getScript() != null && !shape.getScript().getOnEnterActions().isEmpty()) {
-                    checkForScripts(shape);
+                    checkForScriptsEnter(shape);
                 }
             }
         }
@@ -109,35 +109,16 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
         if (x1 == x2 && y1 == y2){
             selectShape(page.findLastShape(x1, y1));
-            checkForScripts(selectedShape);
+            if (selectedShape != null){
+                checkForScripts(selectedShape);
+            }
         }
 
 
         // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
         else if (selectedShape == null){
-            /* Log.d("tag2","Saved for undo in selectedShape == null");
 
-            Log.d("tag1","Drawing new shape");
-            RectF boundingRect = createBounds(x1, y1, x2, y2);
-            if(boundingRect.left < 0 || boundingRect.right > this.getWidth() ||
-                    boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
-            //get the resource Id of the image
-            String latestSelected = getLatestSelected();
-            int res_id = dbase.getId(RESOURCE_TABLE, latestSelected, -1);
-            if(shapeCountNotStarted && pageId != -1){
-                shapeCount = getLatestCount();
-                shapeCountNotStarted = false;
-                shapeCount++;
-            } else shapeCount += 1;
-            String shapeName = "Shape "+ shapeCount;
-            Shape shape = new ImageShape(this, boundingRect, selectedImage, null,
-                    res_id, true, true, shapeName);
-            shape.setScript(new Script());
-            page.addShape(shape);
-            selectShape(shape);
-            changesMade = true;
-            invalidate();*/
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else {
@@ -271,27 +252,59 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
     }
 
     private void goTo(String pageName) {
+        Log.d("anmol", "Trying to go to: " + pageName);
         int goToPageId = dbase.getId(PAGES_TABLE, pageName, gameId);
         Page nextPage = new Page(pageName, gameId);
-        ArrayList<Shape> pageShapes = dbase.getPageShapes(pageId, this);
+        ArrayList<Shape> pageShapes = dbase.getPageShapes(goToPageId, this);
+        Log.d("anmol", "pageShapes: " + pageShapes.size());
+
         nextPage.listOfShapes = (ArrayList<Shape>)pageShapes.clone();
         nextPage.pageID = goToPageId;
+        this.page = nextPage;
+
+        Log.d("anmol", "Next Page Shapes: " + nextPage.listOfShapes.size());
+
+
         invalidate();
         for (Shape shape : page.listOfShapes) {
-            checkForScripts(shape);
+            checkForScriptsEnter(shape);
         }
     }
 
     private void play(String soundName) {
         int soundId = dbase.getId(RESOURCE_TABLE, soundName, NO_PARENT);
         File mediafile = dbase.getAudioFile(soundId);
-        MediaPlayer mp = new MediaPlayer();
+        Log.d("anmol", "Trying to play: " + mediafile.getName() + " at: " + mediafile.getAbsolutePath() );
+
+        //create a new media player
+        MediaPlayer mPlayer = new MediaPlayer();
+//obtain the source
         try {
-            mp.setDataSource(mediafile.getAbsolutePath());
-            mp.start();
+            mPlayer.setDataSource(mediafile.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         }
+//prepare the player
+        try {
+            mPlayer.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//now start the player to begin playing the audio
+        mPlayer.start();
+
+//
+
+//        try {
+//            MediaPlayer mp;
+//        mp.setDataSource(mediafile.getAbsolutePath());
+//            mp=MediaPlayer.create("f", mediafile.getAbsolutePath());
+//            mp.start();
+//
+////            mp.start();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private void hide(String shapeName) {
@@ -315,9 +328,32 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
     }
 
     private void checkForScripts(Shape shape) {
+        if(shape.isVisible() == false) return;
         Script scr = shape.getScript();
         if (scr != null) {
             for (Action action : scr.getOnClickActions()) {
+                switch (action.getVerb()) {
+                    case "goto":
+                        goTo(action.getModifier());
+                        break;
+                    case "play":
+                        play(action.getModifier());
+                        break;
+                    case "hide":
+                        hide(action.getModifier());
+                        break;
+                    case "show":
+                        show(action.getModifier());
+                        break;
+                }
+            }
+        }
+    }
+
+    private void checkForScriptsEnter(Shape shape) {
+        Script scr = shape.getScript();
+        if (scr != null) {
+            for (Action action : scr.getOnEnterActions()) {
                 switch (action.getVerb()) {
                     case "goto":
                         goTo(action.getModifier());
