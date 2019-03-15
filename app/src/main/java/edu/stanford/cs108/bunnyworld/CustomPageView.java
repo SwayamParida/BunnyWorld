@@ -129,7 +129,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             String latestSelected = getLatestSelected();
             int res_id = dbase.getId(RESOURCE_TABLE, latestSelected, -1);
             shapeCount = getLatestCount()+1;
-            String shapeName = "Shape "+ shapeCount;
+            String shapeName = "Shape"+ shapeCount;
 
             Shape shape;
             //Determine which shape we are supposed to draw based on the mode selected
