@@ -32,6 +32,13 @@ public class Script implements BunnyWorldConstants {
         return actions;
     }
 
+    public void addAction(String event, Action action) {
+        switch (event) {
+            case "onClick": addOnClickAction(action); break;
+            case "onDrop": addOnDropAction(action); break;
+            case "onEnter": addOnEnterAction(action); break;
+        }
+    }
     public void addOnClickAction(Action onClickAction) {
         onClick = true;
         onClickActions.add(onClickAction);
@@ -62,8 +69,9 @@ public class Script implements BunnyWorldConstants {
     }
 
     public static Script parseScript(String scriptString) {
-        if (scriptString.isEmpty()) return null;
         Script script = new Script();
+
+        if (scriptString == null || scriptString.isEmpty()) return script;
 
         ArrayList<String> triggers = new ArrayList<>();
         Scanner triggerScanner = new Scanner(scriptString);

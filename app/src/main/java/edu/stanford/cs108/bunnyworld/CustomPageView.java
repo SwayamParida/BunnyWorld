@@ -13,6 +13,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -163,6 +164,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             selectedShape.setBounds(newBounds);
             Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
                     selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+            shape.setScript(selectedShape.getScript());
             page.addShape(shape);
             page.deleteShape(selectedShape);
             selectShape(shape);
@@ -229,31 +231,33 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         EditText height = activity.findViewById(R.id.height);
         CheckBox visible = activity.findViewById(R.id.visible);
         CheckBox movable = activity.findViewById(R.id.movable);
+        TextView script = activity.findViewById(R.id.script);
         imgSpinner = activity.findViewById(R.id.imgSpinner);
 
-        if (name != null) {
-            if (selectedShape != null) {
-                name.setText(shape.getName());
-                text.setText(shape.getText());
-                rectX.setText(String.format(Locale.US, "%f", shape.getBounds().left));
-                rectY.setText(String.format(Locale.US, "%f", shape.getBounds().top));
-                width.setText(String.format(Locale.US, "%f", shape.getBounds().right - shape.getBounds().left));
-                height.setText(String.format(Locale.US, "%f", shape.getBounds().bottom - shape.getBounds().top));
-                visible.setChecked(shape.isVisible());
-                movable.setChecked(shape.isMovable());
-                updateSpinner(imgSpinner, shape.getName());
-//                updateScriptSpinners(selectedShape);
-            } else {
-                name.setText("");
-                text.setText("");
-                rectX.setText("");
-                rectY.setText("");
-                width.setText("");
-                height.setText("");
-                visible.setChecked(false);
-                movable.setChecked(false);
-//                updateScriptSpinners(null);
-            }
+        if (selectedShape != null) {
+            String scriptString = shape.getScript().toString();
+            String scriptTextViewText = (!scriptString.isEmpty()) ? scriptString : activity.getString(R.string.script);
+
+            name.setText(shape.getName());
+            text.setText(shape.getText());
+            rectX.setText(String.format(Locale.US, "%f", shape.getBounds().left));
+            rectY.setText(String.format(Locale.US, "%f", shape.getBounds().top));
+            width.setText(String.format(Locale.US, "%f", shape.getBounds().right - shape.getBounds().left));
+            height.setText(String.format(Locale.US, "%f", shape.getBounds().bottom - shape.getBounds().top));
+            script.setText(scriptTextViewText);
+            visible.setChecked(shape.isVisible());
+            movable.setChecked(shape.isMovable());
+            updateSpinner(imgSpinner, shape.getName());
+        } else {
+            name.setText("");
+            text.setText("");
+            rectX.setText("");
+            rectY.setText("");
+            width.setText("");
+            height.setText("");
+            script.setText(activity.getString(R.string.script));
+            visible.setChecked(false);
+            movable.setChecked(false);
         }
     }
 
@@ -262,61 +266,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             LinearLayout row = (LinearLayout) rows.getChildAt(rowIndex);
             View deleteRowButton = row.getChildAt(DELETE_ROW_BUTTON);
             deleteRowMethod.invoke(deleteRowButton);
-        }
-    }
-    private void updateScriptSpinners(Shape shape) {
-        if (shape != null) {
-            updateActionSpinners(shape);
-            updateTriggerSpinners(TRIGGER_EVENTS[0], shape.getScript().getOnClickActions());
-            updateTriggerSpinners(TRIGGER_EVENTS[1], shape.getScript().getOnDropActions());
-            updateTriggerSpinners(TRIGGER_EVENTS[2], shape.getScript().getOnEnterActions());
-        } else {
-            PageEditorActivity activity = (PageEditorActivity) getContext();
-            LinearLayout actionRows = activity.findViewById(R.id.actions);
-            LinearLayout triggerRows = activity.findViewById(R.id.triggers);
-            try {
-                clearScriptSpinners(actionRows, activity.getClass().getMethod("deleteActionRow", View.class));
-                clearScriptSpinners(triggerRows, activity.getClass().getMethod("deleteTriggerRow", View.class));
-            } catch (Exception ignore) { }
-        }
-    }
-    private void updateActionSpinners(Shape shape) {
-        PageEditorActivity activity = (PageEditorActivity) getContext();
-        LinearLayout actionRows = activity.findViewById(R.id.actions);
-        try {
-            clearScriptSpinners(actionRows, activity.getClass().getMethod("deleteActionRow", View.class));
-        } catch (Exception ignore) { }
-
-        int numRows = 1;
-        for (Action action : shape.getScript().getActions()) {
-            LinearLayout actionRow = (LinearLayout) actionRows.getChildAt(numRows++);
-            Spinner verbSpinner = (Spinner) actionRow.getChildAt(VERB_SPINNER);
-            Spinner modifierSpinner = (Spinner) actionRow.getChildAt(MODIFIER_SPINNER);
-
-            updateSpinner(verbSpinner, action.getVerb());
-            updateSpinner(modifierSpinner, action.getModifier());
-
-            View addRowButton = actionRow.getChildAt(ADD_ROW_BUTTON);
-            activity.addActionRow(addRowButton);
-        }
-    }
-    private void updateTriggerSpinners(String event, List<Action> actions) {
-        PageEditorActivity activity = (PageEditorActivity) getContext();
-        LinearLayout triggerRows = activity.findViewById(R.id.triggers);
-        try {
-            clearScriptSpinners(triggerRows, activity.getClass().getMethod("deleteTriggerRow", View.class));
-        } catch (Exception ignore) { }
-
-        int numRows = 1;
-        for (Action action : actions) {
-            LinearLayout triggerRow = (LinearLayout) triggerRows.getChildAt(numRows++);
-            Spinner eventSpinner = (Spinner) triggerRow.getChildAt(EVENT_SPINNER);
-            Spinner actionSpinner = (Spinner) triggerRow.getChildAt(ACTION_SPINNER);
-
-            updateSpinner(eventSpinner, event);
-            updateSpinner(actionSpinner, action.toString());
-
-            activity.addTriggerRow(null);
         }
     }
     /**

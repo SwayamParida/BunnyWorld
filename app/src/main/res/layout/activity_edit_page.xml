@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -12,33 +11,33 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.85"/>
+        app:layout_constraintGuide_percent="0.85" />
 
     <android.support.constraint.Guideline
         android:id="@+id/vMargin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.75"/>
+        app:layout_constraintGuide_percent="0.75" />
 
     <edu.stanford.cs108.bunnyworld.CustomPageView
         android:id="@+id/pagePreview"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/white"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="@id/hMargin"
+        app:layout_constraintEnd_toEndOf="@id/vMargin"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/vMargin"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <HorizontalScrollView
         android:id="@+id/presetImages"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/pagePreview"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/vMargin"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/vMargin"/>
+        app:layout_constraintTop_toBottomOf="@id/pagePreview" />
 
     <android.support.v4.widget.NestedScrollView
         android:id="@+id/attributes"
@@ -147,40 +146,47 @@
                 android:text="Actions"/>
 
             <LinearLayout
-                android:id="@+id/actions"
-                android:orientation="vertical"
+                android:orientation="horizontal"
+                android:layout_columnSpan="2"
+                android:layout_width="match_parent">
+                <TextView
+                    android:id="@+id/script"
+                    android:layout_width="0dp"
+                    android:layout_weight="6"
+                    android:layout_height="wrap_content"
+                    android:text="@string/script" />
+                <Button
+                    android:id="@+id/clearScript"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="-"
+                    android:onClick="clear"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/actionRow"
+                android:orientation="horizontal"
+                android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:layout_columnSpan="2">
-                <LinearLayout
-                    android:id="@+id/actionRow1"
-                    android:orientation="horizontal"
+                <Spinner
+                    android:id="@+id/verb1"
                     android:layout_height="wrap_content"
-                    android:layout_width="match_parent">
-                    <Spinner
-                        android:id="@+id/verb1"
-                        android:layout_height="wrap_content"
-                        android:layout_width="0dp"
-                        android:layout_weight="3"/>
-                    <Spinner
-                        android:id="@+id/modifier1"
-                        android:layout_height="wrap_content"
-                        android:layout_width="0dp"
-                        android:layout_weight="3" />
-                    <Button
-                        android:id="@+id/addActionRow1"
-                        android:layout_height="wrap_content"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:onClick="addActionRow"
-                        android:text="+"/>
-                    <Button
-                        android:id="@+id/deleteActionRow1"
-                        android:layout_height="wrap_content"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:onClick="deleteActionRow"
-                        android:text="-"/>
-                </LinearLayout>
+                    android:layout_width="0dp"
+                    android:layout_weight="3"/>
+                <Spinner
+                    android:id="@+id/modifier1"
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="3" />
+                <Button
+                    android:id="@+id/addActionRow1"
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:onClick="addAction"
+                    android:text="+"/>
             </LinearLayout>
 
             <TextView
@@ -189,40 +195,28 @@
                 android:text="Triggers"/>
 
             <LinearLayout
-                android:id="@+id/triggers"
-                android:orientation="vertical"
+                android:id="@+id/triggerRow"
+                android:orientation="horizontal"
+                android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:layout_columnSpan="2">
-                <LinearLayout
-                    android:id="@+id/triggerRow1"
-                    android:orientation="horizontal"
+                <Spinner
+                    android:id="@+id/event1"
                     android:layout_height="wrap_content"
-                    android:layout_width="match_parent">
-                    <Spinner
-                        android:id="@+id/event1"
-                        android:layout_height="wrap_content"
-                        android:layout_width="0dp"
-                        android:layout_weight="3" />
-                    <Spinner
-                        android:id="@+id/action1"
-                        android:layout_height="wrap_content"
-                        android:layout_width="0dp"
-                        android:layout_weight="3" />
-                    <Button
-                        android:id="@+id/addTriggerRow1"
-                        android:layout_height="wrap_content"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:onClick="addTriggerRow"
-                        android:text="+"/>
-                    <Button
-                        android:id="@+id/deleteTriggerRow1"
-                        android:layout_height="wrap_content"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:onClick="deleteTriggerRow"
-                        android:text="-"/>
-                </LinearLayout>
+                    android:layout_width="0dp"
+                    android:layout_weight="3" />
+                <Spinner
+                    android:id="@+id/action1"
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="3" />
+                <Button
+                    android:id="@+id/addTriggerRow1"
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:onClick="addTrigger"
+                    android:text="+"/>
             </LinearLayout>
         </GridLayout>
     </android.support.v4.widget.NestedScrollView>
@@ -231,122 +225,119 @@
         android:id="@+id/addTxtBtn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:onClick="enableTextMode"
+        android:text="Add Text"
         app:layout_constraintBottom_toTopOf="@id/deleteShapeBtn"
         app:layout_constraintEnd_toStartOf="@id/rectBtn"
-        app:layout_constraintStart_toStartOf="@id/undo"
-        android:text="Add Text"
-        android:onClick="enableTextMode"
-        />
+        app:layout_constraintStart_toStartOf="@id/undo" />
+
     <Button
         android:id="@+id/rectBtn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/deleteShapeBtn"
-        app:layout_constraintStart_toEndOf="@id/addTxtBtn"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:onClick="enableRectMode"
         android:text="Draw A Rectangle"
-        android:onClick="enableRectMode"/>
+        app:layout_constraintBottom_toTopOf="@id/deleteShapeBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/addTxtBtn" />
 
     <Button
         android:id="@+id/addImgResBtn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:autoSizeTextType="uniform"
         android:onClick="addImgRes"
         android:text="Add Image Resource"
-        android:autoSizeTextType="uniform"
         app:layout_constraintBottom_toTopOf="@id/rectBtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/addTxtBtn" />
 
     <Button
         android:id="@+id/save"
-        android:layout_height="0dp"
         android:layout_width="0dp"
-        app:layout_constraintStart_toStartOf="@id/vMargin"
-        app:layout_constraintEnd_toStartOf="@id/deleteShapeBtn"
-        app:layout_constraintTop_toTopOf="@id/hMargin"
-        app:layout_constraintBottom_toTopOf="@id/undo"
+        android:layout_height="0dp"
         android:onClick="saveChanges"
-        android:text="Update Shape"/>
+        android:text="Update Shape"
+        app:layout_constraintBottom_toTopOf="@id/undo"
+        app:layout_constraintEnd_toStartOf="@id/deleteShapeBtn"
+        app:layout_constraintStart_toStartOf="@id/vMargin"
+        app:layout_constraintTop_toTopOf="@id/hMargin" />
 
     <Button
         android:id="@+id/deleteShapeBtn"
-        android:layout_height="0dp"
         android:layout_width="0dp"
+        android:layout_height="0dp"
         android:onClick="deleteShape"
         android:text="Delete Shape"
-        app:layout_constraintStart_toEndOf="@id/save"
-        app:layout_constraintEnd_toStartOf="@id/savePage"
-        app:layout_constraintTop_toTopOf="@id/hMargin"
         app:layout_constraintBottom_toTopOf="@id/undo"
-        />
+        app:layout_constraintEnd_toStartOf="@id/savePage"
+        app:layout_constraintStart_toEndOf="@id/save"
+        app:layout_constraintTop_toTopOf="@id/hMargin" />
+
     <Button
         android:id="@+id/savePage"
-        android:layout_height="0dp"
         android:layout_width="0dp"
-        app:layout_constraintStart_toEndOf="@id/deleteShapeBtn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/hMargin"
-        app:layout_constraintBottom_toTopOf="@id/redo"
+        android:layout_height="0dp"
         android:onClick="savePage"
-        android:text="Save Page" />
+        android:text="Save Page"
+        app:layout_constraintBottom_toTopOf="@id/redo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/deleteShapeBtn"
+        app:layout_constraintTop_toTopOf="@id/hMargin" />
 
     <Button
         android:id="@+id/undo"
-        android:layout_height="0dp"
         android:layout_width="0dp"
-        app:layout_constraintStart_toStartOf="@id/vMargin"
-        app:layout_constraintEnd_toStartOf="@id/redo"
-        app:layout_constraintTop_toBottomOf="@id/save"
-        app:layout_constraintBottom_toTopOf="@id/copy"
+        android:layout_height="0dp"
         android:onClick="undoChange"
-        android:text="Undo Change" />
+        android:text="Undo Change"
+        app:layout_constraintBottom_toTopOf="@id/copy"
+        app:layout_constraintEnd_toStartOf="@id/redo"
+        app:layout_constraintStart_toStartOf="@id/vMargin"
+        app:layout_constraintTop_toBottomOf="@id/save" />
 
     <Button
         android:id="@+id/redo"
-        android:layout_height="0dp"
         android:layout_width="0dp"
-        app:layout_constraintStart_toEndOf="@id/undo"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/savePage"
-        app:layout_constraintBottom_toTopOf="@id/cut"
+        android:layout_height="0dp"
         android:onClick="redoAction"
-        android:text="Redo Change"/>
+        android:text="Redo Change"
+        app:layout_constraintBottom_toTopOf="@id/cut"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/undo"
+        app:layout_constraintTop_toBottomOf="@id/savePage" />
 
     <Button
         android:id="@+id/copy"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:onClick="copy"
         android:text="Copy"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/undo"
         app:layout_constraintEnd_toStartOf="@id/cut"
         app:layout_constraintStart_toStartOf="@id/vMargin"
-        android:onClick="copy"
-        />
+        app:layout_constraintTop_toBottomOf="@id/undo" />
 
     <Button
         android:id="@+id/cut"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:onClick="cut"
         android:text="Cut"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/redo"
         app:layout_constraintEnd_toStartOf="@id/paste"
         app:layout_constraintStart_toEndOf="@id/copy"
-        android:onClick="cut"
-        />
+        app:layout_constraintTop_toBottomOf="@id/redo" />
 
     <Button
         android:id="@+id/paste"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:onClick="paste"
         android:text="Paste"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/redo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/cut"
-        android:onClick="paste"
-        />
+        app:layout_constraintTop_toBottomOf="@id/redo" />
 
 </android.support.constraint.ConstraintLayout>

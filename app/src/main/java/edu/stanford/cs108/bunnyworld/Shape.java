@@ -81,7 +81,7 @@ abstract class Shape {
     public void setScript(Script newScript){ this.script = newScript; }
 
     //returns the script for this object
-    public Script getScript(){ return script; }
+    public Script getScript(){ return (script != null) ? script : new Script(); }
 
     //bool indicating if the shape is visible
     public boolean isVisible(){
