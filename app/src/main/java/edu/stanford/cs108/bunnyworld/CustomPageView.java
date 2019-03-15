@@ -388,22 +388,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             return 0;
         }
         int largestId = 0;
-        //else parse the string to get the actual count
-//        String cmd = "SELECT * FROM shapes WHERE parent_id =" + pageId +";";
-//        Cursor cursor = dbase.db.rawQuery(cmd, null);
-//        //cursor.moveToLast();
-//        int largestId = 0;
-//        while(cursor.moveToNext()){
-//            String name = cursor.getString(0);
-//            String[] myList = name.split(" ");
-//            int count = 0;
-//            if (myList.length > 1) {
-//                count = Integer.parseInt(myList[1]);
-//            }
-//            if(count > largestId) largestId = count;
-//        }
-
-        //because nothing would have been added then
 
         //loop through the array list of shapes and find the one with the largest Id
         ArrayList<Shape> shapesArr = page.getListOfShapes();
