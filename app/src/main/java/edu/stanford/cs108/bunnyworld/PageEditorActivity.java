@@ -38,7 +38,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     private Set<Action> unsavedActions;
     private boolean ignore = false;
 
-
     //array list of text shapes that is retrieved from EditPagesActivity
     private DatabaseHelper dbase;
     private int gameId;
