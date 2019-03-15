@@ -154,7 +154,7 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
                 Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
                         selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
 
-                if (newY1 > .7 * emulatorHeight) { //put in inventory (bottom 30% of screen)
+                if (newY1 > .75 * emulatorHeight) { //put in inventory (bottom 25% of screen)
                     inventory.addToInventory(shape);
                     Log.d("adding to inventory", inventory.inventoryItems.toString());
                 }
