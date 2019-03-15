@@ -74,8 +74,9 @@ public class Page {
     }
 
     //a constructor that sets the name
-    public Page(String name){
+    public Page(String name, int gameID){
         this.name = name;
+        this.gameID = gameID;
     }
 
     public void setPageRender(Bitmap pageRender) {

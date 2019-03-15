@@ -37,6 +37,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
     private static DatabaseHelper single_instance = null;
     public SQLiteDatabase db;
     private static Context mContext;
+    private static boolean deleteDatabase = false;
     private static ArrayList<String> resourceNames = new ArrayList<String>();
 /**********************************************/
 
@@ -84,7 +85,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      */
     public static DatabaseHelper getInstance(Context context) {
         mContext = context;
-        //context.deleteDatabase(DATABASE_NAME);
+        if (deleteDatabase) context.deleteDatabase(DATABASE_NAME);
         if (single_instance == null) {
             single_instance = new DatabaseHelper(context.getApplicationContext());
         }

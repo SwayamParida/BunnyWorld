@@ -39,8 +39,8 @@ public interface BunnyWorldConstants {
     String[] TRIGGER_EVENTS = { "onClick", "onDrop", "onEnter" };
     String VERB_MODIFIER_DELIMITER = " ";
     String ACTION_DELIMITER = ";";
-    String EVENT_ACTION_DELIMITER = ": |";
-    String TRIGGER_DELIMITER = "|\n";
+    String EVENT_ACTION_DELIMITER = "\\s*: \\s*";
+    String TRIGGER_DELIMITER = "\\s*```\\s*";
     String regex = "trigger: { (verb modifier; )*}\n";
 
     int EVENT_SPINNER = 0;
