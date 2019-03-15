@@ -3,7 +3,6 @@ package edu.stanford.cs108.bunnyworld;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.StringTokenizer;
 
 public class Script implements BunnyWorldConstants {
     private boolean onClick, onEnter, onDrop;
