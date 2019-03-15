@@ -35,7 +35,7 @@ public interface BunnyWorldConstants {
             R.raw.munch, R.raw.munching, R.raw.woof };
     List<Integer> audioList = Arrays.asList(audioResources);
 
-    String[] ACTION_VERBS = { "goto", "play", "hide", "show" };
+    String[] ACTION_VERBS = { "play", "hide", "show", "goto" };
     String[] TRIGGER_EVENTS = { "onClick", "onDrop", "onEnter" };
     String VERB_MODIFIER_DELIMITER = " ";
     String ACTION_DELIMITER = ";";
