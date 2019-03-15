@@ -12,7 +12,7 @@ List of Extensions:
  - Cut/Copy/paste support
  - Custom page view
  - Thumbnail preview
- 
+ - Share to external services
  
  To Do:
  - XML
