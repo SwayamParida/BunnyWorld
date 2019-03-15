@@ -98,6 +98,7 @@ public class Script implements BunnyWorldConstants {
         add(onEnter, TRIGGER_EVENTS[2], onEnterActions, scriptBuilder);
         return scriptBuilder.toString();
     }
+
     private void add(boolean shouldAdd, String triggerLabel, List<Action> toAdd, StringBuilder stringBuilder) {
         if (!shouldAdd) return;
 
