@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 public class PlayGameActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
-    private CustomPageViewForPlayer playerPageView;
+    protected static CustomPageViewForPlayer playerPageView;
     private HorizontalScrollView inventory;
 
     //array list of text shapes that is retrieved from EditPagesActivity

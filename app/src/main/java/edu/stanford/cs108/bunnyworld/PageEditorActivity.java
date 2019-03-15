@@ -558,7 +558,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         Shape selectedShape = pagePreview.getSelectedShape();
         if (selectedShape != null) {
             pagePreview.deleteShape(selectedShape);
-            pagePreview.setSelectedDrawableShape(null);
+//            pagePreview.setSelectedDrawableShape(null);
         }
         pagePreview.invalidate();
     }

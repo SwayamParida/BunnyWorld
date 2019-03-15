@@ -40,9 +40,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
 
-    //a private textView that prints out the text
-    private TextView spannableText;
-
     public boolean isRectModeEnabled() {
         return rectModeEnabled;
     }
@@ -64,10 +61,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
     //get the current number of shapes in the folder
     private int shapeCount = getLatestCount();
-
-    //implementation helpers for undo and redo
-//    private ArrayList<Shape> undoList = new ArrayList<Shape>();
-//    private PriorityQueue<Shape> redoList = new PriorityQueue<Shape>();
 
 
     private Stack<Page> stackOfPages;
@@ -98,18 +91,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         xOffset = 0;
         yOffset = 0;
         stackOfPages = new Stack<Page>();
-        //creates a new textView with which to display text
-//        spannableText = new TextView(getContext());
-//        spannableText.setOnClickListener(new OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                //create an arraylist and pass that to the pageEditor
-////                String name = spannableText.getText().toString();
-////                float xPos = getX();
-////                float yPos = getY();
-////                String
-//            }
-//        });
     }
 
     public void setSelectedImage(BitmapDrawable selectedImage) {
@@ -142,21 +123,15 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         }
     }
 
-    //booleans that checks to see if action up/ down have occured
-    private boolean actionUpOccurred = false;
-    private boolean actionDownOccured = false;
-    private boolean actionBegan = false;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 x1 = event.getX();
                 y1 = event.getY();
-                actionDownOccured = true;
             case MotionEvent.ACTION_UP:
                 x2 = event.getX();
                 y2 = event.getY();
-                actionUpOccurred = true;
         }
 
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
@@ -164,7 +139,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             Shape shape = null;
             EditText textEditText = ((PageEditorActivity) getContext()).findViewById(R.id.shapeText);
             String text = textEditText.getText().toString();
-            setSelectedShape();
+            //setSelectedShape();
             if(!text.isEmpty() && textModeEnabled && selectedShape == null){
                 RectF boundingRect = createBounds(x1, y1, x2, y2);
                 shapeCount = getLatestCount()+1;
@@ -172,14 +147,15 @@ public class CustomPageView extends View implements BunnyWorldConstants{
                 shape = new TextShape(this, boundingRect, selectedImage, text,
                         -1, true, true, shapeName);
                 page.addShape(shape);
-                //selectShape(shape); selecting the shape causes a lot of  conflicts
+                selectShape(selectedShape); //selecting the shape causes a lot of  conflicts
                 updateInspector(shape);
                 changesMade = true;
-                invalidate();
                 textModeEnabled = false;
+                invalidate();
                 return true;
             }
 
+            setSelectedShape();
             //update the spinner
             if(selectedShape != null && !rectModeEnabled && !textModeEnabled){
                 int id = selectedShape.getResId();
