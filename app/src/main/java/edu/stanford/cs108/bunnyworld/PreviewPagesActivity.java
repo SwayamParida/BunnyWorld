@@ -60,7 +60,7 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         int largestId = 0;
         while(cursor.moveToNext()){
             String name = cursor.getString(0);
-            String[] myList = name.split(" ");
+            String[] myList = name.split("_");
             int count = 0;
             if (myList.length > 1) {
                 count = Integer.parseInt(myList[1]);
@@ -74,10 +74,11 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
     //doesn't explicitly handle scrollview because onCreate method will do that
     public void createNew(View view){
         int count = getShapesCount() + 1;
-        String pageName = "Page" + count;
+        String pageName = "Page_" + count;
         Intent newIntent = new Intent(this, PageEditorActivity.class);
         newIntent.putExtra("containsItems", false);
-        newIntent.putExtra("pageName", pageName);
+        newIntent.putExtra("pa" +
+                "geName", pageName);
         newIntent.putExtra("gameId", gameId);
         startActivity(newIntent);
         //update the scrollview so that changes persist when you return
