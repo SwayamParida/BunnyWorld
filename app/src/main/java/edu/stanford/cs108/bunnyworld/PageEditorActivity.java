@@ -80,12 +80,13 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             return;
         }
         Action action = Action.parseAction(actionString);
+        String shape = (String) shapeSpinner.getSelectedItem();
 
         String scriptText = scriptTextView.getText().toString();
         String scriptString = (scriptText.equals(getString(R.string.script))) ? null : scriptText;
         Script script = Script.parseScript(scriptString);
 
-        script.addAction(event, action);
+        script.addAction(event, shape, action);
         scriptTextView.setText(script.toString());
     }
     public void addAction(View view) {

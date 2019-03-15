@@ -40,6 +40,7 @@ public interface BunnyWorldConstants {
     String VERB_MODIFIER_DELIMITER = " ";
     String ACTION_DELIMITER = ";";
     String EVENT_ACTION_DELIMITER = ": ";
+    String SHAPE_ACTION_DELIMITER = "-";
     String TRIGGER_DELIMITER = "\n";
     String regex = "trigger: { (verb modifier; )*}\n";
 
