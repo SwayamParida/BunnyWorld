@@ -43,6 +43,8 @@ public interface BunnyWorldConstants {
     String TRIGGER_DELIMITER = "\\s*```\\s*";
     String regex = "trigger: { (verb modifier; )*}\n";
 
+    int LEFT_SPINNER = 0;
+    int RIGHT_SPINNER = 0;
     int EVENT_SPINNER = 0;
     int ACTION_SPINNER = 1;
     int VERB_SPINNER = 0;

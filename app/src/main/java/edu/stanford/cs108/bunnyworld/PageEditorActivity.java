@@ -63,25 +63,14 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * Event handler for when the "Update" button is clicked.
      */
     public void saveChanges(View view) {
-//        Shape selectedShape = pagePreview.getSelectedShape();
-        if(ignore == false) pagePreview.saveForUndo();
-
-        if(pagePreview.getSelectedShape() == null){
-            Log.d("tag4","slected shape is null");
-        } else{
-            Log.d("tag4","slected shape is " + pagePreview.getSelectedShape().name);
-        }
-
-
+        if(!ignore) pagePreview.saveForUndo();
 
         if (pagePreview.getSelectedShape() != null){
             ignore = true;
-            Log.d("tag4","Attempting to delete " + pagePreview.getSelectedShape().name);
             page.deleteShape(pagePreview.getSelectedShape());
             page.addShape(updateShape());
             pagePreview.invalidate();
             pagePreview.setPage(page);
-            Log.d("tag4","saveChanges called");
         }
         ignore = false;
 
@@ -175,8 +164,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //use the database to get the object
         BitmapDrawable defaultImage = new BitmapDrawable(newBitmap);
         pagePreview.setSelectedImage(defaultImage);
-        if(ignore == false) pagePreview.saveForUndo();
-        Log.d("tag2","Saved for undo in init");
+        if(!ignore) pagePreview.saveForUndo();
         pagePreview.invalidate();
     }
 
@@ -192,7 +180,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             imageView.setBackgroundResource(R.color.transparent);
             //get the image from the database and create new drawable
             Bitmap imgBitmap = dbase.getImage(imgName);
-            if(imgBitmap == null) Log.d("imgName", "Not found");
             imageView.setImageDrawable(new BitmapDrawable(imgBitmap));
             imageView.setOnClickListener(v -> {
                 BitmapDrawable selectedImage = (BitmapDrawable) ((ImageView) v).getDrawable();
@@ -327,7 +314,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      */
     private Shape updateShape() {
         Log.d("tag2","Saved for undo in updateShape()");
-        if(ignore == false) pagePreview.saveForUndo();
+        if(!ignore) pagePreview.saveForUndo();
         String name = nameEditText.getText().toString();
         String text = textEditText.getText().toString();
         String xEdit = xEditText.getText().toString();
@@ -493,7 +480,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     public void copy(View view) {
-        if(ignore == false) pagePreview.saveForUndo();
+        if(!ignore) pagePreview.saveForUndo();
         Shape selectedShape = pagePreview.getSelectedShape();
         if (selectedShape != null) {
             clipboard = pagePreview.makeShapeCopy(selectedShape);
@@ -502,7 +489,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     public void cut(View view) {
-        if(ignore == false) pagePreview.saveForUndo();
+        if(!ignore) pagePreview.saveForUndo();
         Shape selectedShape = pagePreview.getSelectedShape();
         if (selectedShape != null) {
             clipboard = pagePreview.makeShapeCopy(selectedShape);
@@ -512,7 +499,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     public void paste(View view) {
-        if(ignore == false) pagePreview.saveForUndo();
+        if(!ignore) pagePreview.saveForUndo();
         if (clipboard != null) {
             while (repeatName(clipboard.getName())) {
                 clipboard.setName(clipboard.getName()+"_copy");
@@ -539,7 +526,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     public void deleteShape(View view) {
-        if(ignore == false) pagePreview.saveForUndo();
+        if(!ignore) pagePreview.saveForUndo();
 
         Shape selectedShape = pagePreview.getSelectedShape();
         if (selectedShape != null) {
