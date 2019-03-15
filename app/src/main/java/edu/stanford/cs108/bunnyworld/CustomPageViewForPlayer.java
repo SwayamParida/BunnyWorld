@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.MediaPlayer;
+import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -15,6 +17,9 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -40,6 +45,13 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
     private boolean shapeCountNotStarted = true;
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
+    private boolean firstDraw = true;
+
+    public void setGameId(int gameId) {
+        this.gameId = gameId;
+    }
+
+    private int gameId;
 
     //get the current number of shapes in the folder
     private int shapeCount = getLatestCount();
@@ -72,7 +84,13 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
                 Log.d("list", shape.toString());
                 shape.draw(canvas);
             }
+            if (firstDraw) {
+                if (shape.getScript() != null && !shape.getScript().getOnEnterActions().isEmpty()) {
+                    checkForScripts(shape);
+                }
+            }
         }
+        firstDraw = false;
     }
 
     @Override
@@ -91,12 +109,10 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
         if (x1 == x2 && y1 == y2){
             selectShape(page.findLastShape(x1, y1));
-            //update the spinner
-            if(selectedShape != null){
-                int id = selectedShape.getResId();
-                String name = dbase.getResourceName(id);
-            }
+            checkForScripts(selectedShape);
         }
+
+
         // When (x1,y1) and (x2,y2) differ, it implies that user performed a drag action
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
         else if (selectedShape == null){
@@ -253,4 +269,71 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
         }
         return count;
     }
+
+    private void goTo(String pageName) {
+        int goToPageId = dbase.getId(PAGES_TABLE, pageName, gameId);
+        Page nextPage = new Page(pageName, gameId);
+        ArrayList<Shape> pageShapes = dbase.getPageShapes(pageId, this);
+        nextPage.listOfShapes = (ArrayList<Shape>)pageShapes.clone();
+        nextPage.pageID = goToPageId;
+        invalidate();
+        for (Shape shape : page.listOfShapes) {
+            checkForScripts(shape);
+        }
+    }
+
+    private void play(String soundName) {
+        int soundId = dbase.getId(RESOURCE_TABLE, soundName, NO_PARENT);
+        File mediafile = dbase.getAudioFile(soundId);
+        MediaPlayer mp = new MediaPlayer();
+        try {
+            mp.setDataSource(mediafile.getAbsolutePath());
+            mp.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void hide(String shapeName) {
+        for (Shape curr: page.listOfShapes) {
+            if (curr.getName().equals(shapeName)) {
+                curr.setVisible(false);
+                break;
+            }
+        }
+        invalidate();
+    }
+
+    private void show(String shapeName) {
+        for (Shape curr: page.listOfShapes) {
+            if (curr.getName().equals(shapeName)) {
+                curr.setVisible(true);
+                break;
+            }
+        }
+        invalidate();
+    }
+
+    private void checkForScripts(Shape shape) {
+        Script scr = shape.getScript();
+        if (scr != null) {
+            for (Action action : scr.getOnClickActions()) {
+                switch (action.getVerb()) {
+                    case "goto":
+                        goTo(action.getModifier());
+                        break;
+                    case "play":
+                        play(action.getModifier());
+                        break;
+                    case "hide":
+                        hide(action.getModifier());
+                        break;
+                    case "show":
+                        show(action.getModifier());
+                        break;
+                }
+            }
+        }
+    }
+
 }

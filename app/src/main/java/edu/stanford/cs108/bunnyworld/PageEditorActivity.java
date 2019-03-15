@@ -384,8 +384,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
 
         //Insert toast
         Toast.makeText(this, "Page Saved", Toast.LENGTH_SHORT).show();
-
-        savePageBitmap(pagePreview);
+         savePageBitmap(pagePreview);
         saveToDatabase();
         pagePreview.setChangesMadeBool(false);
     }
