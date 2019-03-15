@@ -167,7 +167,6 @@ public class SearchForImageActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             Uri targetUri = data.getData();
@@ -296,7 +295,7 @@ public class SearchForImageActivity extends AppCompatActivity {
                     ImageObject curr = values.get(i);
                     URL currUrl = null;
                     try {
-                        currUrl = new URL(curr.contentUrl());
+                        currUrl = new URL(curr.thumbnailUrl());
                         Bitmap currImg = BitmapFactory.decodeStream(currUrl.openConnection().getInputStream());
                         if (currImg == null) continue;
                         synchronized (imageList) {

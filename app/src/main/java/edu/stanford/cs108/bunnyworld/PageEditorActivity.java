@@ -36,6 +36,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     private Spinner imgSpinner, verbSpinner, modifierSpinner, eventSpinner, actionSpinner;
     private LinearLayout actions, triggers;
     private Set<Action> unsavedActions;
+    private boolean ignore = false;
 
     //array list of text shapes that is retrieved from EditPagesActivity
     private DatabaseHelper dbase;
@@ -62,12 +63,28 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * Event handler for when the "Update" button is clicked.
      */
     public void saveChanges(View view) {
-        Shape selectedShape = pagePreview.getSelectedShape();
-        if (selectedShape != null)
-            page.deleteShape(selectedShape);
-        page.addShape(updateShape());
-        pagePreview.setPage(page);
-        pagePreview.invalidate();
+//        Shape selectedShape = pagePreview.getSelectedShape();
+        if(ignore == false) pagePreview.saveForUndo();
+
+        if(pagePreview.getSelectedShape() == null){
+            Log.d("tag4","slected shape is null");
+        } else{
+            Log.d("tag4","slected shape is " + pagePreview.getSelectedShape().name);
+        }
+
+
+
+        if (pagePreview.getSelectedShape() != null){
+            ignore = true;
+            Log.d("tag4","Attempting to delete " + pagePreview.getSelectedShape().name);
+            page.deleteShape(pagePreview.getSelectedShape());
+            page.addShape(updateShape());
+            pagePreview.invalidate();
+            pagePreview.setPage(page);
+            Log.d("tag4","saveChanges called");
+        }
+        ignore = false;
+
     }
     public void addTriggerRow(View view) {
         addScriptRow(triggers, this::addTriggerRow, this::deleteTriggerRow, Arrays.asList(TRIGGER_EVENTS), false);
@@ -158,7 +175,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //use the database to get the object
         BitmapDrawable defaultImage = new BitmapDrawable(newBitmap);
         pagePreview.setSelectedImage(defaultImage);
-        pagePreview.saveForUndo();
+        if(ignore == false) pagePreview.saveForUndo();
         Log.d("tag2","Saved for undo in init");
         pagePreview.invalidate();
     }
@@ -172,6 +189,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         imgScrollView.removeAllViews();
         for (String imgName : dbase.getResourceNames()) {
             ImageView imageView = new ImageView(this);
+            imageView.setBackgroundResource(R.color.transparent);
             //get the image from the database and create new drawable
             Bitmap imgBitmap = dbase.getImage(imgName);
             if(imgBitmap == null) Log.d("imgName", "Not found");
@@ -222,7 +240,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             case "goto": return dbase.getGamePageNames(page.getGameID());
             case "play": return Arrays.asList(AUDIO_NAMES);
             case "hide": case "show":
-                List<Shape> allShapes = dbase.getPageShapes(page.getPageID(), pagePreview);
+                List<Shape> allShapes = page.listOfShapes;
                 List<String> shapeNames = new ArrayList<>();
                 allShapes.forEach(shape -> shapeNames.add(shape.getName()));
                 return shapeNames;
@@ -281,7 +299,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         String pageName = intent.getStringExtra("pageName");
         getSupportActionBar().setTitle("BunnyWorld Editor: "+ pageName);
 
-        Page newPage = new Page(pageName);
+        Page newPage = new Page(pageName, gameId);
         pagePreview.setPage(newPage);
         if(!intent.getBooleanExtra("containsItems", false)){
             return newPage;
@@ -309,11 +327,22 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      */
     private Shape updateShape() {
         Log.d("tag2","Saved for undo in updateShape()");
-        pagePreview.saveForUndo();
+        if(ignore == false) pagePreview.saveForUndo();
         String name = nameEditText.getText().toString();
         String text = textEditText.getText().toString();
+        String xEdit = xEditText.getText().toString();
+        String yEdit = yEditText.getText().toString();
+        String wEdit = wEditText.getText().toString();
+        String hEdit = hEditText.getText().toString();
         boolean visible = visibleCheckBox.isChecked();
         boolean movable = movableCheckBox.isChecked();
+
+        if(name.isEmpty() || xEdit.isEmpty() || yEdit.isEmpty() || wEdit.isEmpty() || hEdit.isEmpty())
+        {
+            Toast.makeText(this, "One or more EditText fields are empty", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+
 
         String imageName = imgSpinner.getSelectedItem().toString();
         Bitmap image = dbase.getImage(imageName);
@@ -342,9 +371,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             shape = new RectangleShape(pagePreview, boundingRect, -1, visible, movable, name);
             shape.setScript(script);
         }
-
         //Save copy of page
-
         return shape;
     }
     private Script createScript() {
@@ -370,18 +397,16 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     //save button method
     public void savePage(View view){
         //call the saveSelectedPage method
-        if(pagePreview.getChangesMadeBool()){
-            savePageBitmap(pagePreview);
-            saveToDatabase();
-        }
+        savePageBitmap(pagePreview);
+        saveToDatabase();
         pagePreview.setChangesMadeBool(false);
     }
 
     //undoes an action performed by the user on the screen
     public void undoChange(View view){
         //accesses the array list of actions and simply deletes the last activity
-        boolean undo = pagePreview.undoChange();
-        if(undo) Toast.makeText(this, "Action undo successful", Toast.LENGTH_SHORT).show();
+        this.page = pagePreview.undoChange();
+//        if(undo) Toast.makeText(this, "Action undo successful", Toast.LENGTH_SHORT).show();
         pagePreview.setChangesMadeBool(false);
     }
 
@@ -391,12 +416,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         boolean redo = pagePreview.redoAction();
         if(!redo) Toast.makeText(this, "Action redo successful", Toast.LENGTH_SHORT).show();
         pagePreview.setChangesMadeBool(false);
-    }
-
-    public void passValuesBack() {
-        Intent intent = new Intent(PageEditorActivity.this, PreviewPagesActivity.class);
-        intent.putExtra("Game_id", gameId);
-        startActivity(intent);
     }
 
     @Override
@@ -474,7 +493,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     public void copy(View view) {
-        pagePreview.saveForUndo();
+        if(ignore == false) pagePreview.saveForUndo();
         Shape selectedShape = pagePreview.getSelectedShape();
         if (selectedShape != null) {
             clipboard = pagePreview.makeShapeCopy(selectedShape);
@@ -483,7 +502,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     public void cut(View view) {
-        pagePreview.saveForUndo();
+        if(ignore == false) pagePreview.saveForUndo();
         Shape selectedShape = pagePreview.getSelectedShape();
         if (selectedShape != null) {
             clipboard = pagePreview.makeShapeCopy(selectedShape);
@@ -493,7 +512,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     }
 
     public void paste(View view) {
-        pagePreview.saveForUndo();
+        if(ignore == false) pagePreview.saveForUndo();
         if (clipboard != null) {
             while (repeatName(clipboard.getName())) {
                 clipboard.setName(clipboard.getName()+"_copy");
@@ -508,7 +527,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         else {
             Toast.makeText(this, "Nothing to paste!", Toast.LENGTH_SHORT).show();
         }
-
     }
 
     public boolean repeatName(String name) {
@@ -519,4 +537,15 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         }
         return false;
     }
+
+    public void deleteShape(View view) {
+        if(ignore == false) pagePreview.saveForUndo();
+
+        Shape selectedShape = pagePreview.getSelectedShape();
+        if (selectedShape != null) {
+            pagePreview.deleteShape(selectedShape);
+        }
+        pagePreview.invalidate();
+    }
+
 }

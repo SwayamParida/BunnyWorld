@@ -12,15 +12,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
-import java.util.PriorityQueue;
 import java.util.Stack;
 
 import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
@@ -48,10 +43,12 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
     private Stack<Page> stackOfPages;
 
+
     public void saveForUndo(){
+
         if(this.page == null) return;
 
-        Page pageClone = new Page("jhbg");
+        Page pageClone = new Page("jhbg", page.getGameID());
         pageClone.isStarterPage = this.page.isStarterPage;
 
         ArrayList<Shape> clonedList = (ArrayList<Shape>) this.page.listOfShapes.clone();
@@ -65,6 +62,8 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
         stackOfPages.push(pageClone);
         Log.d("tag2","stackOfPagesContains " +stackOfPages.size() + " elements");
+
+
     }
 
 
@@ -74,6 +73,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         xOffset = 0;
         yOffset = 0;
         stackOfPages = new Stack<Page>();
+
     }
 
     public void setSelectedImage(BitmapDrawable selectedImage) {
@@ -82,8 +82,12 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     public Shape getSelectedShape() {
         return selectedShape;
     }
+
     public void setPage(Page other) {
-        page = other;
+        page =  other; //new Page(other.getName());
+//        for (Shape shape : other.getListOfShapes()) {
+//            page.addShape(shape);
+//        }
     }
     @Override
     public void onDraw(Canvas canvas) {
@@ -92,8 +96,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d("width start touch", Integer.toString(getWidth()));
-        Log.d("width start touch", Integer.toString(getHeight()));
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 x1 = event.getX();
@@ -117,29 +119,27 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         // When no shape is selected, a drag implies user intends to draw a new ImageShape
         else if (selectedShape == null){
             saveForUndo();
-            Log.d("tag2","Saved for undo in selectedShape == null");
-
-            Log.d("tag1","Drawing new shape");
             RectF boundingRect = createBounds(x1, y1, x2, y2);
             if(boundingRect.left < 0 || boundingRect.right > this.getWidth() ||
                     boundingRect.top < 0 || boundingRect.bottom > this.getHeight()) return true;
             //get the resource Id of the image
             String latestSelected = getLatestSelected();
             int res_id = dbase.getId(RESOURCE_TABLE, latestSelected, -1);
-            if(shapeCountNotStarted && pageId != -1){
-                shapeCount = getLatestCount();
-                shapeCountNotStarted = false;
-                shapeCount++;
-            } else shapeCount += 1;
+            shapeCount = getLatestCount()+1;
             String shapeName = "Shape "+ shapeCount;
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null,
                     res_id, true, true, shapeName);
-            shape.setScript(new Script());
             page.addShape(shape);
             selectShape(shape);
             updateInspector(shape);
             changesMade = true;
+
+
+
+
             invalidate();
+
+            //updateInspector(shape);
         }
         // When a shape is selected, a drag implies user intends to move the selected shape
         else {
@@ -158,14 +158,25 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             selectedShape.setBounds(newBounds);
             Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
                     selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
-            shape.setScript(new Script());
             page.addShape(shape);
             page.deleteShape(selectedShape);
             selectShape(shape);
             updateInspector(shape);
+
+
+
             changesMade = true;
+
+
+
+
             invalidate();
+
         }
+
+
+
+
         invalidate();
 
         return true;
@@ -217,16 +228,15 @@ public class CustomPageView extends View implements BunnyWorldConstants{
      * @param shape the shape to be updated
      */
     private void updateInspector(Shape shape) {
-        Activity activity = (Activity) getContext();
-        EditText name = activity.findViewById(R.id.name);
-        EditText text = activity.findViewById(R.id.shapeText);
-        EditText rectX = activity.findViewById(R.id.rectX);
-        EditText rectY = activity.findViewById(R.id.rectY);
-        EditText width = activity.findViewById(R.id.width);
-        EditText height = activity.findViewById(R.id.height);
-        CheckBox visible = activity.findViewById(R.id.visible);
-        CheckBox movable = activity.findViewById(R.id.movable);
-        imgSpinner = activity.findViewById(R.id.imgSpinner);
+        EditText name = ((Activity) getContext()).findViewById(R.id.name);
+        EditText text = ((Activity) getContext()).findViewById(R.id.shapeText);
+        EditText rectX = ((Activity) getContext()).findViewById(R.id.rectX);
+        EditText rectY = ((Activity) getContext()).findViewById(R.id.rectY);
+        EditText width = ((Activity) getContext()).findViewById(R.id.width);
+        EditText height = ((Activity) getContext()).findViewById(R.id.height);
+        CheckBox visible = ((Activity) getContext()).findViewById(R.id.visible);
+        CheckBox movable = ((Activity) getContext()).findViewById(R.id.movable);
+        imgSpinner = ((Activity) getContext()).findViewById(R.id.imgSpinner);
 
         if (name != null) {
             if (selectedShape != null) {
@@ -239,7 +249,6 @@ public class CustomPageView extends View implements BunnyWorldConstants{
                 visible.setChecked(shape.isVisible());
                 movable.setChecked(shape.isMovable());
                 updateSpinner(imgSpinner, shape.getName());
-                updateScriptSpinners(selectedShape);
             } else {
                 name.setText("");
                 text.setText("");
@@ -249,73 +258,10 @@ public class CustomPageView extends View implements BunnyWorldConstants{
                 height.setText("");
                 visible.setChecked(false);
                 movable.setChecked(false);
-                updateScriptSpinners(null);
             }
         }
     }
 
-    private void clearScriptSpinners(LinearLayout rows, Method deleteRowMethod) throws IllegalAccessException, InvocationTargetException {
-        for (int rowIndex = 1; rowIndex < rows.getChildCount(); ++rowIndex) {
-            LinearLayout row = (LinearLayout) rows.getChildAt(rowIndex);
-            View deleteRowButton = row.getChildAt(DELETE_ROW_BUTTON);
-            deleteRowMethod.invoke(deleteRowButton);
-        }
-    }
-    private void updateScriptSpinners(Shape shape) {
-        if (selectedShape != null) {
-            updateActionSpinners();
-            updateTriggerSpinners(TRIGGER_EVENTS[0], shape.getScript().getOnClickActions());
-            updateTriggerSpinners(TRIGGER_EVENTS[1], shape.getScript().getOnDropActions());
-            updateTriggerSpinners(TRIGGER_EVENTS[2], shape.getScript().getOnEnterActions());
-        } else {
-            PageEditorActivity activity = (PageEditorActivity) getContext();
-            LinearLayout actionRows = activity.findViewById(R.id.actions);
-            LinearLayout triggerRows = activity.findViewById(R.id.triggers);
-            try {
-                clearScriptSpinners(actionRows, activity.getClass().getMethod("deleteActionRow", View.class));
-                clearScriptSpinners(triggerRows, activity.getClass().getMethod("deleteTriggerRow", View.class));
-            } catch (Exception ignore) { }
-        }
-    }
-    private void updateActionSpinners() {
-        PageEditorActivity activity = (PageEditorActivity) getContext();
-        LinearLayout actionRows = activity.findViewById(R.id.actions);
-        try {
-            clearScriptSpinners(actionRows, activity.getClass().getMethod("deleteActionRow", View.class));
-        } catch (Exception ignore) { }
-
-        int numRows = 1;
-        for (Action action : selectedShape.getScript().getActions()) {
-            LinearLayout actionRow = (LinearLayout) actionRows.getChildAt(numRows++);
-            Spinner verbSpinner = (Spinner) actionRow.getChildAt(VERB_SPINNER);
-            Spinner modifierSpinner = (Spinner) actionRow.getChildAt(MODIFIER_SPINNER);
-
-            updateSpinner(verbSpinner, action.getVerb());
-            updateSpinner(modifierSpinner, action.getModifier());
-
-            View addRowButton = actionRow.getChildAt(ADD_ROW_BUTTON);
-            activity.addActionRow(addRowButton);
-        }
-    }
-    private void updateTriggerSpinners(String event, List<Action> actions) {
-        PageEditorActivity activity = (PageEditorActivity) getContext();
-        LinearLayout triggerRows = activity.findViewById(R.id.triggers);
-        try {
-            clearScriptSpinners(triggerRows, activity.getClass().getMethod("deleteTriggerRow", View.class));
-        } catch (Exception ignore) { }
-
-        int numRows = 1;
-        for (Action action : actions) {
-            LinearLayout triggerRow = (LinearLayout) triggerRows.getChildAt(numRows++);
-            Spinner eventSpinner = (Spinner) triggerRow.getChildAt(EVENT_SPINNER);
-            Spinner actionSpinner = (Spinner) triggerRow.getChildAt(ACTION_SPINNER);
-
-            updateSpinner(eventSpinner, event);
-            updateSpinner(actionSpinner, action.toString());
-
-            activity.addTriggerRow(null);
-        }
-    }
     /**
      * Helper method that creates a RectF object, enforcing that left <= right and top <= bottom.
      * @param x1 One of the horizontal components
@@ -351,19 +297,19 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     }
 
     //undoes an action performed by the user on the screen
-    public boolean undoChange(){
+    public Page undoChange(){
         //accesses the array list of actions and simply deletes the last activity
 
         if(stackOfPages.size() != 0) {
 //            this.page.listOfShapes.clear();
-            Page lastStepPage = stackOfPages.pop();
+            Page lastStepPage = stackOfPages.pop(); //<- this line is an issue...
             Log.d("tag2","stackOfPagesContains " +stackOfPages.size() + " elements");
             this.page = lastStepPage;
-
+//            setPage(page);
             invalidate();
-            return true;
+            return this.page;
         }
-        return false;
+        return this.page;
     }
 
     //redo button
@@ -393,18 +339,24 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
     //gets the latest selected and parses the name correctly
     public int getLatestCount(){
-        if(pageId == -1) return 0;
-
-        //else parse the string to get the actual count
-        String cmd = "SELECT * FROM shapes WHERE parent_id =" + pageId +";";
-        Cursor cursor = dbase.db.rawQuery(cmd, null);
-        cursor.moveToLast();
-        String name = cursor.getString(0);
-        String[] myList = name.split(" ");
-        int count = 0;
-        if (myList.length > 1) {
-            count = Integer.parseInt(myList[1]);
+        if(shapeCountNotStarted && pageId == -1) {
+            shapeCountNotStarted = false;
+            return 0;
         }
-        return count;
+        int largestId = 0;
+
+        //loop through the array list of shapes and find the one with the largest Id
+        ArrayList<Shape> shapesArr = page.getListOfShapes();
+        for(Shape newShape: shapesArr){
+            String name = newShape.getName();
+            String[] myList = name.split(" ");
+            int count = 0;
+            if (myList.length > 1) {
+                count = Integer.parseInt(myList[1]);
+            }
+            if(count > largestId) largestId = count;
+        }
+
+        return largestId;
     }
 }

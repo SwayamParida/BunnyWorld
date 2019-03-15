@@ -3,6 +3,7 @@ package edu.stanford.cs108.bunnyworld;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.StringTokenizer;
 
 public class Script implements BunnyWorldConstants {
     private boolean onClick, onEnter, onDrop;
@@ -58,27 +59,28 @@ public class Script implements BunnyWorldConstants {
 
     public static Script parseScript(String scriptString) {
         Script script = new Script();
-
-        Scanner triggerScanner = new Scanner(scriptString);
-        triggerScanner.useDelimiter(TRIGGER_DELIMITER);
-
-        List<String> triggers = new ArrayList<>();
-        while (triggerScanner.hasNext())
-            triggers.add(triggerScanner.next());
-        triggerScanner.close();
-
+        ArrayList<String> triggers = new ArrayList<>();
+        StringTokenizer st = new StringTokenizer(scriptString, TRIGGER_DELIMITER);
+        while (st.hasMoreTokens()) {
+            String curr = st.nextToken();
+            if (!curr.isEmpty()) triggers.add(curr);
+        }
         for (String trigger : triggers) {
-            Scanner eventScanner = new Scanner(trigger);
-            eventScanner.useDelimiter(EVENT_ACTION_DELIMITER);
-            String event = triggerScanner.next();
-            List<Action> actions = Action.parseActionList(triggerScanner.next());
+            StringTokenizer eventTokenizer = new StringTokenizer(trigger, EVENT_ACTION_DELIMITER);
+            String event = eventTokenizer.nextToken();
+            List<Action> actions = Action.parseActionList(eventTokenizer.nextToken());
             switch (event) {
-                case "onClick": script.addOnClickAction(actions); break;
-                case "onDrop": script.addOnDropAction(actions); break;
-                case "onEnter": script.addOnEnterAction(actions); break;
+                case "onClick":
+                    script.addOnClickAction(actions);
+                    break;
+                case "onDrop":
+                    script.addOnDropAction(actions);
+                    break;
+                case "onEnter":
+                    script.addOnEnterAction(actions);
+                    break;
             }
         }
-
         return script;
     }
 
