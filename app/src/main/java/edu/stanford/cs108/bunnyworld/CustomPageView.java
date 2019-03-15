@@ -234,7 +234,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
                 visible.setChecked(shape.isVisible());
                 movable.setChecked(shape.isMovable());
                 updateSpinner(imgSpinner, shape.getName());
-                updateScriptSpinners(selectedShape);
+                //updateScriptSpinners(selectedShape);
             } else {
                 name.setText("");
                 text.setText("");
@@ -244,7 +244,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
                 height.setText("");
                 visible.setChecked(false);
                 movable.setChecked(false);
-                updateScriptSpinners(null);
+                //updateScriptSpinners(null);
             }
         }
     }

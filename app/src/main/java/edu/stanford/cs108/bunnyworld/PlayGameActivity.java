@@ -15,10 +15,14 @@ import android.widget.HorizontalScrollView;
 
 import java.util.ArrayList;
 
+import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
+import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE;
+
 public class PlayGameActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
     private CustomPageViewForPlayer playerPageView;
-    private HorizontalScrollView inventory;
+    public static InventoryView inventory;
 
     //array list of text shapes that is retrieved from EditPagesActivity
     public DatabaseHelper dbase;
@@ -27,6 +31,8 @@ public class PlayGameActivity extends AppCompatActivity implements BunnyWorldCon
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_IMMERSIVE|
+                SYSTEM_UI_FLAG_FULLSCREEN|SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_game);
 

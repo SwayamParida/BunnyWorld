@@ -23,7 +23,10 @@ import java.util.Locale;
 import java.util.PriorityQueue;
 import java.util.Stack;
 
+import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorHeight;
+import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorWidth;
 import static edu.stanford.cs108.bunnyworld.PageEditorActivity.updateSpinner;
+import static edu.stanford.cs108.bunnyworld.PlayGameActivity.inventory;
 
 public class CustomPageViewForPlayer extends View implements BunnyWorldConstants{
     private Page page;
@@ -129,20 +132,39 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
                 float newY = selectedShape.getY() + (y2 - y1);
                 float newY1 = newY + selectedShape.getHeight();
                 //check to see if the image is in the bounds of the preview else don't make changes
-                if (newX < 0 || newX1 > this.getWidth() || newY < 0 || newY1 > this.getHeight())
-                    return true;
+                if (newX < 0)  {
+                    newX1 += (Math.abs(newX));
+                    newX = 0;
+                }
+                if (newX1 >= emulatorWidth) {
+                    newX -= (Math.abs(newX1 - (emulatorWidth - 1)));
+                    newX1 = emulatorWidth - 1;
+                }
+                if (newY < 0) {
+                    newY1 += (Math.abs(newY));
+                    newY = 0;
+                }
+                if (newY1 >= emulatorHeight) {
+                    newY -= (Math.abs(newY1 - (emulatorHeight - 1)));
+                    newY1 = emulatorHeight - 1;
+                }
 
-                //else update the picture to be dragged and update inspector
                 RectF newBounds = new RectF(newX, newY, newX1, newY1);
                 selectedShape.setBounds(newBounds);
                 Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
                         selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
-                shape.setScript(new Script());
-                page.addShape(shape);
+
+                if (newY1 > .7 * emulatorHeight) { //put in inventory (bottom 30% of screen)
+                    inventory.addToInventory(shape);
+                    Log.d("adding to inventory", inventory.inventoryItems.toString());
+                }
+                else {
+                    page.addShape(shape);
+                    selectShape(shape);
+                }
                 page.deleteShape(selectedShape);
-                selectShape(shape);
-                changesMade = true;
                 invalidate();
+
             }
         }
         invalidate();
