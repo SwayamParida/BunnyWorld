@@ -35,6 +35,7 @@ public class InventoryView extends View implements BunnyWorldConstants{
     private float x1, x2, y1, y2;
     public int countX = 0;
     public int countY = 0;
+    public int rows = 2;
     public ArrayList<Shape> inventoryItems = new ArrayList<Shape>();
     public ArrayList<Shape> thumbnails = new ArrayList<Shape>();
 
@@ -45,27 +46,27 @@ public class InventoryView extends View implements BunnyWorldConstants{
 
     public void addToInventory(Shape shape) {
         inventoryItems.add(shape);
+        if (countX == 10) {
+            if (countY == (int) ((emulatorHeight * .25) / rows)) {
+                rows++;
+                //inventory full
+            }
+            countX = 0;
+            countY = (int) ((emulatorHeight * .25) / rows);
+        }
+
         float newX = countX * (emulatorWidth / 10);
         float newX1 = newX + emulatorWidth / 10;
         float newY = countY;
-        float newY1 = newY + (float) (emulatorHeight * .25) / 2;
-        if (countX == 9) {
-            if (countY == (int) ((emulatorHeight * .25) / 2)) {
-                //inventory full
-            }
-            else {
-                countX = 0;
-                countY = (int) ((emulatorHeight * .25) / 2);
-            }
-        }
-        else {
-            countX++;
-        }
+        float newY1 = newY + (float) (emulatorHeight * .25) / rows;
+
         RectF newBounds = new RectF(newX, newY, newX1, newY1);
         Log.d("onDraw bounds", newBounds.toString());
         Shape thumbnail = new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
                 shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
         thumbnails.add(thumbnail);
+        reDrawInventory();
+        countX++;
         invalidate();
     }
 
@@ -78,13 +79,13 @@ public class InventoryView extends View implements BunnyWorldConstants{
             float newX = countX * (emulatorWidth / 10);
             float newX1 = newX + emulatorWidth / 10;
             float newY = countY;
-            float newY1 = newY + (float) (emulatorHeight * .25) / 2;
+            float newY1 = newY + (float) (emulatorHeight * .25) / rows;
             if (countX == 9) {
-                if (countY == (int) ((emulatorHeight * .25) / 2)) {
+                if (countY == (int) ((emulatorHeight * .25) / rows)) {
                     //inventory full
                 } else {
                     countX = 0;
-                    countY = (int) ((emulatorHeight * .25) / 2);
+                    countY = (int) ((emulatorHeight * .25) / rows);
                 }
             } else {
                 countX++;
