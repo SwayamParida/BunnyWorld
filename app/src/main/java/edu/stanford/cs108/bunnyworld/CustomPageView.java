@@ -38,6 +38,25 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
 
+    public boolean isRectModeEnabled() {
+        return rectModeEnabled;
+    }
+
+    public void setRectModeEnabled(boolean rectModeEnabled) {
+        this.rectModeEnabled = rectModeEnabled;
+    }
+
+    public boolean isTextModeEnabled() {
+        return textModeEnabled;
+    }
+
+    public void setTextModeEnabled(boolean textModeEnabled) {
+        this.textModeEnabled = textModeEnabled;
+    }
+
+    private boolean rectModeEnabled = false;
+    private boolean textModeEnabled = false;
+
     //get the current number of shapes in the folder
     private int shapeCount = getLatestCount();
 

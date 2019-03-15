@@ -58,6 +58,7 @@ public class Script implements BunnyWorldConstants {
     }
 
     public static Script parseScript(String scriptString) {
+        if (scriptString.isEmpty()) return null;
         Script script = new Script();
         ArrayList<String> triggers = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(scriptString, TRIGGER_DELIMITER);

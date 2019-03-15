@@ -227,6 +227,25 @@
         </GridLayout>
     </android.support.v4.widget.NestedScrollView>
 
+    <Button
+        android:id="@+id/addTxtBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/deleteShapeBtn"
+        app:layout_constraintEnd_toStartOf="@id/rectBtn"
+        app:layout_constraintStart_toStartOf="@id/undo"
+        android:text="Add Text"
+        android:onClick="enableTextMode"
+        />
+    <Button
+        android:id="@+id/rectBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/deleteShapeBtn"
+        app:layout_constraintStart_toEndOf="@id/addTxtBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="Draw A Rectangle"
+        android:onClick="enableRectMode"/>
 
     <Button
         android:id="@+id/addImgResBtn"
@@ -234,9 +253,10 @@
         android:layout_height="wrap_content"
         android:onClick="addImgRes"
         android:text="Add Image Resource"
-        app:layout_constraintBottom_toTopOf="@id/savePage"
+        android:autoSizeTextType="uniform"
+        app:layout_constraintBottom_toTopOf="@id/rectBtn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/save" />
+        app:layout_constraintStart_toStartOf="@id/addTxtBtn" />
 
     <Button
         android:id="@+id/save"
