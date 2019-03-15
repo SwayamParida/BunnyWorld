@@ -7,6 +7,7 @@ import java.util.StringTokenizer;
 
 public class Script implements BunnyWorldConstants {
     private boolean onClick, onEnter, onDrop;
+    private Shape onDropShape;
     private List<Action> onClickActions, onEnterActions, onDropActions;
 
     public Script() {
@@ -55,6 +56,10 @@ public class Script implements BunnyWorldConstants {
     public void addOnEnterAction(List<Action> onEnterAction) {
         onEnter = true;
         onEnterActions.addAll(onEnterAction);
+    }
+
+    public void setOnDropShape(Shape onDropShape) {
+        this.onDropShape = onDropShape;
     }
 
     public static Script parseScript(String scriptString) {
