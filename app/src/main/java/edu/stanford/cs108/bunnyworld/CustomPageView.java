@@ -220,7 +220,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
      * Spinner is made ivar because we access it multiple times in this activity
      * @param shape the shape to be updated
      */
-    private void updateInspector(Shape shape) {
+    public void updateInspector(Shape shape) {
         Activity activity = (Activity) getContext();
         EditText name = activity.findViewById(R.id.name);
         EditText text = activity.findViewById(R.id.shapeText);
@@ -233,7 +233,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         TextView script = activity.findViewById(R.id.scriptz);
         imgSpinner = activity.findViewById(R.id.imgSpinner);
 
-        if (selectedShape != null) {
+        if (shape != null) {
             String scriptString = shape.getScript().toString();
             String scriptTextViewText = (!scriptString.isEmpty()) ? scriptString : activity.getString(R.string.script);
 

@@ -253,7 +253,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     private Shape updateShape() {
         if (!ignore) pagePreview.saveForUndo();
         String name = nameEditText.getText().toString();
-        String scriptString = scriptTextView.getText().toString();
+        String scriptText = scriptTextView.getText().toString();
         String text = textEditText.getText().toString();
         String xEdit = xEditText.getText().toString();
         String yEdit = yEditText.getText().toString();
@@ -276,6 +276,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         float height = Float.parseFloat(hEdit);
         RectF boundingRect = new RectF(x, y, x + width, y + height);
 
+        String scriptString = scriptText.equals(getString(R.string.script)) ? null : scriptText;
         Script script = Script.parseScript(scriptString);
 
         Shape shape;
@@ -313,6 +314,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     public void undoChange(View view){
         //accesses the array list of actions and simply deletes the last activity
         this.page = pagePreview.undoChange();
+        pagePreview.updateInspector(null);
 //        if(undo) Toast.makeText(this, "Action undo successful", Toast.LENGTH_SHORT).show();
         pagePreview.setChangesMadeBool(false);
     }
