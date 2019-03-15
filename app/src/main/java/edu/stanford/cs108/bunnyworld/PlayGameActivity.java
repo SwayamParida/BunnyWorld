@@ -114,7 +114,7 @@ public class PlayGameActivity extends AppCompatActivity {
 
         //create a new page that has the properties of the previous page
         String pageName = intent.getStringExtra("pageName");
-        Page newPage = new Page(pageName);
+        Page newPage = new Page(pageName, gameId);
         newPage.setName(pageName);
         newPage.setListOfShapes(shapes);
         return newPage;

@@ -226,7 +226,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             case "goto": return dbase.getGamePageNames(page.getGameID());
             case "play": return Arrays.asList(AUDIO_NAMES);
             case "hide": case "show":
-                List<Shape> allShapes = dbase.getPageShapes(page.getPageID(), pagePreview);
+                List<Shape> allShapes = page.listOfShapes;
                 List<String> shapeNames = new ArrayList<>();
                 allShapes.forEach(shape -> shapeNames.add(shape.getName()));
                 return shapeNames;
@@ -285,7 +285,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         String pageName = intent.getStringExtra("pageName");
         getSupportActionBar().setTitle("BunnyWorld Editor: "+ pageName);
 
-        Page newPage = new Page(pageName);
+        Page newPage = new Page(pageName, gameId);
         pagePreview.setPage(newPage);
         if(!intent.getBooleanExtra("containsItems", false)){
             return newPage;

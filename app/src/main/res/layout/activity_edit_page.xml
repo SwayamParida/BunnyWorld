@@ -270,6 +270,7 @@
         app:layout_constraintBottom_toTopOf="@id/redo"
         android:onClick="savePage"
         android:text="Save Page" />
+
     <Button
         android:id="@+id/undo"
         android:layout_height="0dp"
@@ -280,6 +281,7 @@
         app:layout_constraintBottom_toTopOf="@id/copy"
         android:onClick="undoChange"
         android:text="Undo Change" />
+
     <Button
         android:id="@+id/redo"
         android:layout_height="0dp"

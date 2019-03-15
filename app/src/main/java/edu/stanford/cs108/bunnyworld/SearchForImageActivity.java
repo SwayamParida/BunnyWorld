@@ -295,7 +295,7 @@ public class SearchForImageActivity extends AppCompatActivity {
                     ImageObject curr = values.get(i);
                     URL currUrl = null;
                     try {
-                        currUrl = new URL(curr.contentUrl());
+                        currUrl = new URL(curr.thumbnailUrl());
                         Bitmap currImg = BitmapFactory.decodeStream(currUrl.openConnection().getInputStream());
                         if (currImg == null) continue;
                         synchronized (imageList) {
