@@ -54,8 +54,8 @@ abstract class Shape {
             this.viewHeight = (int) (emulatorHeight * .9);
         }
         else {
-            this.viewWidth = (int) (emulatorWidth * .65);
-            this.viewHeight = (int) (emulatorHeight * .85);
+            this.viewWidth = emulatorWidth;
+            this.viewHeight = (int) (emulatorHeight * .75);
         }
 
         /*viewHeight = 1285;
