@@ -41,6 +41,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:onClick="undoPage"
+                android:text="Undo"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1">
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:onClick="createNew"
                 android:text="Create New Page" />
         </LinearLayout>
@@ -79,10 +92,24 @@
             android:orientation="horizontal"
             android:layout_weight="1">
             <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:onClick="changePageName"
+            android:text="Change Name"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1">
+            <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Change Name"/>
+                android:id="@+id/editTextWithNewName"
+                android:hint="Type new name here..."/>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

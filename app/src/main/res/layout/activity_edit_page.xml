@@ -25,6 +25,7 @@
         android:id="@+id/pagePreview"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/white"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="@id/hMargin"
         app:layout_constraintStart_toStartOf="parent"
@@ -242,16 +243,28 @@
         android:layout_height="0dp"
         android:layout_width="0dp"
         app:layout_constraintStart_toStartOf="@id/vMargin"
-        app:layout_constraintEnd_toStartOf="@id/savePage"
+        app:layout_constraintEnd_toStartOf="@id/deleteShapeBtn"
         app:layout_constraintTop_toTopOf="@id/hMargin"
         app:layout_constraintBottom_toTopOf="@id/undo"
         android:onClick="saveChanges"
         android:text="Update Shape"/>
+
+    <Button
+        android:id="@+id/deleteShapeBtn"
+        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:onClick="deleteShape"
+        android:text="Delete Shape"
+        app:layout_constraintStart_toEndOf="@id/save"
+        app:layout_constraintEnd_toStartOf="@id/savePage"
+        app:layout_constraintTop_toTopOf="@id/hMargin"
+        app:layout_constraintBottom_toTopOf="@id/undo"
+        />
     <Button
         android:id="@+id/savePage"
         android:layout_height="0dp"
         android:layout_width="0dp"
-        app:layout_constraintStart_toEndOf="@id/save"
+        app:layout_constraintStart_toEndOf="@id/deleteShapeBtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/hMargin"
         app:layout_constraintBottom_toTopOf="@id/redo"

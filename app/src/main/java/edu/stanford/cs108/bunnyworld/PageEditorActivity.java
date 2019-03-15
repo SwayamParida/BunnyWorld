@@ -175,6 +175,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         imgScrollView.removeAllViews();
         for (String imgName : dbase.getResourceNames()) {
             ImageView imageView = new ImageView(this);
+            imageView.setBackgroundResource(R.color.transparent);
             //get the image from the database and create new drawable
             Bitmap imgBitmap = dbase.getImage(imgName);
             if(imgBitmap == null) Log.d("imgName", "Not found");
@@ -311,7 +312,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      * @return new Shape using the updated attributes
      */
     private Shape updateShape() {
-        Log.d("tag2","Saved for undo in updateShape()");
         pagePreview.saveForUndo();
         String name = nameEditText.getText().toString();
         String text = textEditText.getText().toString();
@@ -356,9 +356,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             shape = new RectangleShape(pagePreview, boundingRect, -1, visible, movable, name);
             shape.setScript(script);
         }
-
         //Save copy of page
-
         return shape;
     }
     private Script createScript() {
@@ -384,10 +382,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     //save button method
     public void savePage(View view){
         //call the saveSelectedPage method
-        if(pagePreview.getChangesMadeBool()){
-            savePageBitmap(pagePreview);
-            saveToDatabase();
-        }
+        savePageBitmap(pagePreview);
+        saveToDatabase();
         pagePreview.setChangesMadeBool(false);
     }
 
@@ -405,12 +401,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         boolean redo = pagePreview.redoAction();
         if(!redo) Toast.makeText(this, "Action redo successful", Toast.LENGTH_SHORT).show();
         pagePreview.setChangesMadeBool(false);
-    }
-
-    public void passValuesBack() {
-        Intent intent = new Intent(PageEditorActivity.this, PreviewPagesActivity.class);
-        intent.putExtra("Game_id", gameId);
-        startActivity(intent);
     }
 
     @Override
@@ -522,7 +512,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         else {
             Toast.makeText(this, "Nothing to paste!", Toast.LENGTH_SHORT).show();
         }
-
     }
 
     public boolean repeatName(String name) {
@@ -533,4 +522,14 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         }
         return false;
     }
+
+    public void deleteShape(View view) {
+        pagePreview.saveForUndo();
+        Shape selectedShape = pagePreview.getSelectedShape();
+        if (selectedShape != null) {
+            pagePreview.deleteShape(selectedShape);
+        }
+        pagePreview.invalidate();
+    }
+
 }
