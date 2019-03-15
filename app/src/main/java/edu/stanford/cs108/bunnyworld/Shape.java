@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.stanford.cs108.bunnyworld.GameLoaderActivity.playing;
 import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorHeight;
 import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorWidth;
 
@@ -28,7 +29,7 @@ abstract class Shape {
     protected String name;
     protected BitmapDrawable image;
     protected boolean visible, movable;
-    protected int viewWidth, viewHeight;
+    public int viewWidth, viewHeight;
     protected float originalX, originalX2, originalY, originalY2;
     protected Script script;
 
@@ -48,8 +49,15 @@ abstract class Shape {
         this.originalX = bounds.left;
         this.originalY = bounds.top;
 
-        this.viewWidth = (int) (emulatorWidth * .65);
-        this.viewHeight = (int) (emulatorHeight * .85);
+        if (playing) {
+            this.viewWidth = emulatorWidth;
+            this.viewHeight = (int) (emulatorHeight * .9);
+        }
+        else {
+            this.viewWidth = (int) (emulatorWidth * .65);
+            this.viewHeight = (int) (emulatorHeight * .85);
+        }
+
         /*viewHeight = 1285;
        viewWidth = 1664;
         }*/

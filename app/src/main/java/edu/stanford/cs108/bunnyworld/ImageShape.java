@@ -8,6 +8,10 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 
+import static edu.stanford.cs108.bunnyworld.GameLoaderActivity.playing;
+import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorHeight;
+import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.emulatorWidth;
+
 public class ImageShape extends Shape {
     //the file name
     private RectF scaledCoord;
@@ -33,6 +37,7 @@ public class ImageShape extends Shape {
         float height = canvas.getHeight();
         float newX = scaledCoord.left*width;
         float newY = scaledCoord.top*height;
+
         if(drawOriginalDim) {
             canvas.drawBitmap(image.getBitmap(), xPos, yPos, null);
         }
@@ -48,10 +53,14 @@ public class ImageShape extends Shape {
     @Override
     public void draw(Canvas canvas) {
        // super.draw(canvas);
-        float width = canvas.getWidth();
-        float height = canvas.getHeight();
+        float width = viewWidth;
+        float height = viewHeight;
         float newX = scaledCoord.left*width;
         float newY = scaledCoord.top*height;
+        Log.d("debug width", Float.toString(width));
+        Log.d("debug height", Float.toString(height));
+        Log.d("debug", Float.toString(newX));
+        Log.d("debug", Float.toString(newY));
         if(drawOriginalDim) {
             Log.d("drawing", "drawing original shape " + name);
             canvas.drawBitmap(image.getBitmap(), newX, newY, null);

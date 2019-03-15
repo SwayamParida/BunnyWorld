@@ -7,9 +7,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
@@ -21,6 +23,7 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
     private DatabaseHelper dbHelper;
     private String[] fromArray = {"name"};
     private int[] toArray = {android.R.id.text1};
+    public static boolean playing = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +39,21 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
                 SYSTEM_UI_FLAG_FULLSCREEN | SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         setupSpinner();
 
+        playerOrChooserSetup();
+    }
+
+    public void playerOrChooserSetup() {
+        playing = getIntent().getBooleanExtra("playing", false);
+        if (playing) {
+            Button createGameBtn = findViewById(R.id.createGameBtn);
+            EditText newGameNameEditor = findViewById(R.id.newGameNameEditor);
+            TextView createNewGameText = findViewById(R.id.createNewGameText);
+            TextView editExistingGameText = findViewById(R.id.editExistingGameText);
+            createGameBtn.setVisibility(View.GONE);
+            newGameNameEditor.setVisibility(View.GONE);
+            createNewGameText.setVisibility(View.GONE);
+            editExistingGameText.setText("Play Game");
+        }
     }
 
     protected void onResume() {
@@ -86,7 +104,14 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
             return;
         }
         String gameName = gameCursor.getString(0);
-        Intent intent = new Intent(this, PreviewPagesActivity.class);
+        Intent intent;
+        if (playing) {
+            intent = new Intent(this, PlayGameActivity.class);
+            //intent.putExtra();
+        }
+        else {
+            intent = new Intent(this, PreviewPagesActivity.class);
+        }
         intent.putExtra("Game_id", dbHelper.getId(GAMES_TABLE, gameName, NO_PARENT));
         startActivity(intent);
     }
