@@ -32,7 +32,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     private CheckBox visibleCheckBox, movableCheckBox;
     private HorizontalScrollView imgScrollView;
     private TextView scriptTextView;
-    private Spinner imgSpinner, verbSpinner, modifierSpinner, eventSpinner, actionSpinner;
+    private Spinner imgSpinner, verbSpinner, modifierSpinner, eventSpinner, shapeSpinner, actionSpinner;
     private boolean ignore = false;
 
     //array list of text shapes that is retrieved from EditPagesActivity
@@ -75,6 +75,10 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     public void addTrigger(View view) {
         String event = (String) eventSpinner.getSelectedItem();
         String actionString = (String) actionSpinner.getSelectedItem();
+        if (actionString == null || actionString.isEmpty()) {
+            Toast.makeText(this, "Cannot add incomplete script!", Toast.LENGTH_SHORT).show();
+            return;
+        }
         Action action = Action.parseAction(actionString);
 
         String scriptText = scriptTextView.getText().toString();
@@ -110,7 +114,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         populateSpinner(imgSpinner, dbase.getResourceNames());
         populateSpinner(verbSpinner, Arrays.asList(ACTION_VERBS));
         populateSpinner(eventSpinner, Arrays.asList(TRIGGER_EVENTS));
-        initModifierSpinner(verbSpinner, modifierSpinner);
+        initModifierSpinner();
+        initShapeSpinner();
         populateImgScrollView();
         initPageView();
     }
@@ -143,6 +148,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         verbSpinner = findViewById(R.id.verb1);
         modifierSpinner = findViewById(R.id.modifier1);
         eventSpinner = findViewById(R.id.event1);
+        shapeSpinner = findViewById(R.id.modifier2);
         actionSpinner = findViewById(R.id.action1);
         scriptTextView = findViewById(R.id.scriptz);
         imgScrollView = findViewById(R.id.presetImages);
@@ -191,11 +197,27 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         actions.forEach(action -> actionStrings.add(action.toString()));
         populateSpinner(actionSpinner, actionStrings);
     }
-    private void initModifierSpinner(Spinner verbSpinner, Spinner modifierSpinner) {
+    private void initModifierSpinner() {
         verbSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 populateSpinner(modifierSpinner, getModifierValues(ACTION_VERBS[position]));
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) { }
+        });
+    }
+    private void initShapeSpinner() {
+        eventSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (TRIGGER_EVENTS[position].equals("onDrop")) {
+                    List<String> shapeNames = new ArrayList<>();
+                    page.getListOfShapes().forEach(shape -> shapeNames.add(shape.getName()));
+                    populateSpinner(shapeSpinner, shapeNames);
+                } else {
+                    populateSpinner(shapeSpinner, new ArrayList<>());
+                }
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) { }

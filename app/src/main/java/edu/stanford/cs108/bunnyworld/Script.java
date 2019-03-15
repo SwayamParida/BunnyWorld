@@ -1,24 +1,26 @@
 package edu.stanford.cs108.bunnyworld;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Script implements BunnyWorldConstants {
     private boolean onClick, onEnter, onDrop;
-    private Shape onDropShape;
-    private List<Action> onClickActions, onEnterActions, onDropActions;
+    private List<Action> onClickActions, onEnterActions;
+    private Map<Shape, Action> onDropActions;
 
     public Script() {
         onClickActions = new ArrayList<>();
-        onDropActions = new ArrayList<>();
+        onDropActions = new HashMap<>();
         onEnterActions = new ArrayList<>();
     }
 
     public List<Action> getOnClickActions() {
         return onClickActions;
     }
-    public List<Action> getOnDropActions() {
+    public Map<Shape, Action> getOnDropActions() {
         return onDropActions;
     }
     public List<Action> getOnEnterActions() {
@@ -27,15 +29,15 @@ public class Script implements BunnyWorldConstants {
     public List<Action> getActions() {
         List<Action> actions = new ArrayList<>();
         actions.addAll(onClickActions);
-        actions.addAll(onDropActions);
+        actions.addAll(onDropActions.values());
         actions.addAll(onEnterActions);
         return actions;
     }
 
-    public void addAction(String event, Action action) {
+    public void addAction(String event, Shape shape, Action action) {
         switch (event) {
             case "onClick": addOnClickAction(action); break;
-            case "onDrop": addOnDropAction(action); break;
+            case "onDrop": addOnDropAction(shape, action); break;
             case "onEnter": addOnEnterAction(action); break;
         }
     }
@@ -43,9 +45,9 @@ public class Script implements BunnyWorldConstants {
         onClick = true;
         onClickActions.add(onClickAction);
     }
-    public void addOnDropAction(Action onDropAction) {
+    public void addOnDropAction(Shape shape, Action onDropAction) {
         onDrop = true;
-        onDropActions.add(onDropAction);
+        onDropActions.put(shape, onDropAction);
     }
     public void addOnEnterAction(Action onEnterAction) {
         onEnter = true;
@@ -62,10 +64,6 @@ public class Script implements BunnyWorldConstants {
     public void addOnEnterAction(List<Action> onEnterAction) {
         onEnter = true;
         onEnterActions.addAll(onEnterAction);
-    }
-
-    public void setOnDropShape(Shape onDropShape) {
-        this.onDropShape = onDropShape;
     }
 
     public static Script parseScript(String scriptString) {

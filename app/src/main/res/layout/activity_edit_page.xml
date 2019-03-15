@@ -206,10 +206,10 @@
                     android:layout_width="0dp"
                     android:layout_weight="3" />
                 <Spinner
-                    android:id="@+id/action1"
-                    android:layout_height="wrap_content"
+                    android:id="@+id/modifier2"
                     android:layout_width="0dp"
-                    android:layout_weight="3" />
+                    android:layout_weight="3"
+                    android:layout_height="wrap_content"/>
                 <Button
                     android:id="@+id/addTriggerRow1"
                     android:layout_height="wrap_content"
@@ -218,6 +218,12 @@
                     android:onClick="addTrigger"
                     android:text="+"/>
             </LinearLayout>
+
+            <Spinner
+                android:id="@+id/action1"
+                android:layout_columnSpan="2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
         </GridLayout>
     </android.support.v4.widget.NestedScrollView>
 
