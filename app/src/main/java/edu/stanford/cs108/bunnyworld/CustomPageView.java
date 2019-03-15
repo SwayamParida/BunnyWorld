@@ -36,6 +36,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     private boolean changesMade = false;
     // Co-ordinates of user touches - populated in onTouchEvent()
     private boolean shapeCountNotStarted = true;
+    private boolean textSet; //checks if the textfield has been set thereby causing it to draw text
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
 
@@ -141,20 +142,44 @@ public class CustomPageView extends View implements BunnyWorldConstants{
         }
     }
 
+    //booleans that checks to see if action up/ down have occured
+    private boolean actionUpOccurred = false;
+    private boolean actionDownOccured = false;
+    private boolean actionBegan = false;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 x1 = event.getX();
                 y1 = event.getY();
+                actionDownOccured = true;
             case MotionEvent.ACTION_UP:
                 x2 = event.getX();
                 y2 = event.getY();
+                actionUpOccurred = true;
         }
 
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
         if (x1 == x2 && y1 == y2){
+            Shape shape = null;
+            EditText textEditText = ((PageEditorActivity) getContext()).findViewById(R.id.shapeText);
+            String text = textEditText.getText().toString();
             setSelectedShape();
+            if(!text.isEmpty() && textModeEnabled && selectedShape == null){
+                RectF boundingRect = createBounds(x1, y1, x2, y2);
+                shapeCount = getLatestCount()+1;
+                String shapeName = "Shape "+ shapeCount;
+                shape = new TextShape(this, boundingRect, selectedImage, text,
+                        -1, true, true, shapeName);
+                page.addShape(shape);
+                //selectShape(shape); selecting the shape causes a lot of  conflicts
+                updateInspector(shape);
+                changesMade = true;
+                invalidate();
+                textModeEnabled = false;
+                return true;
+            }
+
             //update the spinner
             if(selectedShape != null && !rectModeEnabled && !textModeEnabled){
                 int id = selectedShape.getResId();
@@ -175,14 +200,14 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             shapeCount = getLatestCount()+1;
             String shapeName = "Shape "+ shapeCount;
             Shape shape = null;
-            //Determine which shape we are supposed to draw based on the mode selected
-            if (textModeEnabled) {
-                EditText textEditText = ((PageEditorActivity) getContext()).findViewById(R.id.shapeText);
-                String text = textEditText.getText().toString();
+            EditText textEditText = ((PageEditorActivity) getContext()).findViewById(R.id.shapeText);
+            String text = textEditText.getText().toString();
+            if(textModeEnabled) {
                 if(text.isEmpty()) return true;
                 shape = new TextShape(this, boundingRect, selectedImage, text,
                         -1, true, true, shapeName);
                 textModeEnabled = false;
+                //Determine which shape we are supposed to draw based on the mode selected
             } else if (rectModeEnabled) {
                 shape = new RectangleShape(this, boundingRect, -1, true,
                          true, shapeName);
@@ -481,4 +506,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
         return largestId;
     }
+
+    //setters and getters for the textSet
+    public void setSelectedDrawableShape(Shape newShape){selectedShape = newShape;}
 }

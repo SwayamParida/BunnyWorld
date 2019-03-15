@@ -65,12 +65,17 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     public void saveChanges(View view) {
         if(!ignore) pagePreview.saveForUndo();
 
-        if (pagePreview.getSelectedShape() != null){
+        if (pagePreview.getSelectedShape() != null && pagePreview.isTextModeEnabled()){
             ignore = true;
             page.deleteShape(pagePreview.getSelectedShape());
             page.addShape(updateShape());
             pagePreview.invalidate();
             pagePreview.setPage(page);
+        } else if(pagePreview.isTextModeEnabled()){
+            ignore = true; //check if it is right
+            page.addShape(updateShape());
+            //pagePreview.setPage(page);
+            pagePreview.invalidate();
         }
         ignore = false;
 
@@ -348,7 +353,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             return null;
         }
 
-
         String imageName = imgSpinner.getSelectedItem().toString();
         Bitmap image = dbase.getImage(imageName);
 
@@ -379,6 +383,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         //Save copy of page
         return shape;
     }
+
     private Script createScript() {
         Script script = new Script();
         for (int triggerRowIndex = 0; triggerRowIndex < triggers.getChildCount(); ++triggerRowIndex) {
@@ -553,6 +558,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         Shape selectedShape = pagePreview.getSelectedShape();
         if (selectedShape != null) {
             pagePreview.deleteShape(selectedShape);
+            pagePreview.setSelectedDrawableShape(null);
         }
         pagePreview.invalidate();
     }

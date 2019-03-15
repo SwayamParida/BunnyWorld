@@ -46,16 +46,6 @@ public class TextShape extends Shape {
         newBounds = new RectF(startX, startY, endX, endY);
         this.bounds = newBounds;
 
-
-        //reorder the bounds for the bounding rect
-        //recompute the proper bounds and add it in....MAYBE WITH OFFSETS(?)
-//        float sX = bounds.left;
-//        float sY = bounds.top - txtRect.height();
-//        float eX = sX + txtRect.width();
-//        float eY =  sY + txtRect.height();
-//        RectF bounding = new RectF(startX, startY, endX, endY);
-
-
        // create a new Rect shape and place a text within it
         rectBackground = new RectangleShape(view, newBounds, resourceId, visible, movable, name);
         rectPaint = new Paint();
