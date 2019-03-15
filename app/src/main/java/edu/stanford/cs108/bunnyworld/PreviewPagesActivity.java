@@ -252,12 +252,11 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
         populateScrollView();
     }
 
-
     public void changePageName(View view){
         if(selectedPage == null) return;
         // GET NEW NAME FROM THE EDITTEXT
         EditText etField   = (EditText)findViewById(R.id.editTextWithNewName);
-        String newName = etField.getText().toString();
+        String newName = etField.getText().toString().trim();
 
         if(newName.length() == 0){
             //Display error toast
@@ -276,10 +275,6 @@ public class PreviewPagesActivity extends AppCompatActivity implements BunnyWorl
             toast.show();
             return;
         }
-
-
-
-
 
 
         int pageId = dbase.getId(PAGES_TABLE, selectedPage, gameId);

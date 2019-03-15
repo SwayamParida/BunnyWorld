@@ -351,19 +351,19 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     }
 
     //undoes an action performed by the user on the screen
-    public boolean undoChange(){
+    public Page undoChange(){
         //accesses the array list of actions and simply deletes the last activity
 
         if(stackOfPages.size() != 0) {
 //            this.page.listOfShapes.clear();
-            Page lastStepPage = stackOfPages.pop();
+            Page lastStepPage = stackOfPages.pop(); //<- this line is an issue...
             Log.d("tag2","stackOfPagesContains " +stackOfPages.size() + " elements");
             this.page = lastStepPage;
-
+//            setPage(page);
             invalidate();
-            return true;
+            return this.page;
         }
-        return false;
+        return this.page;
     }
 
     //redo button
