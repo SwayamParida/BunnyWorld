@@ -126,11 +126,7 @@ public class CustomPageView extends View implements BunnyWorldConstants{
             //get the resource Id of the image
             String latestSelected = getLatestSelected();
             int res_id = dbase.getId(RESOURCE_TABLE, latestSelected, -1);
-            if(shapeCountNotStarted && pageId != -1){
-                shapeCount = getLatestCount();
-                shapeCountNotStarted = false;
-                shapeCount++;
-            } else shapeCount += 1;
+            shapeCount = getLatestCount()+1;
             String shapeName = "Shape "+ shapeCount;
             Shape shape = new ImageShape(this, boundingRect, selectedImage, null,
                     res_id, true, true, shapeName);
@@ -393,18 +389,40 @@ public class CustomPageView extends View implements BunnyWorldConstants{
 
     //gets the latest selected and parses the name correctly
     public int getLatestCount(){
-        if(pageId == -1) return 0;
-
-        //else parse the string to get the actual count
-        String cmd = "SELECT * FROM shapes WHERE parent_id =" + pageId +";";
-        Cursor cursor = dbase.db.rawQuery(cmd, null);
-        cursor.moveToLast();
-        String name = cursor.getString(0);
-        String[] myList = name.split(" ");
-        int count = 0;
-        if (myList.length > 1) {
-            count = Integer.parseInt(myList[1]);
+        if(shapeCountNotStarted && pageId == -1) {
+            shapeCountNotStarted = false;
+            return 0;
         }
-        return count;
+        int largestId = 0;
+        //else parse the string to get the actual count
+//        String cmd = "SELECT * FROM shapes WHERE parent_id =" + pageId +";";
+//        Cursor cursor = dbase.db.rawQuery(cmd, null);
+//        //cursor.moveToLast();
+//        int largestId = 0;
+//        while(cursor.moveToNext()){
+//            String name = cursor.getString(0);
+//            String[] myList = name.split(" ");
+//            int count = 0;
+//            if (myList.length > 1) {
+//                count = Integer.parseInt(myList[1]);
+//            }
+//            if(count > largestId) largestId = count;
+//        }
+
+        //because nothing would have been added then
+
+        //loop through the array list of shapes and find the one with the largest Id
+        ArrayList<Shape> shapesArr = page.getListOfShapes();
+        for(Shape newShape: shapesArr){
+            String name = newShape.getName();
+            String[] myList = name.split(" ");
+            int count = 0;
+            if (myList.length > 1) {
+                count = Integer.parseInt(myList[1]);
+            }
+            if(count > largestId) largestId = count;
+        }
+
+        return largestId;
     }
 }

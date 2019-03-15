@@ -63,10 +63,13 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
      */
     public void saveChanges(View view) {
         Shape selectedShape = pagePreview.getSelectedShape();
-        if (selectedShape != null)
+        Shape newShape = updateShape();
+        if (selectedShape != null && newShape != null){
             page.deleteShape(selectedShape);
-        page.addShape(updateShape());
-        pagePreview.setPage(page);
+            page.addShape(newShape);
+        } else if(newShape != null) page.addShape(newShape);
+        else return;
+        //pagePreview.setPage(page);
         pagePreview.invalidate();
     }
     public void addTriggerRow(View view) {
@@ -312,8 +315,19 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         pagePreview.saveForUndo();
         String name = nameEditText.getText().toString();
         String text = textEditText.getText().toString();
+        String xEdit = xEditText.getText().toString();
+        String yEdit = yEditText.getText().toString();
+        String wEdit = wEditText.getText().toString();
+        String hEdit = hEditText.getText().toString();
         boolean visible = visibleCheckBox.isChecked();
         boolean movable = movableCheckBox.isChecked();
+
+        if(name.isEmpty() || xEdit.isEmpty() || yEdit.isEmpty() || wEdit.isEmpty() || hEdit.isEmpty())
+        {
+            Toast.makeText(this, "One or more EditText fields are empty", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+
 
         String imageName = imgSpinner.getSelectedItem().toString();
         Bitmap image = dbase.getImage(imageName);
