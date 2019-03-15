@@ -90,6 +90,7 @@ public class PlayGameActivity extends AppCompatActivity implements BunnyWorldCon
                     readShape.isMovable(), readShape.getName());
             Log.d("debug width", Float.toString(newShape.getWidth()));
             Log.d("debug height", Float.toString(newShape.getHeight()));
+            newShape.setScript(readShape.getScript());
             shapes.add(newShape);
         }
         newPage.setListOfShapes(shapes);
@@ -104,10 +105,10 @@ public class PlayGameActivity extends AppCompatActivity implements BunnyWorldCon
     }
 
     private void initPageView() {
+        playerPageView.setGameId(gameId);
         playerPageView.setPage(page);
         playerPageView.setPageId(dbase.getId(PAGES_TABLE, page.getName(), gameId));
         Log.d("debug", Integer.toString(playerPageView.getWidth()));
-
         playerPageView.invalidate();
     }
 

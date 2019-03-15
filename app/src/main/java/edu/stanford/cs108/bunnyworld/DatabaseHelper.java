@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static android.content.ContentValues.TAG;
+
 public class DatabaseHelper implements BunnyWorldConstants {
 
     //iVars
@@ -571,6 +573,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
 
         ImageShape shape = new ImageShape(view, bounds, drawable, txtString, res_id, visible, moveable, name);
         shape.setScript(Script.parseScript(script));
+        Log.d("ScriptVal", "Script at database retrieval: " + script);
         cursor.close();
 
         return shape;
