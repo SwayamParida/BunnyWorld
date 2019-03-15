@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static edu.stanford.cs108.bunnyworld.IntroScreenActivity.clipboard;
+
 public class PageEditorActivity extends AppCompatActivity implements BunnyWorldConstants {
     private Page page;
     private CustomPageView pagePreview;
@@ -40,7 +42,6 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
     //array list of text shapes that is retrieved from EditPagesActivity
     private DatabaseHelper dbase;
     private int gameId;
-    public Shape clipboard;
 
     /**
      * Helper method that updates the Spinner to reflect the image clicked by the user
