@@ -64,6 +64,7 @@ public class Page {
             shape.draw(canvas);
         }
     }
+
     public Shape findLastShape(float x, float y) {
         Shape lastFound = null;
         for (Shape shape : listOfShapes) {
