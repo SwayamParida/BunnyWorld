@@ -258,15 +258,45 @@ public class CustomPageView extends View implements BunnyWorldConstants{
     }
 
     public Shape makeShapeCopy(Shape shape) {
-        return new ImageShape(this, shape.getBounds(), shape.getImage(), shape.getText(),
-                shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+        //check and return proper shape
+        Shape newShape = null;
+        if(shape.getClass() == RectangleShape.class){ //draw a rect shape
+            newShape = new RectangleShape(this, shape.getBounds() , shape.getResId(), shape.isVisible(),
+                    shape.isMovable(), shape.getName());
+
+        } else if(shape.getClass() == TextShape.class){
+            newShape = new TextShape(this, shape.getBounds(), shape.getImage(), shape.getText(),
+                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+
+        } else {
+            newShape = new ImageShape(this, shape.getBounds(), shape.getImage(), shape.getText(),
+                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+        }
+
+        return newShape;
     }
 
     // Overloading
     public Shape makeShapeCopy(Shape shape, String shapeName, float x, float y) {
         RectF newBounds = new RectF(x, y, shape.getWidth(), shape.getHeight());
-        return new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
-                shape.getResId(), shape.isVisible(), shape.isMovable(), shapeName);
+
+        //create the right copy and return that
+        Shape newShape = null;
+        if(shape.getClass() == RectangleShape.class){ //draw a rect shape
+            newShape = new RectangleShape(this, newBounds , shape.getResId(), shape.isVisible(),
+                    shape.isMovable(), shape.getName());
+
+        } else if(shape.getClass() == TextShape.class){
+            newShape = new TextShape(this, newBounds, shape.getImage(), shape.getText(),
+                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+
+        } else {
+            newShape = new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
+                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+        }
+
+        //return the newly created shape
+        return newShape;
     }
 
     /**
