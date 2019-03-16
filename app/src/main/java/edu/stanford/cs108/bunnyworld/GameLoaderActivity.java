@@ -1,15 +1,21 @@
 package edu.stanford.cs108.bunnyworld;
 
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,6 +48,7 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
     private String[] fromArray = {"name"};
     private int[] toArray = {android.R.id.text1};
     public static boolean playing = false;
+    private static final int CHOOSE_FILE_REQUESTCODE = 8777;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,7 +183,39 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
         sharingIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+exportFile.getPath()));
-        startActivity(Intent.createChooser(sharingIntent, "Share game file using"));
-        Toast.makeText(this,"Save operation completed.", Toast.LENGTH_SHORT).show();
+        startActivity(Intent.createChooser(sharingIntent, "Share game files using"));
+    }
+
+    public void importDatabase(View view) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, CHOOSE_FILE_REQUESTCODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent resultIntent) {
+
+        if (requestCode == CHOOSE_FILE_REQUESTCODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Uri fileUri = resultIntent.getData();
+                Cursor cur = this.getContentResolver().query(fileUri, null, null, null, null);
+                cur.moveToFirst();
+                int nameIndex = cur.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                String name = cur.getString(nameIndex);
+                int len = name.length();
+                if (name.charAt(len -1) != 'b' || name.charAt(len - 2) != 'd' || name.charAt(len - 3) != '.') {
+                    Toast.makeText(this, "Cannot load from chosen file.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                try {
+                    dbHelper.replaceDatabase(fileUri);
+                    this.finish();
+                    startActivity(getIntent());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }//onActivityResult
     }
 }

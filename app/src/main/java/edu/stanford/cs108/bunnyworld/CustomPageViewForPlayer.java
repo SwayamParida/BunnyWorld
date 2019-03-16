@@ -111,8 +111,18 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
             case MotionEvent.ACTION_UP:
                 x2 = event.getX();
                 y2 = event.getY();
-                unHighlight();
 
+                // On Drop Event
+                for (Shape targetShape : shapesToHighlight) {
+                    Log.d("abc", "Target Shape: " + targetShape.getBounds().toString());
+                    Log.d("abc", x2 + ", " + y2);
+                    if (targetShape.getBounds().contains(x2, y2)) {
+                        Log.d("abc", selectedShape.toString() + " triggered " + targetShape.toString());
+                        checkForScriptsOnDrop(targetShape, selectedShape);
+                    }
+                }
+
+                unHighlight();
         }
 
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
@@ -473,4 +483,35 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
         }
     }
 
+
+
+    private void checkForScriptsOnDrop(Shape targetShape, Shape triggerShape) {
+        Script targetScript = targetShape.getScript();
+
+        Map<String, List<Action>> mapOfAllActions = targetScript.getOnDropMap();
+        List<Action> actionsListz = mapOfAllActions.get(triggerShape.getName());
+
+        Log.d("abc",actionsListz.toString());
+
+
+        for (Action action : actionsListz) {
+            switch (action.getVerb()) {
+                case "goto":
+                    goTo(action.getModifier());
+                    break;
+                case "play":
+                    play(action.getModifier());
+                    break;
+                case "hide":
+                    hide(action.getModifier());
+                    break;
+                case "show":
+                    show(action.getModifier());
+                    break;
+            }
+        }
+    }
 }
+
+
+

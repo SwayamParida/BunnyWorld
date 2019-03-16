@@ -99,10 +99,10 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/exportGameTxt"
+        android:id="@+id/importExportBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Export Game Files"
+        android:text="Export/Import Games"
         android:textSize="48sp"
         android:textStyle="bold"
         android:textColor="@color/colorPrimaryDark"
@@ -111,15 +111,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         />
-    <Button
-        android:id="@+id/exportBtn"
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/exportGameTxt"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:text="Export"
-        android:textSize="24sp"
-        android:onClick="exportDatabase"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/importExportBtn">
+
+        <Button
+            android:id="@+id/exportBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Export"
+            android:textSize="24sp"
+            android:onClick="exportDatabase"/>
+
+        <Button
+            android:id="@+id/importBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Import"
+            android:textSize="24sp"
+            android:onClick="importDatabase"/>
+    </LinearLayout>
+
 
 </android.support.constraint.ConstraintLayout>
