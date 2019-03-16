@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -807,4 +809,35 @@ public class DatabaseHelper implements BunnyWorldConstants {
             );
         }
     }
+
+    public void replaceDatabase(Uri newDbUri) throws IOException {
+        String toPath = mContext.getDatabasePath(DATABASE_NAME).getParent();
+        mContext.deleteDatabase(DATABASE_NAME);
+//        if (Environment.getExternalStorageState() != null) {
+//            File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/MyAppFolder");
+//            String fromPath = dir.getAbsolutePath() + DATABASE_NAME;
+            try {
+                fileCopy(new File(toPath), newDbUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+       // }
+    }
+
+    private void fileCopy(File dst, Uri newDbUri) throws IOException {
+        FileInputStream in = (FileInputStream) mContext.getContentResolver().openInputStream(newDbUri);
+        if (dst.isDirectory()) dst = new File(dst.getPath() + File.separator + DATABASE_NAME);
+        OutputStream out = new FileOutputStream(dst);
+
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        out.flush();
+        in.close();
+        out.close();
+        db = SQLiteDatabase.openOrCreateDatabase(dst, null);
+    }
+
 }
