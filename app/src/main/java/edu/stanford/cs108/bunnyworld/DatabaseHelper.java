@@ -1,8 +1,10 @@
 package edu.stanford.cs108.bunnyworld;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -10,6 +12,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -37,10 +42,15 @@ public class DatabaseHelper implements BunnyWorldConstants {
 /**********************************************/
     //Variable for single instance of DBSingleton
     private static DatabaseHelper single_instance = null;
-    public SQLiteDatabase db;
+    public static SQLiteDatabase db;
     private static Context mContext;
     private static boolean deleteDatabase = false;
     private static ArrayList<String> resourceNames = new ArrayList<String>();
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
 /**********************************************/
 
     /**
@@ -756,5 +766,45 @@ public class DatabaseHelper implements BunnyWorldConstants {
         int id = cursor.getInt(1);
         cursor.close();
         return id;
+    }
+
+    public static File backupDatabase(Activity activity) throws IOException {
+        //Open your local db as the input stream
+        String inFileName = db.getPath();
+        File dbFile = new File(inFileName);
+        FileInputStream fis = new FileInputStream(dbFile);
+
+        String outFileName = Environment.getExternalStorageDirectory() + "/" + DATABASE_NAME + ".db";
+        //Open the empty db as the output stream
+        verifyStoragePermissions(activity);
+        File backup = new File(outFileName);
+        if (!backup.exists()) backup.createNewFile();
+        OutputStream output = new FileOutputStream(outFileName);
+        //transfer bytes from the inputfile to the outputfile
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = fis.read(buffer))>0){
+            output.write(buffer, 0, length);
+        }
+        //Close the streams
+        output.flush();
+        output.close();
+        fis.close();
+        return backup;
+    }
+
+
+    public static void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }
     }
 }
