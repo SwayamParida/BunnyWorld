@@ -341,7 +341,7 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
     private void play(String soundName) {
         int soundId = dbase.getId(RESOURCE_TABLE, soundName, NO_PARENT);
         File mediafile = dbase.getAudioFile(soundId);
-        Log.d("anmol", "Trying to play: " + mediafile.getName() + " at: " + mediafile.getAbsolutePath() );
+//        Log.d("anmol", "Trying to play: " + mediafile.getName() + " at: " + mediafile.getAbsolutePath() );
 
         //create a new media player
         MediaPlayer mPlayer = new MediaPlayer();
