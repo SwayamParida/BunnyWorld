@@ -62,8 +62,22 @@ public class InventoryView extends View implements BunnyWorldConstants{
 
         RectF newBounds = new RectF(newX, newY, newX1, newY1);
         Log.d("onDraw bounds", newBounds.toString());
-        Shape thumbnail = new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
-                shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+
+        //get proper shapes
+        Shape thumbnail= null;
+        if(shape.getClass() == RectangleShape.class){ //draw a rect shape
+            thumbnail = new RectangleShape(this, newBounds, shape.getResId(), shape.isVisible(),
+                    shape.isMovable(), shape.getName());
+
+        } else if(shape.getClass() == TextShape.class){
+            thumbnail = new TextShape(this, newBounds, shape.getImage(), shape.getText(),
+                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+
+        } else {
+            thumbnail = new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
+                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+        }
+
         thumbnails.add(thumbnail);
         reDrawInventory();
         countX++;
@@ -92,8 +106,22 @@ public class InventoryView extends View implements BunnyWorldConstants{
             }
             RectF newBounds = new RectF(newX, newY, newX1, newY1);
             Log.d("onDraw bounds", newBounds.toString());
-            Shape newThumbnail = new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
-                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+
+            //get proper shapes
+            Shape newThumbnail= null;
+            if(shape.getClass() == RectangleShape.class){ //draw a rect shape
+                newThumbnail = new RectangleShape(this, newBounds, shape.getResId(), shape.isVisible(),
+                        shape.isMovable(), shape.getName());
+
+            } else if(shape.getClass() == TextShape.class){
+                newThumbnail = new TextShape(this, newBounds, shape.getImage(), shape.getText(),
+                        shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+
+            } else {
+                newThumbnail = new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
+                        shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+            }
+
             resetThumbnails.add(newThumbnail);
         }
         thumbnails = resetThumbnails;
@@ -109,7 +137,6 @@ public class InventoryView extends View implements BunnyWorldConstants{
             Log.d("onDraw width", Float.toString(thumbnail.getWidth()));
             Log.d("onDraw movable", Boolean.toString(thumbnail.isMovable()));
             Log.d("onDraw visible", Boolean.toString(thumbnail.isVisible()));
-            Log.d("onDraw image", thumbnail.getImage().toString());
             Log.d("onDraw bounds", thumbnail.getBounds().toString());
             thumbnail.draw(canvas);
         }
@@ -183,8 +210,20 @@ public class InventoryView extends View implements BunnyWorldConstants{
                 RectF newBounds = new RectF(newX, newY, newX1, newY1);
                 Log.d("moving out", newBounds.toString());
                 selectedShape.setBounds(newBounds);
-                Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
+
+                Shape shape = null;
+                if(selectedShape.getClass() == RectangleShape.class){ //draw a rect shape
+                    shape = new RectangleShape(this, newBounds, selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+
+                } else if(selectedShape.getClass() == TextShape.class){
+                    shape = new TextShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
                         selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+
+                } else{
+                    shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
+                        selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+                }
+
                 playerPageView.addShape(shape);
                 thumbnails.remove(num);
                 if (num != -1) {

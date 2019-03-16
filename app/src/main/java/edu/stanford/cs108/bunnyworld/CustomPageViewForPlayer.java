@@ -162,10 +162,22 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
 
                 RectF newBounds = new RectF(newX, newY, newX1, newY1);
                 selectedShape.setBounds(newBounds);
-                Shape shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
-                        selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+                Shape shape = null;
+                if(selectedShape.getClass() == RectangleShape.class){ //draw a rect shape
+                    shape = new RectangleShape(this, newBounds, selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+
+                } else if(selectedShape.getClass() == TextShape.class){
+                    shape = new TextShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
+                            selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+
+                } else{
+                    shape = new ImageShape(this, newBounds, selectedShape.getImage(), selectedShape.getText(),
+                            selectedShape.getResId(), selectedShape.isVisible(), selectedShape.isMovable(), selectedShape.getName());
+
+                }
 
                 if (newY1 > .75 * emulatorHeight) { //put in inventory (bottom 25% of screen)
+                    //add to the inventory
                     inventory.addToInventory(shape);
                     Log.d("adding to inventory", inventory.inventoryItems.toString());
                 }
@@ -201,15 +213,45 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
     }
 
     public Shape makeShapeCopy(Shape shape) {
-        return new ImageShape(this, shape.getBounds(), shape.getImage(), shape.getText(),
-                shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+        //check and return proper shape
+        Shape newShape = null;
+        if(shape.getClass() == RectangleShape.class){ //draw a rect shape
+            newShape = new RectangleShape(this, shape.getBounds() , shape.getResId(), shape.isVisible(),
+                    shape.isMovable(), shape.getName());
+
+        } else if(shape.getClass() == TextShape.class){
+            newShape = new TextShape(this, shape.getBounds(), shape.getImage(), shape.getText(),
+                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+
+        } else {
+            newShape = new ImageShape(this, shape.getBounds(), shape.getImage(), shape.getText(),
+                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+        }
+
+        return newShape;
     }
 
     // Overloading
     public Shape makeShapeCopy(Shape shape, String shapeName, float x, float y) {
         RectF newBounds = new RectF(x, y, shape.getWidth(), shape.getHeight());
-        return new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
-                shape.getResId(), shape.isVisible(), shape.isMovable(), shapeName);
+
+        //create the right copy and return that
+        Shape newShape = null;
+        if(shape.getClass() == RectangleShape.class){ //draw a rect shape
+            newShape = new RectangleShape(this, newBounds , shape.getResId(), shape.isVisible(),
+                    shape.isMovable(), shape.getName());
+
+        } else if(shape.getClass() == TextShape.class){
+            newShape = new TextShape(this, newBounds, shape.getImage(), shape.getText(),
+                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+
+        } else {
+            newShape = new ImageShape(this, newBounds, shape.getImage(), shape.getText(),
+                    shape.getResId(), shape.isVisible(), shape.isMovable(), shape.getName());
+        }
+
+        //return the newly created shape
+        return newShape;
     }
 
 
@@ -239,9 +281,21 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
     //getters and setters for the pageId
     public void setPageId(int pageId){this.pageId = pageId;}
     public void addShape(Shape other) {
-        Shape shape = new ImageShape(this, other.getBounds(), other.getImage(), other.getText(),
-                other.getResId(), other.isVisible(), other.isMovable(), other.getName());
-        page.addShape(shape);
+        //create a new shape based on the instance
+        Shape newShape = null;
+        if(other.getClass() == RectangleShape.class){ //draw a rect shape
+            newShape = new RectangleShape(this, other.getBounds(), other.getResId(), other.isVisible(),
+                    other.isMovable(), other.getName());
+        } else if(other.getClass() == TextShape.class){
+            newShape = new TextShape(this, other.getBounds(), other.getImage(), other.getText(),
+                    other.getResId(), other.isVisible(), other.isMovable(), other.getName());
+
+        } else {
+            newShape = new ImageShape(this, other.getBounds(), other.getImage(), other.getText(),
+                    other.getResId(), other.isVisible(), other.isMovable(), other.getName());
+        }
+
+        page.addShape(newShape);
         invalidate();
     }
     public void deleteShape(Shape shape) {
