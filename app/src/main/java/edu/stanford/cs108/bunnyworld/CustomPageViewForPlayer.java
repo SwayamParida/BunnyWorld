@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Stack;
 
@@ -46,6 +47,7 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
     private float x1, x2, y1, y2;
     private float xOffset, yOffset;
     private boolean firstDraw = true;
+    private ArrayList<Shape> shapesToHighlight = new ArrayList<Shape>();
 
     public void setGameId(int gameId) {
         this.gameId = gameId;
@@ -83,6 +85,11 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
             if (shape.isVisible()) {
                 Log.d("list", shape.toString());
                 shape.draw(canvas);
+                Log.d("xyz", "Border of " + shape.getName() + " is " + shape.greenBorder);
+                if (shape.greenBorder) {
+                    Log.d("xyz", "trying to draw green border");
+                    canvas.drawRect(shape.getBounds().left - 5, shape.getBounds().top - 5, shape.getBounds().right + 5, shape.getBounds().bottom + 5, Shape.greenPaint);
+                }
             }
             if (firstDraw) {
                 if (shape.getScript() != null && !shape.getScript().getOnEnterActions().isEmpty()) {
@@ -104,6 +111,18 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
             case MotionEvent.ACTION_UP:
                 x2 = event.getX();
                 y2 = event.getY();
+
+                // On Drop Event
+                for (Shape targetShape : shapesToHighlight) {
+                    Log.d("abc", "Target Shape: " + targetShape.getBounds().toString());
+                    Log.d("abc", x2 + ", " + y2);
+                    if (targetShape.getBounds().contains(x2, y2)) {
+                        Log.d("abc", selectedShape.toString() + " triggered " + targetShape.toString());
+                        checkForScriptsOnDrop(targetShape, selectedShape);
+                    }
+                }
+
+                unHighlight();
         }
 
         // When (x1,y1) = (x2,y2), it implies user simply tapped screen
@@ -111,6 +130,7 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
             selectShape(page.findLastShape(x1, y1));
             if (selectedShape != null){
                 checkForScripts(selectedShape);
+                highlightAllGreen(selectedShape);
             }
         }
 
@@ -123,6 +143,10 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
         // When a shape is selected, a drag implies user intends to move the selected shape
         else {
             if (selectedShape.isMovable() && selectedShape.isVisible()) {
+                //Make everything green...
+
+
+
                 Log.d("width", Integer.toString(getWidth()));
                 float newX = selectedShape.getX() + (x2 - x1);
                 float newX1 = newX + selectedShape.getWidth();
@@ -160,8 +184,8 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
                     selectShape(shape);
                 }
                 page.deleteShape(selectedShape);
+                selectedShape = shape; //Anmol added this line
                 invalidate();
-
             }
         }
         invalidate();
@@ -264,7 +288,6 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
 
         Log.d("anmol", "Next Page Shapes: " + nextPage.listOfShapes.size());
 
-
         invalidate();
         for (Shape shape : page.listOfShapes) {
             checkForScriptsEnter(shape);
@@ -305,6 +328,40 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
+    }
+
+    private void highlightAllGreen(Shape shapeBeingDragged){
+        Log.d("xyz", "Highlight green method called!");
+        if(shapeBeingDragged == null){
+            Log.d("xyz", "shapeBeingDraggedIsNull");
+        }
+        for(Shape shp : page.getListOfShapes()){
+            if(shp == null) {
+                Log.d("xyz", "Shapes in page are null");
+                continue;
+            }
+            Script shapeScript = shp.getScript();
+            Log.d("xyz", shapeScript.toString());
+            Map<String, List<Action>> actionsList = shapeScript.getOnDropMap();
+            for(String shapeName : actionsList.keySet()){
+                if(shapeName.equals(shapeBeingDragged.getName())){
+                    //Add to list of shapes to make green
+                    shp.greenBorder = true;
+                    Log.d("xyz", "Set green border of " + shp.getName() + " to true");
+                    shapesToHighlight.add(shp);
+                    invalidate();
+                }
+            }
+        }
+    }
+
+    private void unHighlight(){
+        for(Shape shp : shapesToHighlight){
+            //remove green border
+            shp.greenBorder = false;
+        }
+        invalidate();
+        shapesToHighlight.clear();
     }
 
     private void hide(String shapeName) {
@@ -372,4 +429,35 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
         }
     }
 
+
+
+    private void checkForScriptsOnDrop(Shape targetShape, Shape triggerShape) {
+        Script targetScript = targetShape.getScript();
+
+        Map<String, List<Action>> mapOfAllActions = targetScript.getOnDropMap();
+        List<Action> actionsListz = mapOfAllActions.get(triggerShape.getName());
+
+        Log.d("abc",actionsListz.toString());
+
+
+        for (Action action : actionsListz) {
+            switch (action.getVerb()) {
+                case "goto":
+                    goTo(action.getModifier());
+                    break;
+                case "play":
+                    play(action.getModifier());
+                    break;
+                case "hide":
+                    hide(action.getModifier());
+                    break;
+                case "show":
+                    show(action.getModifier());
+                    break;
+            }
+        }
+    }
 }
+
+
+

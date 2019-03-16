@@ -33,10 +33,17 @@ abstract class Shape {
     protected float originalX, originalX2, originalY, originalY2;
     protected Script script;
 
+    public boolean greenBorder = false;
+
     private static final Paint outlinePaint = new Paint();
     private static final int PAINT_COLOR = Color.BLUE;
     private static final Paint.Style PAINT_STYLE = Paint.Style.STROKE;
     private static final float STROKE_WIDTH = 15.0f;
+
+    public static final Paint greenPaint = new Paint();
+    private static final int GREEN = Color.GREEN;
+    private static final Paint.Style GREEN_STYLE = Paint.Style.STROKE;
+    private static final float GREEN_WIDTH = 15.0f;
 
     Shape(View view, RectF bounds, BitmapDrawable drawable, String txtString, int resourceId,
           boolean visible, boolean movable, String name){
@@ -68,11 +75,16 @@ abstract class Shape {
         outlinePaint.setStyle(PAINT_STYLE);
         outlinePaint.setColor(PAINT_COLOR);
         outlinePaint.setStrokeWidth(STROKE_WIDTH);
+
+        greenPaint.setStyle(GREEN_STYLE);
+        greenPaint.setStrokeWidth(GREEN_WIDTH);
+        greenPaint.setColor(GREEN);
     }
 
     //general draw method
     public void draw(Canvas canvas) {
-        if (selected) canvas.drawRect(bounds, outlinePaint); }
+        if (selected) canvas.drawRect(bounds, outlinePaint);
+    }
 
     //specific draw for other canvases
     abstract void draw(Canvas canvas, float xPos, float yPos);

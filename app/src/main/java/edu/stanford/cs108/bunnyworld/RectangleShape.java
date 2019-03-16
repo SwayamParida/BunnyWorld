@@ -56,5 +56,9 @@ public class RectangleShape extends Shape {
         float newHeight = newBounds.height()/viewHeight;
         scaledCoord = new RectF(newX, newY, newX + newWidth, newY + newHeight);
     }
+
+    //set and get the paint object for this rectangle shape
+    public void setDefaultPaint(Paint newPaint){defaultPaint = newPaint;}
+    public Paint getDefaultPaint(){return defaultPaint;}
 }
 
