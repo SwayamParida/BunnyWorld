@@ -123,6 +123,10 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
         // When a shape is selected, a drag implies user intends to move the selected shape
         else {
             if (selectedShape.isMovable() && selectedShape.isVisible()) {
+                //Make everything green...
+
+
+
                 Log.d("width", Integer.toString(getWidth()));
                 float newX = selectedShape.getX() + (x2 - x1);
                 float newX1 = newX + selectedShape.getWidth();
@@ -160,8 +164,8 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
                     selectShape(shape);
                 }
                 page.deleteShape(selectedShape);
+                selectedShape = shape; //Anmol added this line
                 invalidate();
-
             }
         }
         invalidate();
@@ -263,7 +267,6 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
         this.page = nextPage;
 
         Log.d("anmol", "Next Page Shapes: " + nextPage.listOfShapes.size());
-
 
         invalidate();
         for (Shape shape : page.listOfShapes) {

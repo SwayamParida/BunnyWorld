@@ -307,6 +307,11 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
         String imageName = imgSpinner.getSelectedItem().toString();
         Bitmap image = dbase.getImage(imageName);
 
+        if(pagePreview.getSelectedShape().getClass() == RectangleShape.class){
+            imageName = null;
+            image = null;
+        }
+
         float x = Float.parseFloat(xEdit);
         float y = Float.parseFloat(yEdit);
         float width = Float.parseFloat(wEdit);
