@@ -561,7 +561,7 @@ public class DatabaseHelper implements BunnyWorldConstants {
      * @param view The view in which you want the shape to appear
      * @return TextShape object
      */
-    public ImageShape getShape(int shape_id, View view) {
+    public Shape getShape(int shape_id, View view) {
         String getShapeRow = "SELECT * FROM " + SHAPES_TABLE + " WHERE _id = " + shape_id + ";";
         Cursor cursor = db.rawQuery(getShapeRow, null);
         cursor.moveToFirst();
@@ -578,10 +578,25 @@ public class DatabaseHelper implements BunnyWorldConstants {
         boolean visible = cursor.getInt(10) > 0;
 
         RectF bounds = new RectF(x, y, x + width, y + height);
-        Bitmap newBitmap = getImage(res_id);
-        BitmapDrawable drawable = new BitmapDrawable(newBitmap);
 
-        ImageShape shape = new ImageShape(view, bounds, drawable, txtString, res_id, visible, moveable, name);
+        //in the case where res_id == -1, return null object for bitmap
+        Bitmap newBitmap = null; BitmapDrawable drawable = null;
+        if(res_id != -1){
+            newBitmap = getImage(res_id);
+            drawable = new BitmapDrawable(newBitmap);
+        }
+
+        //get and return proper shape based on parameters
+        Shape shape;
+        if(txtString.isEmpty() && res_id == -1) //create rectShape
+            shape = new RectangleShape(view, bounds, -1,visible,moveable,name);
+        else if(!txtString.isEmpty()) //create textShape
+            shape = new TextShape(view, bounds, drawable,txtString,-1,visible,moveable,name);
+        else
+            shape = new ImageShape(view, bounds, drawable, txtString, res_id, visible, moveable, name);
+
+
+        //finally set the script and return the shape
         shape.setScript(Script.parseScript(script));
         Log.d("ScriptVal", "Script at database retrieval: " + script);
         cursor.close();
