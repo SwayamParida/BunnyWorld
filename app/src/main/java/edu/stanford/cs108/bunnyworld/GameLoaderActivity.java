@@ -2,6 +2,10 @@ package edu.stanford.cs108.bunnyworld;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
+import android.os.Environment;
+import android.os.StrictMode;
+import android.provider.ContactsContract;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,6 +17,20 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.opencsv.CSVWriter;
+
+import org.apache.commons.lang3.RandomStringUtils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collections;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
@@ -99,7 +117,7 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
     public void openGameFile(View view) {
         Spinner spinner = (Spinner) findViewById(R.id.existingGamesSpinner);
         Cursor gameCursor = (Cursor) spinner.getSelectedItem();
-        if(gameCursor == null){
+        if (gameCursor == null) {
             Toast.makeText(this, "No games in database", Toast.LENGTH_LONG).show();
             return;
         }
@@ -108,18 +126,17 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
         if (playing) {
             intent = new Intent(this, PlayGameActivity.class);
             //intent.putExtra();
-        }
-        else {
+        } else {
             intent = new Intent(this, PreviewPagesActivity.class);
         }
         intent.putExtra("Game_id", dbHelper.getId(GAMES_TABLE, gameName, NO_PARENT));
         startActivity(intent);
     }
 
-    public void deleteGameFile(View view){
+    public void deleteGameFile(View view) {
         Spinner spinner = (Spinner) findViewById(R.id.existingGamesSpinner);
         Cursor gameCursor = (Cursor) spinner.getSelectedItem();
-        if(gameCursor == null){
+        if (gameCursor == null) {
             Toast.makeText(this, "No games in database", Toast.LENGTH_LONG).show();
             return;
         }
@@ -140,5 +157,26 @@ public class GameLoaderActivity extends AppCompatActivity implements BunnyWorldC
 //            dbHelper = DatabaseHelper.getInstance(this);
 //        }
     }
-}
 
+    public void exportDatabase(View view) {
+        File exportFile = null;
+        try {
+            exportFile = DatabaseHelper.backupDatabase(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (exportFile == null) {
+            Toast.makeText(this, "Unsuccessful export.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+        sharingIntent.setType("*/.db");
+        sharingIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        sharingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+exportFile.getPath()));
+        startActivity(Intent.createChooser(sharingIntent, "Share game file using"));
+        Toast.makeText(this,"Save operation completed.", Toast.LENGTH_SHORT).show();
+    }
+}
