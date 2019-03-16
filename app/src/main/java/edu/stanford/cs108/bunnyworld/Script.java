@@ -161,16 +161,16 @@ public class Script implements BunnyWorldConstants {
         stringBuilder.append(TRIGGER_DELIMITER);
     }
 
-    public static void main(String[] args) {
-        Script script = new Script();
-        script.addOnClickAction(Action.parseAction("hide Shape1;"));
-        script.addOnDropAction("Shape1", Action.parseAction("play woof;"));
-        script.addOnDropAction("Shape1", Action.parseAction("goto Page2;"));
-        script.addOnDropAction("Shape2", Action.parseAction("hide Shape5;"));
-        script.addOnEnterAction(Action.parseAction("show Shape3;"));
-        System.out.println(script);
-
-        Script parsedScript = Script.parseScript(script.toString());
-        System.out.println("Parsed script:\n" + parsedScript.toString());
-    }
+//    public static void main(String[] args) {
+//        Script script = new Script();
+//        script.addOnClickAction(Action.parseAction("hide Shape1;"));
+//        script.addOnDropAction("Shape1", Action.parseAction("play woof;"));
+//        script.addOnDropAction("Shape1", Action.parseAction("goto Page2;"));
+//        script.addOnDropAction("Shape2", Action.parseAction("hide Shape5;"));
+//        script.addOnEnterAction(Action.parseAction("show Shape3;"));
+//        System.out.println(script);
+//
+//        Script parsedScript = Script.parseScript(script.toString());
+//        System.out.println("Parsed script:\n" + parsedScript.toString());
+//    }
 }
