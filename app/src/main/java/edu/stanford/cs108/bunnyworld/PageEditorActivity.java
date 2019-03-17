@@ -215,7 +215,8 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (TRIGGER_EVENTS[position].equals("onDrop")) {
                     List<String> shapeNames = new ArrayList<>();
-                    page.getListOfShapes().forEach(shape -> shapeNames.add(shape.getName()));
+                    List<Shape> gameShapes = dbase.getGameShapes(page.gameID, pagePreview);
+                    gameShapes.forEach(shape -> shapeNames.add(shape.getName()));
                     populateSpinner(shapeSpinner, shapeNames);
                 } else {
                     populateSpinner(shapeSpinner, new ArrayList<>());
@@ -230,7 +231,7 @@ public class PageEditorActivity extends AppCompatActivity implements BunnyWorldC
             case "goto": return dbase.getGamePageNames(page.getGameID());
             case "play": return Arrays.asList(AUDIO_NAMES);
             case "hide": case "show":
-                List<Shape> allShapes = page.listOfShapes;
+                List<Shape> allShapes = dbase.getGameShapes(page.gameID, pagePreview);
                 List<String> shapeNames = new ArrayList<>();
                 allShapes.forEach(shape -> shapeNames.add(shape.getName()));
                 return shapeNames;

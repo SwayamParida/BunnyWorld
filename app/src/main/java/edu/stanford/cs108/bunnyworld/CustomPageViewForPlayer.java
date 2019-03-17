@@ -340,12 +340,13 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
         nextPage.pageID = goToPageId;
         this.page = nextPage;
 
-        Log.d("anmol", "Next Page Shapes: " + nextPage.listOfShapes.size());
+//        Log.d("anmol", "Next Page Shapes: " + nextPage.listOfShapes.size());
 
         invalidate();
         for (Shape shape : page.listOfShapes) {
             checkForScriptsEnter(shape);
         }
+        invalidate();
     }
 
     private void play(String soundName) {
@@ -462,6 +463,7 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
     }
 
     private void checkForScriptsEnter(Shape shape) {
+        invalidate();
         Script scr = shape.getScript();
         if (scr != null) {
             for (Action action : scr.getOnEnterActions()) {
@@ -498,6 +500,7 @@ public class CustomPageViewForPlayer extends View implements BunnyWorldConstants
             switch (action.getVerb()) {
                 case "goto":
                     goTo(action.getModifier());
+
                     break;
                 case "play":
                     play(action.getModifier());

@@ -661,6 +661,17 @@ public class DatabaseHelper implements BunnyWorldConstants {
         db.execSQL(pageShapeDelete);
     }
 
+    public ArrayList<Shape> getGameShapes(int game_id, View view) {
+        ArrayList<Shape> gameShapes = new ArrayList<>();
+        for (String currPageName : getGamePageNames(game_id)) {
+            int currId = getId(PAGES_TABLE, currPageName, game_id);
+            for (Shape currShape : getPageShapes(currId, view)) {
+                gameShapes.add(currShape);
+            }
+        }
+        return gameShapes;
+    }
+
     /**
      * Change a given page's name in the database
      * @param page_id Unique id where page is stored in the database
